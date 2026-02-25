@@ -1,10 +1,4 @@
-import {
-  OpportunityStage,
-  PricingRequestStatus,
-  PricingRequestPriority,
-  ContractStatus,
-  ActivityType,
-} from './enums';
+export * from './enums';
 
 export interface User {
   id: string;
@@ -20,9 +14,11 @@ export interface Client {
   name: string;
   industry: string;
   accountManagerId: string;
-  status: 'Active' | 'Inactive';
+  isActive: boolean;
   totalOpportunities: number;
   lastContactDate: string;
+  arr: number;
+  owner: string;
 }
 
 export interface Opportunity {

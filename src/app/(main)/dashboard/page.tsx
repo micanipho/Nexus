@@ -25,7 +25,7 @@ export default function DashboardPage() {
         <Col xs={24} sm={12} lg={6}>
           <MetricCard 
             title="Total Revenue" 
-            value="$4.2M" 
+            value="R4.2M" 
             prefix={<DollarOutlined />} 
             trend={12} 
           />
@@ -33,7 +33,7 @@ export default function DashboardPage() {
         <Col xs={24} sm={12} lg={6}>
           <MetricCard 
             title="Pipeline Value" 
-            value="$12.8M" 
+            value="R12.8M" 
             prefix={<LineChartOutlined />} 
             trend={8} 
           />
