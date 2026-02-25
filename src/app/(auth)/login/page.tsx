@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Form, Input, Button, Card, Typography, Alert, message, Space } from 'antd';
+import { Form, Input, Button, Card, Typography, Alert, App, Space } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useAuthActions, useAuth } from '@/providers/authProvider';
 import { useRouter } from 'next/navigation';
@@ -12,6 +12,7 @@ import useStyles from './style/login.style';
 const { Title, Text, Paragraph } = Typography;
 
 export default function LoginPage() {
+  const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
   const { login } = useAuthActions();
   const { error } = useAuth();
@@ -39,8 +40,8 @@ export default function LoginPage() {
             <Image 
               src="/logo.svg" 
               alt="Nexus Logo" 
-              width={88} 
-              height={88} 
+              width={48} 
+              height={48} 
               className={styles.logo}
             />
             <h1 className={styles.title}>NEXUS</h1>
@@ -79,7 +80,7 @@ export default function LoginPage() {
           </Form.Item>
           
           <div className={styles.footer}>
-            <Space direction="vertical" size={4}>
+            <Space orientation="vertical" size={4}>
               <p className={styles.subtitle}>
                 Don't have an account? <Link href="/register">Create an account</Link>
               </p>

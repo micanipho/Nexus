@@ -31,7 +31,7 @@ const useStyles = createStyles(({ token, css }) => ({
   `,
   header: css`
     background: transparent;
-    padding: clamp(12px, 3vh, 24px) clamp(16px, 5vw, 64px);
+    padding: clamp(12px, 2vh, 20px) clamp(16px, 5vw, 48px);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -40,31 +40,31 @@ const useStyles = createStyles(({ token, css }) => ({
   logoWrapper: css`
     display: flex;
     align-items: center;
-    gap: clamp(12px, 2vw, 20px);
+    gap: 12px;
   `,
   logoImage: css`
-    width: clamp(35px, 4vw, 54px);
+    width: 32px;
     height: auto;
     flex-shrink: 0;
   `,
   logo: css`
-    font-size: clamp(30px, 6vw, 62px);
+    font-size: 32px;
     font-weight: 900;
     color: #0b3b73;
-    letter-spacing: -1.5px;
+    letter-spacing: -1px;
     line-height: 1;
     display: flex;
     align-items: center;
   `,
   navLink: css`
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 500;
   `,
   primaryButtonSmall: css`
-    height: 40px;
-    padding: 0 24px;
-    font-size: 16px;
-    border-radius: 20px;
+    height: 36px;
+    padding: 0 20px;
+    font-size: 14px;
+    border-radius: 18px;
   `,
   content: css`
     display: flex;
@@ -73,17 +73,19 @@ const useStyles = createStyles(({ token, css }) => ({
     justify-content: center;
     z-index: 10;
     padding: 0 24px;
+    flex: 1;
   `,
   heroSection: css`
     text-align: center;
-    max-width: 800px;
+    max-width: 720px;
+    margin-top: -40px;
   `,
   title: css`
-    font-size: clamp(40px, 10vw, 84px);
+    font-size: clamp(32px, 6vw, 64px);
     font-weight: 900;
-    line-height: 1;
-    margin-bottom: 32px;
-    letter-spacing: -2px;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    letter-spacing: -1.5px;
     color: #111;
   `,
   gradientText: css`
@@ -92,18 +94,18 @@ const useStyles = createStyles(({ token, css }) => ({
     -webkit-text-fill-color: transparent;
   `,
   paragraph: css`
-    font-size: clamp(18px, 2vw, 24px);
+    font-size: clamp(16px, 1.5vw, 18px);
     color: #666;
-    margin-bottom: 48px;
+    margin-bottom: 40px;
     font-weight: 400;
-    max-width: 600px;
+    max-width: 540px;
     margin-inline: auto;
   `,
   primaryButton: css`
-    height: 64px;
-    padding: 0 48px;
-    font-size: 20px;
-    border-radius: 12px;
+    height: 54px;
+    padding: 0 36px;
+    font-size: 17px;
+    border-radius: 10px;
     box-shadow: 0 10px 20px rgba(24, 144, 255, 0.2);
   `,
 }));

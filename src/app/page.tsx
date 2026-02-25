@@ -24,8 +24,8 @@ export default function LandingPage() {
                 <Image 
                   src="/logo.svg" 
                   alt="Nexus Logo" 
-                  width={64} 
-                  height={64} 
+                  width={32} 
+                  height={32} 
                   className={styles.logoImage}
                 />
                 <div className={styles.logo}>Nexus</div>

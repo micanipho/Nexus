@@ -10,70 +10,71 @@ const useStyles = createStyles(({ token, css }) => ({
     padding: 24px;
   `,
   card: css`
-    width: clamp(400px, 60vw, 720px);
-    padding: clamp(32px, 5vw, 80px);
+    width: 100%;
+    max-width: 440px;
+    padding: clamp(24px, 4vw, 40px);
     box-shadow: ${token.boxShadowTertiary};
-    border-radius: 24px;
+    border-radius: 16px;
     background: ${token.colorBgContainer};
   `,
   header: css`
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: clamp(40px, 6vh, 64px);
+    margin-bottom: 32px;
   `,
   logoWrapper: css`
     display: flex;
     align-items: center;
-    gap: clamp(12px, 2vw, 24px);
-    margin-bottom: 16px;
+    gap: 12px;
+    margin-bottom: 12px;
   `,
   logo: css`
-    width: clamp(56px, 7vw, 88px);
+    width: 48px;
     height: auto;
   `,
   title: css`
-    font-size: clamp(40px, 5.5vw, 72px);
-    font-weight: 900 ;
+    font-size: 32px;
+    font-weight: 900;
     color: ${token.colorPrimary};
     margin: 0;
     line-height: 1;
-    letter-spacing: -3px;
+    letter-spacing: -1.5px;
     display: flex;
     align-items: center;
   `,
   subtitle: css`
-    font-size: clamp(18px, 2vw, 24px);
+    font-size: 16px;
   `,
   errorAlert: css`
-    margin-bottom: 32px;
-  `,
-  formItem: css`
     margin-bottom: 24px;
   `,
+  formItem: css`
+    margin-bottom: 20px;
+  `,
   passwordItem: css`
-    margin-bottom: 32px;
+    margin-bottom: 24px;
   `,
   footer: css`
     text-align: center;
-    margin-top: 40px;
-    font-size: clamp(16px, 1.2vw, 20px);
+    margin-top: 32px;
+    font-size: 14px;
   `,
   registerParagraph: css`
-    margin-top: 16px;
+    margin-top: 12px;
   `,
   submitButton: css`
     width: 100%;
-    height: clamp(64px, 8vh, 80px);
-    font-size: clamp(18px, 1.5vw, 24px);
-    font-weight: 700;
-    border-radius: 16px;
-    margin-top: 24px;
+    height: 48px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 10px;
+    margin-top: 16px;
   `,
   input: css`
-    height: clamp(56px, 7vh, 72px);
-    font-size: clamp(16px, 1.2vw, 20px);
-    border-radius: 12px;
+    height: 44px;
+    font-size: 14px;
+    border-radius: 8px;
   `,
 }));
 
