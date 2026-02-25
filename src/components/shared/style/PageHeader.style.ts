@@ -13,7 +13,7 @@ const useStyles = createStyles(({ token, css }) => ({
     align-items: center;
   `,
   title: css`
-    margin: 0 !important;
+    margin: 0;
   `,
 }));
 

@@ -20,6 +20,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         dispatch(actions.authLoginFailure(error.message || 'Login failed'));
       }
     },
+    register: async (firstName: string, lastName: string, email: string, password: string) => {
+      dispatch(actions.authRegisterRequest());
+      try {
+        const result = await authService.register(firstName, lastName, email, password);
+        localStorage.setItem('nexus_token', result.token);
+        dispatch(actions.authRegisterSuccess(result));
+      } catch (error: any) {
+        dispatch(actions.authRegisterFailure(error.message || 'Registration failed'));
+      }
+    },
     logout: async () => {
       await authService.logout();
       dispatch(actions.authLogout());

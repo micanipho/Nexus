@@ -14,13 +14,22 @@ const useStyles = createStyles(({ token, css }) => ({
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 10px;
+  `,
+  logo: css`
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
   `,
   logoText: css`
     margin: 0;
     color: ${token.colorPrimary};
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: bold;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
   `,
   menu: css`
     border-right: 0;
