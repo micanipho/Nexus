@@ -70,7 +70,7 @@ const Sidebar: React.FC = () => {
     <Sider
       breakpoint="lg"
       collapsedWidth="0"
-      theme="light"
+      theme="dark"
       className={styles.sider}
     >
       <div className={styles.logoContainer}>
