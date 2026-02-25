@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Form, Input, Button, Card, Typography, Alert, message, Space, Row, Col } from 'antd';
+import { Form, Input, Button, Card, Typography, Alert, App, Space, Row, Col } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useAuthActions, useAuth } from '@/providers/authProvider';
 import { useRouter } from 'next/navigation';
@@ -12,6 +12,7 @@ import useStyles from './style/register.style';
 const { Title, Text } = Typography;
 
 export default function RegisterPage() {
+  const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
   const { register } = useAuthActions();
   const { error } = useAuth();
@@ -39,8 +40,8 @@ export default function RegisterPage() {
             <Image 
               src="/logo.svg" 
               alt="Nexus Logo" 
-              width={88} 
-              height={88} 
+              width={48} 
+              height={48} 
               className={styles.logo}
             />
             <h1 className={styles.title}>NEXUS</h1>

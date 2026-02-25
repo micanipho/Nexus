@@ -1,7 +1,7 @@
 import React from 'react';
 import { Geist } from "next/font/google";
 import { AntdRegistry } from '@ant-design/nextjs-registry';
-import { ConfigProvider, theme as antdTheme } from 'antd';
+import { ConfigProvider, App, theme as antdTheme } from 'antd';
 import type { ThemeConfig } from 'antd';
 import { AppProviders } from '../providers';
 import './globals.css';
@@ -47,9 +47,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={geist.className}>
       <AntdRegistry>
         <ConfigProvider theme={theme}>
-          <AppProviders>
-            {children}
-          </AppProviders>
+          <App>
+            <AppProviders>
+              {children}
+            </AppProviders>
+          </App>
         </ConfigProvider>
       </AntdRegistry>
       </body>
