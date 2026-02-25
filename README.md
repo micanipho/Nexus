@@ -2,6 +2,8 @@
 
 **Nexus** is an Enterprise Sales Automation System designed to streamline B2B sales operations, pipeline tracking, and contract renewals. It provides a structured platform for managing high-value enterprise sales lifecycles within a single solution.
 
+**Live Demo:** [https://nexus-alpha-gules.vercel.app/](https://nexus-alpha-gules.vercel.app/)
+
 ---
 
 ## Overview
