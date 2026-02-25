@@ -13,7 +13,7 @@ import {
 } from '@ant-design/icons';
 import { usePathname, useRouter } from 'next/navigation';
 import type { MenuProps } from 'antd';
-import useStyles from './Sidebar.style';
+import useStyles from './style/Sidebar.style';
 
 const { Sider } = Layout;
 

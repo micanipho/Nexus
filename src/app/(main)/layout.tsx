@@ -4,7 +4,7 @@ import React from 'react';
 import { Layout } from 'antd';
 import Sidebar from '@/components/layout/Sidebar';
 import Topbar from '@/components/layout/Topbar';
-import useStyles from './layout.style';
+import useStyles from './style/layout.style';
 
 const { Content } = Layout;
 

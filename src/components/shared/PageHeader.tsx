@@ -3,7 +3,7 @@
 import React from 'react';
 import { Typography, Breadcrumb, Space } from 'antd';
 import Link from 'next/link';
-import useStyles from './PageHeader.style';
+import useStyles from './style/PageHeader.style';
 
 const { Title } = Typography;
 

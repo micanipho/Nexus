@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, Statistic, Typography } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
-import useStyles from './MetricCard.style';
+import useStyles from './style/MetricCard.style';
 
 const { Text } = Typography;
 

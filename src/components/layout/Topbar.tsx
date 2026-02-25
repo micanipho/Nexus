@@ -4,7 +4,7 @@ import React from 'react';
 import { Layout, Avatar, Dropdown, Space, Typography, Button, Badge } from 'antd';
 import { UserOutlined, BellOutlined, LogoutOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import useStyles from './Topbar.style';
+import useStyles from './style/Topbar.style';
 
 const { Header } = Layout;
 const { Text } = Typography;
