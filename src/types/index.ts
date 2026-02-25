@@ -6,6 +6,8 @@ import {
   ActivityType,
 } from './enums';
 
+export * from './enums';
+
 export interface User {
   id: string;
   firstName: string;
@@ -20,20 +22,25 @@ export interface Client {
   name: string;
   industry: string;
   accountManagerId: string;
-  status: 'Active' | 'Inactive';
+  isActive: boolean;
   totalOpportunities: number;
   lastContactDate: string;
+  arr: number;
+  owner: string;
 }
 
 export interface Opportunity {
   id: string;
   clientId: string;
+  clientName: string;
   title: string;
   value: number;
   stage: OpportunityStage;
   probability: number;
   expectedCloseDate: string;
   ownerId: string;
+  ownerName: string;
+  isActive: boolean;
 }
 
 export interface PricingRequest {
