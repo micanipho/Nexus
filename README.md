@@ -4,9 +4,9 @@
 
 ---
 
-## 🚀 Overview
+## Overview
 
-Nexus addresses the challenges of manual sales processes and fragmented tracking. It provides organizational visibility, accountability, and proactive revenue protection.
+Nexus addresses the challenges of manual sales processes and fragmented tracking by providing organizational visibility, accountability, and proactive revenue protection.
 
 ### Core Modules:
 *   **Pipeline & Opportunity Tracking:** Real-time visibility into deal stages from discovery to closed-won.
@@ -18,17 +18,18 @@ Nexus addresses the challenges of manual sales processes and fragmented tracking
 
 ---
 
-## 🛠 Technology Stack
+## Technology Stack
 
 *   **Framework:** [Next.js 16 (App Router)](https://nextjs.org/)
 *   **UI Library:** [Ant Design (antd) 6.x](https://ant.design/)
+*   **State Management:** [Provider Pattern](./providerPattern.md) (Context API + `redux-actions`)
 *   **Language:** [TypeScript (Strict Mode)](https://www.typescriptlang.org/)
 *   **HTTP Client:** [Axios](https://axios-http.com/)
 *   **Visualization:** [@ant-design/plots](https://ant-design-charts.antgroup.com/)
 
 ---
 
-## 📂 Project Architecture
+## Project Architecture
 
 The project follows a domain-driven structure within the `src/` directory:
 
@@ -37,57 +38,60 @@ src/
 ├── app/                              # Next.js App Router (Pages & Layouts)
 │   ├── (auth)/                       # Auth group (Login, Register)
 │   ├── (main)/                       # Main application shell
-│   │   ├── dashboard/                # Executive Overview
-│   │   ├── clients/                  # CRM & Client Detail Views
-│   │   ├── opportunities/            # Sales Pipeline
-│   │   ├── pricing-requests/         # Proposal & Quote Workflows
-│   │   ├── contracts/                # Contract Management
-│   │   ├── profile/                  # "My Performance" Individual Dashboard
-│   │   └── settings/                 # User Preferences
-│   └── layout.tsx                    # Root layout (Config, Providers)
+│   └── layout.tsx                    # Root layout (Config, AppProviders)
 │
-├── services/                         # API Integration Layer
-│   ├── api.ts                        # Centralized Axios instance
-│   ├── dashboardService.ts           # Metrics & Performance API
-│   ├── pricingRequestService.ts      # Workflow API
-│   └── ...                           # Domain-specific services
+├── providers/                        # State Management Layer (Context Providers)
+│   ├── authProvider/                 # Auth state & actions
+│   ├── clientProvider/               # CRM state
+│   ├── dashboardProvider/            # Analytics state
+│   └── ...                           # Domain-specific providers
 │
-├── types/                            # Strict TypeScript Contracts
-│   ├── index.ts                      # Centralized Domain Interfaces
-│   ├── enums.ts                      # Business logic Enums (Status, Priority)
-│   └── dashboard.ts                  # Analytics-specific types
+├── components/                       # UI Components
+│   ├── layout/                       # Sidebar, Topbar, Shell components
+│   ├── shared/                       # Reusable UI (DataTable, StatusBadge, etc.)
+│   └── features/                     # Domain-specific complex components
 │
-└── components/                       # Shared UI Components
+├── services/                         # API Integration Layer (Axios)
+│   ├── api.ts                        # Axios instance & interceptors
+│   ├── authService.ts                # Auth API
+│   └── ...                           # Domain services with mock fallbacks
+│
+└── types/                            # Strict TypeScript Contracts
+    ├── index.ts                      # Centralized Domain Interfaces
+    ├── enums.ts                      # Business logic Enums
+    └── auth.ts                       # Auth-specific types
 ```
 
 ---
 
-## 🏁 Getting Started
+## State Management: The Provider Pattern
+
+This project uses a strictly typed, Redux-like architecture utilizing the React Context API. Each domain (e.g., Clients, Auth) has a dedicated provider directory containing:
+- `context.tsx`: State and Action context definitions.
+- `actions.tsx`: Action types and synchronous creators.
+- `reducer.tsx`: State transition logic using `handleActions`.
+- `index.tsx`: The Provider component and custom hooks (`useDomain`, `useDomainActions`).
+
+Refer to [providerPattern.md](./providerPattern.md) for detailed documentation.
+
+---
+
+## Getting Started
 
 ### Prerequisites
 - Node.js 20.x or higher
-- npm or yarn
+- npm
 
 ### Installation
-1.  **Clone the repository:**
+1.  **Clone and Install:**
     ```bash
     git clone https://github.com/your-org/nexus-sales.git
     cd nexus-sales
-    ```
-
-2.  **Install dependencies:**
-    ```bash
     npm install
     ```
 
-3.  **Run the development server:**
+2.  **Run Development Server:**
     ```bash
     npm run dev
     ```
 
-4.  **Build for production:**
-    ```bash
-    npm run build
-    ```
-
----
