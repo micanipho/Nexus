@@ -4,6 +4,7 @@ import React from 'react';
 import { Layout } from 'antd';
 import Sidebar from '@/components/layout/Sidebar';
 import Topbar from '@/components/layout/Topbar';
+import useStyles from './layout.style';
 
 const { Content } = Layout;
 
@@ -12,20 +13,14 @@ export default function MainLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { styles } = useStyles();
+
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout className={styles.layout}>
       <Sidebar />
-      <Layout style={{ marginLeft: 200 }}>
+      <Layout className={styles.mainSection}>
         <Topbar />
-        <Content
-          style={{
-            margin: '24px 16px',
-            padding: 24,
-            minHeight: 280,
-            background: '#fff',
-            borderRadius: 8,
-          }}
-        >
+        <Content className={styles.content}>
           {children}
         </Content>
       </Layout>

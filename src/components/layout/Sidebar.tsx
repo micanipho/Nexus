@@ -12,8 +12,8 @@ import {
   SettingOutlined,
 } from '@ant-design/icons';
 import { usePathname, useRouter } from 'next/navigation';
-
 import type { MenuProps } from 'antd';
+import useStyles from './Sidebar.style';
 
 const { Sider } = Layout;
 
@@ -22,6 +22,7 @@ type MenuItem = Required<MenuProps>['items'][number];
 const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const { styles } = useStyles();
 
   const menuItems: MenuItem[] = [
     {
@@ -69,24 +70,17 @@ const Sidebar: React.FC = () => {
       breakpoint="lg"
       collapsedWidth="0"
       theme="light"
-      style={{
-        height: '100vh',
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        bottom: 0,
-        borderRight: '1px solid #f0f0f0',
-      }}
+      className={styles.sider}
     >
-      <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <h2 style={{ margin: 0, color: '#1677ff' }}>NEXUS</h2>
+      <div className={styles.logoContainer}>
+        <h2 className={styles.logoText}>NEXUS</h2>
       </div>
       <Menu
         mode="inline"
         selectedKeys={[pathname]}
         items={menuItems}
         onClick={({ key }) => router.push(key)}
-        style={{ borderRight: 0 }}
+        className={styles.menu}
       />
     </Sider>
   );
