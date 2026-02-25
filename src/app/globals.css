@@ -17,9 +17,9 @@ body {
 }
 
 body {
+  margin: 0;
+  background: #F7F8FA;
   color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

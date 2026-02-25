@@ -13,6 +13,7 @@ import {
 } from '@ant-design/icons';
 import { usePathname, useRouter } from 'next/navigation';
 import type { MenuProps } from 'antd';
+import Image from 'next/image';
 import useStyles from './style/Sidebar.style';
 
 const { Sider } = Layout;
@@ -73,6 +74,13 @@ const Sidebar: React.FC = () => {
       className={styles.sider}
     >
       <div className={styles.logoContainer}>
+        <Image 
+          src="/logo.svg" 
+          alt="Nexus Logo" 
+          width={24} 
+          height={24} 
+          className={styles.logo}
+        />
         <h2 className={styles.logoText}>NEXUS</h2>
       </div>
       <Menu

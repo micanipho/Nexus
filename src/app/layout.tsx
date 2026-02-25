@@ -1,45 +1,58 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import React from 'react';
+import { Geist } from "next/font/google";
 import { AntdRegistry } from '@ant-design/nextjs-registry';
-import { ConfigProvider } from 'antd';
-import "./globals.css";
+import { ConfigProvider, theme as antdTheme } from 'antd';
+import type { ThemeConfig } from 'antd';
+import { AppProviders } from '../providers';
+import './globals.css';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const geist = Geist({
   subsets: ["latin"],
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-  title: "Nexus | Enterprise Sales Automation",
-  description: "Enterprise Sales Automation & Intelligence System",
-};
-
-const theme = {
+const theme: ThemeConfig = {
   token: {
-    colorPrimary: '#1677ff',
-    borderRadius: 6,
+    fontFamily: geist.style.fontFamily,
+    colorPrimary: '#0B3B73',
+    colorInfo: '#0B3B73',
+    colorBgBase: '#FFFFFF',
+    colorTextBase: '#0A1A2B',
+    colorBorder: '#E5E7EB',
+    borderRadius: 8,
+    fontSize: 14,
   },
+  components: {
+    Layout: {
+      headerBg: '#FFFFFF',
+      bodyBg: '#FFFFFF',
+      siderBg: '#0B2545',
+      triggerBg: '#0B2545',
+    },
+    Menu: {
+      itemSelectedBg: 'rgba(255,255,255,0.1)',
+      itemSelectedColor: '#FFFFFF',
+      itemColor: 'rgba(255,255,255,0.85)',
+    },
+    Card: { headerHeight: 52 },
+    Table: { headerSplitColor: '#E5E7EB' },
+    Statistic: { titleFontSize: 12 },
+  },
+  algorithm: antdTheme.defaultAlgorithm,
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <AntdRegistry>
-          <ConfigProvider theme={theme}>
+      <html lang="en">
+      <body className={geist.className}>
+      <AntdRegistry>
+        <ConfigProvider theme={theme}>
+          <AppProviders>
             {children}
-          </ConfigProvider>
-        </AntdRegistry>
+          </AppProviders>
+        </ConfigProvider>
+      </AntdRegistry>
       </body>
-    </html>
+      </html>
   );
 }

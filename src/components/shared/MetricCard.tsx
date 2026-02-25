@@ -33,7 +33,6 @@ const MetricCard: React.FC<MetricCardProps> = ({
         value={value}
         prefix={prefix}
         suffix={suffix}
-        valueStyle={{ fontWeight: 'bold' }} // Ant Design Statistic valueStyle is a direct prop, but we can also use className if supported or keep it for now if it's the standard way for this specific component's sub-element. However, let's try to move it.
       />
       {trend !== undefined && (
         <div className={styles.trendContainer}>

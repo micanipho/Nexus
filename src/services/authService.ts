@@ -4,7 +4,8 @@ import { User } from '@/types';
 // Mock data for development
 const MOCK_USER: User = {
   id: '1',
-  name: 'John Doe',
+  firstName: 'John',
+  lastName: 'Doe',
   email: 'john.doe@example.com',
   role: 'Sales Executive',
   avatar: 'https://i.pravatar.cc/150?u=1',
@@ -34,6 +35,26 @@ export const authService = {
   async logout(): Promise<void> {
     // const response = await api.post('/auth/logout');
     localStorage.removeItem('nexus_token');
+  },
+
+  async register(firstName: string, lastName: string, email: string, password: string): Promise<{ user: User; token: string }> {
+    try {
+      // Real API call
+      // const response = await api.post('/auth/register', { firstName, lastName, email, password });
+      // return response.data;
+
+      // Mock fallback
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({
+            user: { ...MOCK_USER, firstName, lastName, email },
+            token: 'mock-jwt-token-register',
+          });
+        }, 1000);
+      });
+    } catch (error) {
+      throw error;
+    }
   },
 
   async getCurrentUser(): Promise<User> {
