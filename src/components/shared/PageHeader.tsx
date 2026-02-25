@@ -3,6 +3,7 @@
 import React from 'react';
 import { Typography, Breadcrumb, Space } from 'antd';
 import Link from 'next/link';
+import useStyles from './style/PageHeader.style';
 
 const { Title } = Typography;
 
@@ -13,17 +14,19 @@ interface PageHeaderProps {
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({ title, breadcrumbs, extra }) => {
+  const { styles } = useStyles();
+
   return (
-    <div style={{ marginBottom: 24 }}>
-      <Breadcrumb style={{ marginBottom: 8 }}>
+    <div className={styles.container}>
+      <Breadcrumb className={styles.breadcrumb}>
         {breadcrumbs.map((bc, index) => (
           <Breadcrumb.Item key={index}>
             {bc.href ? <Link href={bc.href}>{bc.title}</Link> : bc.title}
           </Breadcrumb.Item>
         ))}
       </Breadcrumb>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Title level={2} style={{ margin: 0 }}>
+      <div className={styles.headerContent}>
+        <Title level={2} className={styles.title}>
           {title}
         </Title>
         <Space>{extra}</Space>
