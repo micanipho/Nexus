@@ -3,19 +3,22 @@ import { User, UserRole, AuthResponse } from '../types';
 
 export const authService = {
   async login(email: string, password: string): Promise<AuthResponse> {
-    try {
-      const response = await api.post<AuthResponse>('/auth/login', { email, password });
-      
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.post<any>('/auth/login', { email, password });
+    
+    const payload = response.data;
+    return {
+      user: {
+        ...payload,
+        roles: payload.roles || []
+      },
+      token: payload.token
+    };
   },
 
   async logout(): Promise<void> {
     // Optionally call logout endpoint
     // await api.post('/auth/logout');
-    localStorage.removeItem('nexus_token');
+    sessionStorage.removeItem('nexus_token');
     
   },
 
@@ -28,56 +31,54 @@ export const authService = {
     tenantId?: string,
     role?: string
   ): Promise<AuthResponse> {
-    try {
-      // Scenarios:
-      // A: New Organisation (tenantName provided) — user becomes Admin
-      // B: Join existing org (tenantId + role provided)
-      // C: Default shared tenant (role provided, no org info)
-      const response = await api.post<AuthResponse>('/auth/register', { 
-        firstName, 
-        lastName, 
-        email, 
-        password,
-        tenantName,
-        tenantId,
-        role
-      });
-      
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    // Scenarios:
+    // A: New Organisation (tenantName provided) — user becomes Admin
+    // B: Join existing org (tenantId + role provided)
+    // C: Default shared tenant (role provided, no org info)
+    const response = await api.post<any>('/auth/register', { 
+      firstName, 
+      lastName, 
+      email, 
+      password,
+      tenantName,
+      tenantId,
+      role
+    });
+    
+    const payload = response.data;
+    return {
+      user: {
+        ...payload,
+        roles: payload.roles || []
+      },
+      token: payload.token
+    };
   },
 
   async getCurrentUser(): Promise<User> {
-    try {
-      const response = await api.get('/auth/me');
-      const data = response.data;
+    const response = await api.get<any>('/auth/me');
+    
+    // Ensure roles is always an array to prevent undefined errors in RBAC hook
+    const user = response.data;
+    if (!user.roles) {
+      user.roles = [];
+    }
 
-      // The API returns claims as an array of { type, value } pairs.
-      // Extract the needed fields into a flat User object.
-      const claimMap = new Map<string, string>();
-      if (Array.isArray(data.claims)) {
-        for (const claim of data.claims) {
-          claimMap.set(claim.type, claim.value);
-        }
-      }
-
-      const user: User = {
-        id: data.userId ?? claimMap.get('http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier') ?? '',
-        userId: data.userId ?? '',
-        firstName: claimMap.get('firstName') ?? '',
-        lastName: claimMap.get('lastName') ?? '',
-        email: data.email ?? claimMap.get('http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress') ?? '',
-        roles: (data.roles ?? []) as UserRole[],
-        tenantId: claimMap.get('tenantId') ?? '',
-        tenantName: claimMap.get('tenantName'),
-        expiresAt: claimMap.get('exp') ?? '',
+    // /auth/me returns properties like firstName inside a "claims" array of objects
+    // We map them to the root level to match the /auth/login shape that the Context expects
+    if (user.claims && Array.isArray(user.claims)) {
+      const getClaim = (type: string) => {
+        const claim = user.claims.find((c: any) => c.type === type);
+        return claim ? claim.value : undefined;
       };
 
-      return user;
-    } catch (error) {
-      throw error;
+      user.firstName = user.firstName || getClaim('firstName') || '';
+      user.lastName = user.lastName || getClaim('lastName') || '';
+      user.tenantId = user.tenantId || getClaim('tenantId') || '';
     }
+    
+    user.id = user.id || user.userId;
+    
+    return user as User;
   },
 };

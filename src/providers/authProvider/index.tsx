@@ -17,7 +17,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         dispatch(actions.authLoginRequest());
         try {
           const result = await authService.login(email, password);
-          localStorage.setItem("nexus_token", result.token);
+          sessionStorage.setItem("nexus_token", result.token);
           dispatch(actions.authLoginSuccess(result));
           // Fetch the full user profile to ensure user data is populated
           const user = await authService.getCurrentUser();
@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             tenantId,
             role,
           );
-          localStorage.setItem("nexus_token", result.token);
+          sessionStorage.setItem("nexus_token", result.token);
           dispatch(actions.authRegisterSuccess(result));
         } catch (error: any) {
           dispatch(
@@ -63,23 +63,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           // Log error but proceed with local cleanup
           console.error("Server logout failed:", error);
         } finally {
-          localStorage.removeItem("nexus_token");
+          sessionStorage.removeItem("nexus_token");
           dispatch(actions.authLogout());
           globalThis.location.href = '/login';
         }
-      },      checkAuth: async () => {
-        const token = localStorage.getItem("nexus_token");
+      },        checkAuth: async () => {
+        const token = sessionStorage.getItem("nexus_token");
         if (token) {
           try {
+            // Set loading state so route guards know we're checking
+            dispatch(actions.authLoginRequest()); 
             const user = await authService.getCurrentUser();
             dispatch(actions.authSetUser(user));
-          } catch (error: any) {
-            // Do not clear auth state if it's just a cross-tenant access error
-            if (!error.isCrossTenantError) {
-              localStorage.removeItem("nexus_token");
-              dispatch(actions.authSetUser(null));
-            }
+            // Ensure token is put back into state by faking a success login so context possesses the token
+            dispatch(actions.authLoginSuccess({ user, token }));
+          } catch (error) {
+            sessionStorage.removeItem("nexus_token");
+            dispatch(actions.authSetUser(null));
           }
+        } else {
+            // If there's no token on load, just ensure loading finishes
+            dispatch(actions.authSetUser(null));
         }
       },
     }),
@@ -87,6 +91,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   useEffect(() => {
+    // If we're booting up, ensure loading state starts true if we possess a token
+    const token = typeof globalThis.window !== 'undefined' ? sessionStorage.getItem("nexus_token") : null;
+    if (token) {
+        dispatch(actions.authLoginRequest());
+    }
     authActions.checkAuth();
   }, [authActions]);
 

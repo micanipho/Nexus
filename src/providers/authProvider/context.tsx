@@ -13,7 +13,7 @@ export const initialState: AuthState = {
   user: null,
   token: null,
   isAuthenticated: false,
-  loading: false,
+  loading: true,
   error: null,
 };
 
