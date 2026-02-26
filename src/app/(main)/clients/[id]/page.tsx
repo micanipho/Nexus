@@ -174,6 +174,7 @@ export default function ClientDetailPage() {
                                             { title: 'Email', dataIndex: 'email', key: 'email' },
                                             { title: 'Actions', key: 'actions', render: () => <Button size="small" type="link">Contact</Button> }
                                         ]}
+                                        scroll={{ x: 'max-content' }}
                                     />
                                     <div style={{ marginTop: 16 }}>
                                         <Button type="dashed" block icon={<PlusOutlined />} onClick={() => setIsContactModalOpen(true)}>
@@ -215,6 +216,7 @@ export default function ClientDetailPage() {
                                         { title: 'Probability', dataIndex: 'probability', key: 'probability', render: (p: number) => `${p}%` },
                                     ]}
                                     locale={{ emptyText: 'No opportunities yet. Click "New Opportunity" to create one.' }}
+                                    scroll={{ x: 'max-content' }}
                                 />
                             ),
                         },
@@ -264,6 +266,7 @@ export default function ClientDetailPage() {
                                             }
                                         ]}
                                         locale={{ emptyText: 'No activities yet.' }}
+                                        scroll={{ x: 'max-content' }}
                                     />
                                     <div style={{ marginTop: 16 }}>
                                         <Button type="dashed" block icon={<PlusOutlined />} onClick={() => setIsActivityModalOpen(true)} disabled={!canCreate}>

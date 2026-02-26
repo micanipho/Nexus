@@ -7,6 +7,10 @@ const useStyles = createStyles(({ token, css }) => ({
   mainSection: css`
     margin-left: 200px;
     transition: margin-left 0.2s;
+    
+    @media (max-width: 768px) {
+      margin-left: 0;
+    }
   `,
   content: css`
     margin: 24px 16px;

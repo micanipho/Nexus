@@ -34,6 +34,7 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
 /* Override autofill for Ant Design Inputs */
 .ant-input:-webkit-autofill,
 .ant-input:-webkit-autofill:hover,
@@ -43,8 +44,39 @@ a {
   -webkit-text-fill-color: rgba(0, 0, 0, 0.88);
   transition: background-color 5000s ease-in-out 0s;
 }
+
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
+  }
+}
+
+/* Prevent table headers and cells from wrapping text into individual vertical letters on tiny screens */
+.ant-table-wrapper .ant-table-thead > tr > th,
+.ant-table-wrapper .ant-table-tbody > tr > td,
+.ant-table-cell {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+}
+
+/* Mobile Action Buttons visibility toggles */
+.desktop-action-btn {
+  display: inline-block;
+}
+
+.mobile-fab-btn {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .desktop-action-btn {
+    display: none !important;
+  }
+  .mobile-fab-btn {
+    display: inline-flex !important;
+    width: 40px !important;
+    height: 40px !important;
+    justify-content: center !important;
+    align-items: center !important;
   }
 }

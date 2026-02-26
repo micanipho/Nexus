@@ -222,6 +222,7 @@ export default function DashboardPage() {
                   rowKey="userId" 
                   pagination={false} 
                   size="small"
+                  scroll={{ x: 'max-content' }}
                 />
               </>
             ) : (
@@ -249,6 +250,7 @@ export default function DashboardPage() {
               rowKey="stage" 
               pagination={false} 
               size="small"
+              scroll={{ x: 'max-content' }}
             />
           </Card>
         </Col>
@@ -348,6 +350,7 @@ export default function DashboardPage() {
               rowKey="id" 
               pagination={false} 
               size="small"
+              scroll={{ x: 'max-content' }}
             />
           </Card>
         </Col>

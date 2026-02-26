@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button, Input, Select, Space, message, Popconfirm } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { Contract, ContractStatus, UserRole } from '@/types';
 import { useContracts, useContractActions } from '@/providers/contractProvider';
@@ -206,7 +207,7 @@ export default function ContractsPage() {
                 style={{ width: 160 }}
                 value={filters.status}
             />
-            <Button type="primary" disabled={!canManage} onClick={() => setModalOpen(true)}>New Contract</Button>
+            <Button className="desktop-action-btn" type="primary" disabled={!canManage} onClick={() => setModalOpen(true)}>New Contract</Button>
         </Space>
     );
 
@@ -221,6 +222,7 @@ export default function ContractsPage() {
                 title="Contracts" 
                 breadcrumbs={breadcrumbs}
                 extra={extra} 
+                action={<Button className="mobile-fab-btn" type="primary" shape="circle" icon={<PlusOutlined />} onClick={() => setModalOpen(true)} disabled={!canManage} />}
             />
             <DataTable<Contract>
                 rowKey="id"

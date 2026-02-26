@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button, Input, Select, Space, message } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { Opportunity, OpportunityStage } from '@/types';
 import { useOpportunities, useOpportunityActions } from '@/providers/opportunityProvider';
@@ -187,7 +188,7 @@ export default function OpportunitiesPage() {
                 style={{ width: 120 }}
                 value={filters.isActive}
             />
-            <Button type="primary" onClick={() => setIsModalOpen(true)} disabled={!canCreate}>New Opportunity</Button>
+            <Button className="desktop-action-btn" type="primary" onClick={() => setIsModalOpen(true)} disabled={!canCreate}>New Opportunity</Button>
         </Space>
     );
 
@@ -202,6 +203,7 @@ export default function OpportunitiesPage() {
                 title="Opportunities" 
                 breadcrumbs={breadcrumbs}
                 extra={extra} 
+                action={<Button className="mobile-fab-btn" type="primary" shape="circle" icon={<PlusOutlined />} onClick={() => setIsModalOpen(true)} disabled={!canCreate} />}
             />
             <DataTable<Opportunity>
                 rowKey="id"

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button, Input, Select, Space, Popconfirm, message } from 'antd';
-import { CheckOutlined, SendOutlined, CloseOutlined } from '@ant-design/icons';
+import { CheckOutlined, SendOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { Proposal, ProposalStatus, UserRole } from '@/types';
 import { useProposals, useProposalActions } from '@/providers/proposalProvider';
@@ -183,7 +183,7 @@ export default function ProposalsPage() {
                 style={{ width: 160 }}
                 value={filters.status}
             />
-            <Button type="primary" disabled={!canCreate} onClick={() => setModalOpen(true)}>
+            <Button className="desktop-action-btn" type="primary" disabled={!canCreate} onClick={() => setModalOpen(true)}>
                 New Proposal
             </Button>
         </Space>
@@ -200,6 +200,7 @@ export default function ProposalsPage() {
                 title="Proposals" 
                 breadcrumbs={breadcrumbs}
                 extra={extra} 
+                action={<Button className="mobile-fab-btn" type="primary" shape="circle" icon={<PlusOutlined />} onClick={() => setModalOpen(true)} disabled={!canCreate} />}
             />
             <DataTable<Proposal>
                 rowKey="id"

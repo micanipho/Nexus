@@ -11,9 +11,13 @@ const useStyles = createStyles(({ token, css }) => ({
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
   `,
   title: css`
-    margin: 0;
+    margin: 0 !important;
+    word-break: break-word;
+    white-space: normal;
   `,
 }));
 

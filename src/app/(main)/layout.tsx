@@ -18,6 +18,7 @@ export default function MainLayout({
   const { styles } = useStyles();
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -39,9 +40,12 @@ export default function MainLayout({
 
   return (
     <Layout className={styles.layout}>
-      <Sidebar />
+      <Sidebar 
+          mobileOpen={mobileMenuOpen} 
+          onMobileClose={() => setMobileMenuOpen(false)} 
+      />
       <Layout className={styles.mainSection}>
-        <Topbar />
+        <Topbar onMenuClick={() => setMobileMenuOpen(true)} />
         <Content className={styles.content}>
           {children}
         </Content>

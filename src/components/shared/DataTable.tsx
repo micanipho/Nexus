@@ -17,6 +17,7 @@ function DataTable<T extends object>({ tableTitle, ...props }: DataTableProps<T>
           showSizeChanger: true,
           ...props.pagination 
         }} 
+        scroll={{ x: 'max-content', ...props.scroll }}
       />
     </Card>
   );
