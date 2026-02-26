@@ -26,13 +26,15 @@ const theme: ThemeConfig = {
     Layout: {
       headerBg: '#FFFFFF',
       bodyBg: '#FFFFFF',
-      siderBg: '#0B2545',
-      triggerBg: '#0B2545',
+      siderBg: '#0B3B73',
+      triggerBg: '#0B3B73',
     },
     Menu: {
-      itemSelectedBg: 'rgba(255,255,255,0.1)',
+      itemSelectedBg: '#0B2545',
       itemSelectedColor: '#FFFFFF',
       itemColor: 'rgba(255,255,255,0.85)',
+      itemHoverColor: '#FFFFFF',
+      itemHoverBg: 'rgba(255,255,255,0.05)',
     },
     Card: { headerHeight: 52 },
     Table: { headerSplitColor: '#E5E7EB' },

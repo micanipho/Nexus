@@ -1,10 +1,13 @@
 import {
   OpportunityStage,
   PricingRequestStatus,
+  ProposalStatus,
   PricingRequestPriority,
   ContractStatus,
   ActivityType,
 } from './enums';
+
+export * from './enums';
 
 export interface User {
   id: string;
@@ -20,34 +23,42 @@ export interface Client {
   name: string;
   industry: string;
   accountManagerId: string;
-  status: 'Active' | 'Inactive';
+  isActive: boolean;
   totalOpportunities: number;
   lastContactDate: string;
+  arr: number;
+  owner: string;
 }
 
 export interface Opportunity {
   id: string;
   clientId: string;
+  clientName: string;
   title: string;
   value: number;
   stage: OpportunityStage;
   probability: number;
   expectedCloseDate: string;
   ownerId: string;
+  ownerName: string;
+  isActive: boolean;
 }
 
-export interface PricingRequest {
+export interface Proposal {
   id: string;
   opportunityId: string;
-  requestDate: string;
-  status: PricingRequestStatus;
-  priority: PricingRequestPriority;
+  opportunityTitle: string;
+  clientId: string;
+  clientName: string;
+  status: ProposalStatus;
   totalValue: number;
-  items: PricingItem[];
+  createdAt: string;
+  lineItems: ProposalLineItem[];
 }
 
-export interface PricingItem {
+export interface ProposalLineItem {
   id: string;
+  proposalId: string;
   sku: string;
   description: string;
   quantity: number;
@@ -58,11 +69,21 @@ export interface PricingItem {
 export interface Contract {
   id: string;
   clientId: string;
+  clientName: string;
   opportunityId: string;
   startDate: string;
   endDate: string;
   status: ContractStatus;
   totalValue: number;
+  ownerId: string;
+  ownerName: string;
+}
+
+export interface ContractRenewal {
+  id: string;
+  contractId: string;
+  renewalDate: string;
+  status: 'Pending' | 'Completed';
 }
 
 export interface Activity {

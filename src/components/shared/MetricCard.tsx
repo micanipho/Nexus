@@ -27,7 +27,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
   const { styles } = useStyles();
 
   return (
-    <Card loading={loading} bordered={false}>
+    <Card loading={loading} variant="borderless">
       <Statistic
         title={<Text type="secondary">{title}</Text>}
         value={value}

@@ -9,7 +9,7 @@ interface DataTableProps<T> extends TableProps<T> {
 
 function DataTable<T extends object>({ tableTitle, ...props }: DataTableProps<T>) {
   return (
-    <Card title={tableTitle} styles={{ body: { padding: 0 } }} bordered={false}>
+    <Card title={tableTitle} styles={{ body: { padding: 0 } }} variant="borderless">
       <Table<T> 
         {...props} 
         pagination={{ 
