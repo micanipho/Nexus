@@ -22,6 +22,7 @@ const useStyles = createStyles(({ token, css }) => ({
     width: 24px;
     height: 24px;
     flex-shrink: 0;
+    filter: brightness(0) invert(1);
   `,
   logoText: css`
     margin: 0;
