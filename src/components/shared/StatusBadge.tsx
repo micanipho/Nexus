@@ -36,18 +36,15 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
       case ContractStatus.ACTIVE:
         return 'success';
       case OpportunityStage.CLOSED_LOST:
-      case ProposalStatus.REJECTED:
       case ContractStatus.CANCELLED:
       case ContractStatus.EXPIRED:
         return 'error';
       case OpportunityStage.NEGOTIATION:
-      case ProposalStatus.SUBMITTED:
       case ContractStatus.RENEWED:
         return 'warning';
       case OpportunityStage.DISCOVERY:
       case OpportunityStage.QUALIFICATION:
       case OpportunityStage.PROPOSAL:
-      case ProposalStatus.DRAFT:
       case ContractStatus.DRAFT:
         return 'processing';
       default:

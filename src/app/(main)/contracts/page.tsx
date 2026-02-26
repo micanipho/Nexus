@@ -11,12 +11,20 @@ import PageHeader from '@/components/shared/PageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { useHasRole } from '@/hooks/useHasRole';
 import CreateContractModal from '@/components/contracts/CreateContractModal';
+import CreateRenewalModal from '@/components/contracts/CreateRenewalModal';
+import contractService from '@/services/contractService';
+import { ContractRenewal } from '@/types';
 
 export default function ContractsPage() {
     const { contracts, isPending, filters, totalCount } = useContracts();
     const { fetchContracts, setFilters, activateContract, cancelContract } = useContractActions();
     const { hasRole: canManage } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
     const [modalOpen, setModalOpen] = useState(false);
+    const [renewalModalOpen, setRenewalModalOpen] = useState(false);
+    const [selectedContract, setSelectedContract] = useState<{ id: string; clientName: string; clientId: string } | null>(null);
+    const [expandedRowKeys, setExpandedRowKeys] = useState<readonly React.Key[]>([]);
+    const [renewalsByContract, setRenewalsByContract] = useState<Record<string, ContractRenewal[]>>({});
+    const [loadingRenewals, setLoadingRenewals] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
         fetchContracts();
@@ -47,6 +55,43 @@ export default function ContractsPage() {
             fetchContracts();
         } catch {
             message.error('Failed to cancel contract');
+        }
+    };
+
+    const handleOpenRenewal = (record: Contract) => {
+        setSelectedContract({ id: record.id, clientName: record.clientName, clientId: record.clientId });
+        setRenewalModalOpen(true);
+    };
+
+    const loadRenewals = async (contractId: string) => {
+        setLoadingRenewals(prev => ({ ...prev, [contractId]: true }));
+        try {
+            const data = await contractService.getRenewals(contractId);
+            setRenewalsByContract(prev => ({ ...prev, [contractId]: data }));
+        } catch {
+            message.error('Failed to load renewals');
+        } finally {
+            setLoadingRenewals(prev => ({ ...prev, [contractId]: false }));
+        }
+    };
+
+    const handleExpand = (expanded: boolean, record: Contract) => {
+        if (expanded) {
+            setExpandedRowKeys([...expandedRowKeys, record.id]);
+            loadRenewals(record.id);
+        } else {
+            setExpandedRowKeys(expandedRowKeys.filter(k => k !== record.id));
+        }
+    };
+
+    const handleCompleteRenewal = async (renewalId: string, contractId: string) => {
+        try {
+            await contractService.completeRenewal(renewalId);
+            message.success('Renewal completed successfully');
+            await loadRenewals(contractId);
+            fetchContracts(); // refresh parent contracts
+        } catch {
+            message.error('Failed to complete renewal');
         }
     };
 
@@ -103,6 +148,7 @@ export default function ContractsPage() {
             key: 'actions',
             render: (_, record) => {
                 const isDraft = record.statusName === 'Draft' || record.status === ContractStatus.DRAFT;
+                const isActive = record.statusName === 'Active' || record.status === ContractStatus.ACTIVE;
                 return (
                     <Space>
                         <Link href={`/contracts/${record.id}`}>
@@ -117,6 +163,11 @@ export default function ContractsPage() {
                             >
                                 <Button size="small" type="primary">Activate</Button>
                             </Popconfirm>
+                        )}
+                        {isActive && canManage && (
+                            <Button size="small" type="primary" onClick={() => handleOpenRenewal(record)}>
+                                Renew
+                            </Button>
                         )}
                         {isDraft && canManage && (
                             <Popconfirm
@@ -183,12 +234,62 @@ export default function ContractsPage() {
                     onChange: (page) => setFilters({ ...filters, pageNumber: page }),
                     showTotal: t => `${t} contracts`
                 }}
+                expandable={{
+                    expandedRowKeys,
+                    onExpand: handleExpand,
+                    expandedRowRender: (record) => {
+                        const loading = loadingRenewals[record.id];
+                        const items = renewalsByContract[record.id];
+
+                        if (loading) return <div>Loading renewals...</div>;
+                        if (!items || items.length === 0) return <div style={{ color: '#888' }}>No renewals found.</div>;
+
+                        return (
+                            <DataTable<ContractRenewal>
+                                rowKey="id"
+                                dataSource={items}
+                                pagination={false}
+                                size="small"
+                                columns={[
+                                    { title: 'Date Initiated', dataIndex: 'renewalDate', render: d => new Date(d).toLocaleDateString() },
+                                    { title: 'Status', dataIndex: 'statusName', render: (status) => <StatusBadge status={status} /> },
+                                    { title: 'Notes', dataIndex: 'notes' },
+                                    {
+                                        title: 'Action',
+                                        render: (_, renewal) => (
+                                            renewal.statusName === 'Pending' && canManage ? (
+                                                <Button size="small" type="primary" onClick={() => handleCompleteRenewal(renewal.id, record.id)}>
+                                                    Complete Renewal
+                                                </Button>
+                                            ) : null
+                                        )
+                                    }
+                                ]}
+                            />
+                        );
+                    }
+                }}
             />
             <CreateContractModal
                 open={modalOpen}
                 onClose={() => setModalOpen(false)}
                 onSuccess={() => fetchContracts()}
             />
+            {selectedContract && (
+                <CreateRenewalModal
+                    open={renewalModalOpen}
+                    onClose={() => {
+                        setRenewalModalOpen(false);
+                        loadRenewals(selectedContract.id);
+                        if (!expandedRowKeys.includes(selectedContract.id)) {
+                            setExpandedRowKeys([...expandedRowKeys, selectedContract.id]);
+                        }
+                    }}
+                    contractId={selectedContract.id}
+                    clientName={selectedContract.clientName}
+                    clientId={selectedContract.clientId}
+                />
+            )}
         </div>
     );
 }

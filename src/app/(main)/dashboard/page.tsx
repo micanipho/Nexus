@@ -21,6 +21,8 @@ import dashboardService, {
 } from '@/services/dashboardService';
 import { useHasRole } from '@/hooks/useHasRole';
 import { UserRole } from '@/types';
+import CreateRenewalModal from '@/components/contracts/CreateRenewalModal';
+import { Button } from 'antd';
 
 const { Title, Text } = Typography;
 
@@ -46,6 +48,14 @@ export default function DashboardPage() {
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [renewalModalOpen, setRenewalModalOpen] = useState(false);
+  const [selectedContract, setSelectedContract] = useState<{ id: string; clientName: string; clientId: string } | null>(null);
+
+  const handleOpenRenewal = (record: any) => {
+      setSelectedContract({ id: record.id, clientName: record.clientName, clientId: record.clientId });
+      setRenewalModalOpen(true);
+  };
 
   useEffect(() => {
     // Wait until roles are fully loaded before fetching
@@ -120,7 +130,16 @@ export default function DashboardPage() {
     { title: 'Contract ID', dataIndex: 'id', key: 'id', render: (text: string) => text.substring(0, 8) },
     { title: 'Client', dataIndex: 'clientName', key: 'clientName' },
     { title: 'End Date', dataIndex: 'endDate', key: 'endDate', render: (val: string) => new Date(val).toLocaleDateString() },
-    { title: 'Value', dataIndex: 'totalValue', key: 'totalValue', render: (val: number) => formatCurrency(val) }
+    { title: 'Value', dataIndex: 'totalValue', key: 'totalValue', render: (val: number) => formatCurrency(val) },
+    { 
+      title: 'Action', 
+      key: 'action', 
+      render: (_: any, record: any) => (
+          <Button size="small" type="primary" onClick={() => handleOpenRenewal(record)}>
+              Renew
+          </Button>
+      )
+    }
   ];
 
   const stageColumns = [
@@ -269,6 +288,16 @@ export default function DashboardPage() {
           </Card>
         </Col>
       </Row>
+
+      {selectedContract && (
+          <CreateRenewalModal
+              open={renewalModalOpen}
+              onClose={() => setRenewalModalOpen(false)}
+              contractId={selectedContract.id}
+              clientName={selectedContract.clientName}
+              clientId={selectedContract.clientId}
+          />
+      )}
     </div>
   );
 }
