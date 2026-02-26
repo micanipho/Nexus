@@ -18,7 +18,8 @@ import {
     MailOutlined,
     VideoCameraOutlined,
     DownOutlined,
-    ProjectOutlined
+    ProjectOutlined,
+    PlusOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
@@ -174,8 +175,19 @@ export default function ActivitiesPage() {
                     { title: 'Nexus', href: '/' },
                     { title: 'Activities' }
                 ]}
+                action={
+                    <Button 
+                        className="mobile-fab-btn" 
+                        type="primary" 
+                        shape="circle" 
+                        icon={<PlusOutlined />} 
+                        onClick={() => setIsCreateModalOpen(true)} 
+                        disabled={!canCreate} 
+                    />
+                }
                 extra={
                     <Button 
+                        className="desktop-action-btn"
                         type="primary" 
                         onClick={() => setIsCreateModalOpen(true)}
                         disabled={!canCreate}

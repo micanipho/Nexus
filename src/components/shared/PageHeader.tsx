@@ -11,9 +11,10 @@ interface PageHeaderProps {
   title: string;
   breadcrumbs: { title: string; href?: string }[];
   extra?: React.ReactNode;
+  action?: React.ReactNode;
 }
 
-const PageHeader: React.FC<PageHeaderProps> = ({ title, breadcrumbs, extra }) => {
+const PageHeader: React.FC<PageHeaderProps> = ({ title, breadcrumbs, extra, action }) => {
   const { styles } = useStyles();
 
   const breadcrumbItems = breadcrumbs.map((bc) => ({
@@ -24,10 +25,13 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, breadcrumbs, extra }) =>
     <div className={styles.container}>
       <Breadcrumb className={styles.breadcrumb} items={breadcrumbItems} />
       <div className={styles.headerContent}>
-        <Title level={2} className={styles.title}>
-          {title}
-        </Title>
-        <Space>{extra}</Space>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <Title level={2} className={styles.title}>
+            {title}
+            </Title>
+            {action}
+        </div>
+        <Space wrap>{extra}</Space>
       </div>
     </div>
   );

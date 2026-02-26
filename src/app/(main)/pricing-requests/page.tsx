@@ -1,14 +1,17 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { Button, Input, Select, Space, Table, Tag, message, Tooltip } from 'antd';
+import { Button, Input, Select, Space, Tag, message, Tooltip } from 'antd';
 import { CheckCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { PricingRequest } from '@/types';
+import { UserRole } from '@/types';
 import pricingRequestService, { PricingRequestFilters } from '@/services/pricingRequestService';
 import dashboardService from '@/services/dashboardService';
 import PageHeader from '@/components/shared/PageHeader';
+import DataTable from '@/components/shared/DataTable';
 import PricingRequestModal from '@/components/pricing/PricingRequestModal';
+import { useHasRole } from '@/hooks/useHasRole';
 
 const priorityLabels: Record<number, { label: string; color: string }> = {
     1: { label: 'Low', color: 'green' },
@@ -33,6 +36,8 @@ export default function PricingRequestsPage() {
         pageNumber: 1,
         pageSize: 10,
     });
+
+    const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER, UserRole.SALES_REP]);
 
     const fetchRequests = useCallback(async () => {
         setLoading(true);
@@ -214,7 +219,7 @@ export default function PricingRequestsPage() {
                 style={{ width: 120 }}
                 value={filters.priority}
             />
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalOpen(true)}>
+            <Button className="desktop-action-btn" type="primary" icon={<PlusOutlined />} onClick={() => setIsModalOpen(true)} disabled={!canCreate}>
                 New Request
             </Button>
         </Space>
@@ -231,8 +236,9 @@ export default function PricingRequestsPage() {
                 title="Pricing Requests"
                 breadcrumbs={breadcrumbs}
                 extra={extra}
+                action={<Button className="mobile-fab-btn" type="primary" shape="circle" icon={<PlusOutlined />} onClick={() => setIsModalOpen(true)} disabled={!canCreate} />}
             />
-            <Table<PricingRequest>
+            <DataTable<PricingRequest>
                 rowKey="id"
                 columns={columns}
                 dataSource={requests}

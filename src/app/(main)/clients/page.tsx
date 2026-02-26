@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button, Input, Select, Space, Tag } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { Client, UserRole } from '@/types';
 import { useClients, useClientActions } from '@/providers/clientProvider';
@@ -75,7 +76,7 @@ export default function ClientsPage() {
     ];
 
     const extra = (
-        <Space size="middle">
+        <Space size="middle" wrap>
             <Input.Search
                 placeholder="Search clients..."
                 onSearch={handleSearch}
@@ -110,7 +111,7 @@ export default function ClientsPage() {
                 style={{ width: 120 }}
                 value={filters.isActive}
             />
-            <Button type="primary" onClick={() => setIsModalOpen(true)} disabled={!canCreate}>New Client</Button>
+            <Button className="desktop-action-btn" type="primary" onClick={() => setIsModalOpen(true)} disabled={!canCreate}>New Client</Button>
         </Space>
     );
 
@@ -125,6 +126,7 @@ export default function ClientsPage() {
                 title="Clients" 
                 breadcrumbs={breadcrumbs}
                 extra={extra} 
+                action={<Button className="mobile-fab-btn" type="primary" shape="circle" icon={<PlusOutlined />} onClick={() => setIsModalOpen(true)} disabled={!canCreate} />}
             />
             <DataTable<Client>
                 rowKey="id"
