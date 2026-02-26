@@ -107,17 +107,17 @@ export default function ClientDetailPage() {
             <Row gutter={[16, 16]}>
                 <Col xs={24} sm={8}>
                     <Card variant="borderless">
-                        <Statistic title="Annual Recurring Revenue (ARR)" prefix="R" value={client.arr} valueStyle={{ fontWeight: 700 }} />
+                        <Statistic title="Total Contacts" value={client.contactsCount} valueStyle={{ fontWeight: 700 }} />
                     </Card>
                 </Col>
                 <Col xs={24} sm={8}>
                     <Card variant="borderless">
-                        <Statistic title="Opportunities" value={client.totalOpportunities} />
+                        <Statistic title="Opportunities" value={client.opportunitiesCount} />
                     </Card>
                 </Col>
                 <Col xs={24} sm={8}>
                     <Card variant="borderless">
-                        <Statistic title="Last Contact" value={client.lastContactDate} prefix={<HistoryOutlined />} />
+                        <Statistic title="Last Contact" value={new Date(client.updatedAt).toLocaleDateString()} prefix={<HistoryOutlined />} />
                     </Card>
                 </Col>
             </Row>
@@ -132,7 +132,7 @@ export default function ClientDetailPage() {
                             label: 'Account Overview',
                             children: (
                                 <Descriptions column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }} bordered>
-                                    <Descriptions.Item label="Account Owner">{client.owner}</Descriptions.Item>
+                                    <Descriptions.Item label="Account Owner">{client.createdByName}</Descriptions.Item>
                                     <Descriptions.Item label="Industry">{client.industry}</Descriptions.Item>
                                     <Descriptions.Item label="HQ Location">Johannesburg, South Africa</Descriptions.Item>
                                     <Descriptions.Item label="Status">

@@ -16,12 +16,20 @@ export interface Client {
   id: string;
   name: string;
   industry: string;
-  accountManagerId: string;
+  accountId?: string;
+  companySize?: string;
+  website?: string;
+  billingAddress?: string;
+  taxNumber?: string;
+  clientType: number;
   isActive: boolean;
-  totalOpportunities: number;
-  lastContactDate: string;
-  arr: number;
-  owner: string;
+  createdById: string;
+  createdByName: string;
+  createdAt: string;
+  updatedAt: string;
+  contactsCount: number;
+  opportunitiesCount: number;
+  contractsCount: number;
 }
 
 export interface Opportunity {

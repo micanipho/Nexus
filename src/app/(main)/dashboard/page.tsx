@@ -73,7 +73,13 @@ export default function DashboardPage() {
 
         let salesPerf = null;
         if (canViewSalesPerf) {
-          salesPerf = await dashboardService.getSalesPerformance(5);
+          salesPerf = await dashboardService.getSalesPerformance(10);
+          if (salesPerf && salesPerf.topPerformers) {
+            // Filter out users who haven't worked on any opportunities
+            salesPerf.topPerformers = salesPerf.topPerformers
+              .filter(p => p.opportunitiesCount > 0)
+              .slice(0, 5); // Keep top 5
+          }
         }
         
         setData({ overview, pipeline, salesPerf, activities, expiring });
@@ -111,11 +117,11 @@ export default function DashboardPage() {
 
   const performanceColumns = [
     { title: 'Sales Rep', dataIndex: 'userName', key: 'userName' },
-    { title: 'Won Deals', dataIndex: 'wonDeals', key: 'wonDeals' },
+    { title: 'Won Deals', dataIndex: 'wonCount', key: 'wonCount' },
     { 
       title: 'Revenue', 
-      dataIndex: 'revenue', 
-      key: 'revenue',
+      dataIndex: 'totalRevenue', 
+      key: 'totalRevenue',
       render: (val: number) => formatCurrency(val)
     },
     { 
@@ -157,7 +163,7 @@ export default function DashboardPage() {
         <Col xs={24} sm={12} lg={6}>
           <MetricCard 
             title="Projected Revenue" 
-            value={formatCurrency(overview?.revenue?.projectedThisYear || 0)} 
+            value={formatCurrency((overview?.revenue?.projectedThisYear || 0) + (overview?.revenue?.thisYear || 0))} 
             prefix={<DollarOutlined />} 
             trend={12} 
           />
