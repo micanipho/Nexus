@@ -29,10 +29,13 @@ export interface Opportunity {
   clientId: string;
   clientName: string;
   title: string;
-  value: number;
-  stage: OpportunityStage;
+  estimatedValue: number;
+  currency: string;
   probability: number;
+  stage: OpportunityStage;
+  source: number;
   expectedCloseDate: string;
+  description: string;
   ownerId: string;
   ownerName: string;
   isActive: boolean;

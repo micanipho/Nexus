@@ -44,8 +44,15 @@ const opportunityService = {
   },
 
   async createOpportunity(data: Partial<Opportunity>): Promise<Opportunity> {
-    const response = await api.post('/opportunities', data);
-    return response.data;
+    try {
+      const response = await api.post('/opportunities', data);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.data) {
+        throw new Error(error.response.data.message || error.response.data.error || 'Failed to create opportunity');
+      }
+      throw new Error('An error occurred while creating the opportunity.');
+    }
   },
 
   async updateOpportunity(id: string, data: Partial<Opportunity>): Promise<Opportunity> {
@@ -68,8 +75,15 @@ const opportunityService = {
   },
 
   async updateStage(id: string, stage: OpportunityStage, notes: string = '', lossReason: string | null = null): Promise<Opportunity> {
-    const response = await api.put(`/opportunities/${id}/stage`, { stage, notes, lossReason });
-    return response.data;
+    try {
+      const response = await api.put(`/opportunities/${id}/stage`, { stage, notes, lossReason });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.data) {
+        throw new Error(error.response.data.message || error.response.data.error || 'Failed to update stage');
+      }
+      throw new Error('An error occurred while updating the opportunity stage.');
+    }
   },
 
   async assignOpportunity(id: string, userId: string): Promise<Opportunity> {

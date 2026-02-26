@@ -1,18 +1,53 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Button, Input, Select, Space } from 'antd';
+import { Button, Input, Select, Space, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Opportunity, OpportunityStage } from '@/types';
 import { useOpportunities, useOpportunityActions } from '@/providers/opportunityProvider';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
-import StatusBadge from '@/components/shared/StatusBadge';
+import OpportunityModal from '@/components/opportunities/OpportunityModal';
+import dashboardService from '@/services/dashboardService';
 
 export default function OpportunitiesPage() {
     const { opportunities, isPending, filters, totalCount } = useOpportunities();
-    const { fetchOpportunities, setFilters } = useOpportunityActions();
+    const { fetchOpportunities, setFilters, updateStage, assignOpportunity } = useOpportunityActions();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [salesReps, setSalesReps] = useState<Array<{ userId: string; userName: string }>>([]);
+
+    useEffect(() => {
+        const loadSalesReps = async () => {
+            try {
+                const data = await dashboardService.getSalesPerformance(50);
+                setSalesReps(data.topPerformers || []);
+            } catch {
+                // Silently fail - the dropdown will just be empty
+            }
+        };
+        loadSalesReps();
+    }, []);
+
+    const handleUpdateStage = async (id: string, newStage: OpportunityStage) => {
+        try {
+            await updateStage(id, newStage);
+            message.success('Stage updated successfully');
+            fetchOpportunities();
+        } catch {
+            message.error('Failed to update opportunity stage');
+        }
+    };
+
+    const handleAssign = async (opportunityId: string, userId: string) => {
+        try {
+            await assignOpportunity(opportunityId, userId);
+            message.success('Opportunity assigned successfully');
+            fetchOpportunities();
+        } catch {
+            message.error('Failed to assign opportunity');
+        }
+    };
 
     useEffect(() => {
         fetchOpportunities();
@@ -45,16 +80,31 @@ export default function OpportunitiesPage() {
         },
         {
             title: 'Value',
-            dataIndex: 'value',
-            key: 'value',
+            dataIndex: 'estimatedValue',
+            key: 'estimatedValue',
             render: v => `R${v?.toLocaleString()}`,
-            sorter: (a, b) => a.value - b.value,
+            sorter: (a, b) => a.estimatedValue - b.estimatedValue,
         },
         {
             title: 'Stage',
             dataIndex: 'stage',
             key: 'stage',
-            render: (stage: OpportunityStage) => <StatusBadge status={stage} />,
+            render: (stage: OpportunityStage, record) => (
+                <Select
+                    value={stage}
+                    onChange={(value) => handleUpdateStage(record.id, value)}
+                    style={{ width: 140 }}
+                    size="small"
+                    options={[
+                        { value: 1, label: 'Lead' },
+                        { value: 2, label: 'Qualified' },
+                        { value: 3, label: 'Proposal' },
+                        { value: 4, label: 'Negotiation' },
+                        { value: 5, label: 'Closed Won' },
+                        { value: 6, label: 'Closed Lost' }
+                    ]}
+                />
+            ),
         },
         {
             title: 'Probability',
@@ -71,6 +121,23 @@ export default function OpportunitiesPage() {
             title: 'Owner',
             dataIndex: 'ownerName',
             key: 'ownerName',
+        },
+        {
+            title: 'Assign',
+            key: 'assign',
+            width: 180,
+            render: (_, record) => (
+                <Select
+                    value={record.ownerId || undefined}
+                    onChange={(value) => handleAssign(record.id, value)}
+                    placeholder="Assign rep"
+                    style={{ width: 160 }}
+                    size="small"
+                    showSearch
+                    optionFilterProp="label"
+                    options={salesReps.map(rep => ({ value: rep.userId, label: rep.userName }))}
+                />
+            ),
         },
     ];
 
@@ -106,7 +173,7 @@ export default function OpportunitiesPage() {
                 style={{ width: 120 }}
                 value={filters.isActive}
             />
-            <Button type="primary">New Opportunity</Button>
+            <Button type="primary" onClick={() => setIsModalOpen(true)}>New Opportunity</Button>
         </Space>
     );
 
@@ -134,6 +201,11 @@ export default function OpportunitiesPage() {
                     onChange: (page) => setFilters({ ...filters, pageNumber: page }),
                     showTotal: t => `${t} opportunities`
                 }}
+            />
+            
+            <OpportunityModal 
+                open={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
             />
         </div>
     );
