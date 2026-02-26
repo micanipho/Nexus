@@ -1,5 +1,5 @@
 import api from './api';
-import { User, AuthResponse } from '../types';
+import { User, UserRole, AuthResponse } from '../types';
 
 export const authService = {
   async login(email: string, password: string): Promise<AuthResponse> {
@@ -51,8 +51,31 @@ export const authService = {
 
   async getCurrentUser(): Promise<User> {
     try {
-      const response = await api.get<User>('/auth/me');
-      return response.data;
+      const response = await api.get('/auth/me');
+      const data = response.data;
+
+      // The API returns claims as an array of { type, value } pairs.
+      // Extract the needed fields into a flat User object.
+      const claimMap = new Map<string, string>();
+      if (Array.isArray(data.claims)) {
+        for (const claim of data.claims) {
+          claimMap.set(claim.type, claim.value);
+        }
+      }
+
+      const user: User = {
+        id: data.userId ?? claimMap.get('http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier') ?? '',
+        userId: data.userId ?? '',
+        firstName: claimMap.get('firstName') ?? '',
+        lastName: claimMap.get('lastName') ?? '',
+        email: data.email ?? claimMap.get('http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress') ?? '',
+        roles: (data.roles ?? []) as UserRole[],
+        tenantId: claimMap.get('tenantId') ?? '',
+        tenantName: claimMap.get('tenantName'),
+        expiresAt: claimMap.get('exp') ?? '',
+      };
+
+      return user;
     } catch (error) {
       throw error;
     }

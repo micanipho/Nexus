@@ -19,6 +19,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           const result = await authService.login(email, password);
           localStorage.setItem("nexus_token", result.token);
           dispatch(actions.authLoginSuccess(result));
+          // Fetch the full user profile to ensure user data is populated
+          const user = await authService.getCurrentUser();
+          dispatch(actions.authSetUser(user));
         } catch (error: any) {
           dispatch(actions.authLoginFailure(error.message || "Login failed"));
           throw error;
@@ -70,9 +73,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           try {
             const user = await authService.getCurrentUser();
             dispatch(actions.authSetUser(user));
-          } catch (error) {
-            localStorage.removeItem("nexus_token");
-            dispatch(actions.authSetUser(null));
+          } catch (error: any) {
+            // Do not clear auth state if it's just a cross-tenant access error
+            if (!error.isCrossTenantError) {
+              localStorage.removeItem("nexus_token");
+              dispatch(actions.authSetUser(null));
+            }
           }
         }
       },

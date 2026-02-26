@@ -10,7 +10,7 @@ const api = axios.create({
 // Request Interceptor: Add Authorization header
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('nexus_token') : null;
+    const token = globalThis.window === undefined ? null : localStorage.getItem('nexus_token');
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -21,17 +21,35 @@ api.interceptors.request.use(
   }
 );
 
+// Keywords that indicate a cross-tenant access violation in API error messages
+const CROSS_TENANT_KEYWORDS = ['tenant', 'organization', 'cross-tenant', 'not found'];
+
+function isCrossTenantResponse(error: AxiosError): boolean {
+  const status = error.response?.status;
+  if (status !== 403 && status !== 404) return false;
+
+  const data = error.response?.data as Record<string, unknown> | undefined;
+  const message = (data?.message ?? data?.error ?? '') as string;
+  return CROSS_TENANT_KEYWORDS.some((kw) =>
+    message.toLowerCase().includes(kw),
+  );
+}
+
 // Response Interceptor: Handle common errors
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      // Logic for handling unauthorized access (e.g., redirect to login)
-      if (typeof window !== 'undefined') {
+      if (globalThis.window !== undefined) {
         localStorage.removeItem('nexus_token');
-        // window.location.href = '/login';
       }
     }
+
+    // Flag cross-tenant access errors so the UI can handle them gracefully
+    if (isCrossTenantResponse(error)) {
+      (error as AxiosError & { isCrossTenantError: boolean }).isCrossTenantError = true;
+    }
+
     return Promise.reject(error);
   }
 );

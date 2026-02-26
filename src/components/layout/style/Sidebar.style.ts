@@ -49,6 +49,23 @@ const useStyles = createStyles(({ token, css }) => ({
       color: #FFFFFF !important;
     }
   `,
+  orgBadgeContainer: css`
+    display: flex;
+    justify-content: center;
+    padding: 8px 16px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  `,
+  orgBadge: css`
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 6px !important;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+  `,
 }));
 
 export default useStyles;

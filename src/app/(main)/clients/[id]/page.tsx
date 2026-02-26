@@ -4,18 +4,15 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import {
     Card, Typography, Tag, Button, Space, Tabs,
-    Descriptions, Statistic, Timeline, Table, Avatar,
-    Row, Col, Skeleton, App
+    Descriptions, Statistic, Table, Row, Col, Skeleton, App
 } from 'antd';
 import {
-    UserOutlined,
     PlusOutlined,
     HistoryOutlined,
-    ThunderboltOutlined,
     EditOutlined
 } from '@ant-design/icons';
-import { Client, Opportunity, Contract } from '@/types';
-import { OpportunityStage, ContractStatus } from '@/types/enums';
+import { Client } from '@/types';
+import { OpportunityStage } from '@/types/enums';
 import clientService from '@/services/clientService';
 import PageHeader from '@/components/shared/PageHeader';
 
