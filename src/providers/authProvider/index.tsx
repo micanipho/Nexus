@@ -54,10 +54,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       },
       logout: async () => {
-        await authService.logout();
-        dispatch(actions.authLogout());
-      },
-      checkAuth: async () => {
+        try {
+          await authService.logout();
+        } catch (error) {
+          // Log error but proceed with local cleanup
+          console.error("Server logout failed:", error);
+        } finally {
+          localStorage.removeItem("nexus_token");
+          dispatch(actions.authLogout());
+          globalThis.location.href = '/login';
+        }
+      },      checkAuth: async () => {
         const token = localStorage.getItem("nexus_token");
         if (token) {
           try {

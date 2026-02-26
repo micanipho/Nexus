@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Layout, Menu } from 'antd';
 import {
   DashboardOutlined,
@@ -15,17 +15,23 @@ import { usePathname, useRouter } from 'next/navigation';
 import type { MenuProps } from 'antd';
 import Image from 'next/image';
 import useStyles from './style/Sidebar.style';
+import { useAuth } from '../../providers/authProvider';
+import { UserRole } from '../../types';
 
 const { Sider } = Layout;
 
-type MenuItem = Required<MenuProps>['items'][number];
+type MenuItem = Required<MenuProps>['items'][number] & {
+  /** When set, the item is only visible to users who hold one of these roles. */
+  roles?: UserRole[];
+};
 
 const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { styles } = useStyles();
+  const { user } = useAuth();
 
-  const menuItems: MenuItem[] = [
+  const allMenuItems: MenuItem[] = [
     {
       key: '/dashboard',
       icon: <DashboardOutlined />,
@@ -63,8 +69,16 @@ const Sidebar: React.FC = () => {
       key: '/settings',
       icon: <SettingOutlined />,
       label: 'Settings',
+      roles: [UserRole.ADMIN],
     },
   ];
+
+  const menuItems = useMemo(() => {
+    return allMenuItems.filter((item) => {
+      if (!item.roles || item.roles.length === 0) return true;
+      return user?.roles?.some((r) => item.roles!.includes(r)) ?? false;
+    });
+  }, [user?.roles]);
 
   return (
     <Sider
