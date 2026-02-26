@@ -48,7 +48,7 @@ export default function CreateContractModal({ open, onClose, onSuccess }: Create
             form.setFieldsValue({
                 clientId: proposal.clientId,
                 opportunityId: proposal.opportunityId,
-                contractValue: proposal.totalValue,
+                contractValue: proposal.totalAmount,
                 currency: 'ZAR',
             });
         }
@@ -118,7 +118,7 @@ export default function CreateContractModal({ open, onClose, onSuccess }: Create
                         onChange={handleProposalChange}
                         options={approvedProposals.map(p => ({
                             value: p.id,
-                            label: `${p.opportunityTitle} — ${p.clientName} (R${p.totalValue?.toLocaleString()})`,
+                            label: `${p.opportunityTitle} — ${p.clientName} (R${p.totalAmount?.toLocaleString()})`,
                         }))}
                     />
                 </Form.Item>
