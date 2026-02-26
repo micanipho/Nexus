@@ -125,7 +125,7 @@ export default function ProposalsPage() {
                     <Link href={`/proposals/${record.id}`}>
                         <Button size="small">View</Button>
                     </Link>
-                    {record.status === ProposalStatus.DRAFT && (
+                    {record.status === ProposalStatus.DRAFT && canCreate && (
                         <Popconfirm
                             title="Submit this proposal for review?"
                             onConfirm={() => handleSubmit(record.id)}

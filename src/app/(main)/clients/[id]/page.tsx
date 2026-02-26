@@ -10,7 +10,8 @@ import {
     PlusOutlined,
     HistoryOutlined,
     EditOutlined,
-    DeleteOutlined
+    DeleteOutlined,
+    CheckCircleOutlined
 } from '@ant-design/icons';
 import { Client, Contact, Opportunity, UserRole, Activity, ActivityType } from '@/types';
 import { OpportunityStage } from '@/types/enums';
@@ -52,6 +53,7 @@ export default function ClientDetailPage() {
     const { deleteClient } = useClientActions();
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
     const { hasRole: canDelete } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
+    const { hasRole: canCreateActivity } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER, UserRole.SALES_REP]);
 
     const fetchClientAndContacts = async () => {
         if (!id) return;
@@ -94,6 +96,18 @@ export default function ClientDetailPage() {
         }
     };
 
+    const handleReactivate = async () => {
+        if (!id || !client) return;
+        try {
+            const { id: _, ...updateData } = client;
+            await clientService.updateClient(id, { ...updateData, isActive: true });
+            message.success('Client reactivated successfully');
+            fetchClientAndContacts();
+        } catch {
+            message.error('Failed to reactivate client');
+        }
+    };
+
     useEffect(() => {
         fetchClientAndContacts();
     }, [id, message]);
@@ -122,7 +136,7 @@ export default function ClientDetailPage() {
 
     const extra = (
         <Space size="middle">
-            {canDelete && (
+            {canDelete && client.isActive && (
                 <Popconfirm
                     title="Delete Client"
                     description="Are you sure you want to delete this client? This action cannot be undone."
@@ -133,6 +147,16 @@ export default function ClientDetailPage() {
                 >
                     <Button danger icon={<DeleteOutlined />}>Delete</Button>
                 </Popconfirm>
+            )}
+            {canDelete && !client.isActive && (
+                <Button 
+                    type="primary" 
+                    icon={<CheckCircleOutlined />} 
+                    onClick={handleReactivate}
+                    style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                >
+                    Reactivate
+                </Button>
             )}
             <Button icon={<EditOutlined />} onClick={() => setIsClientModalOpen(true)} disabled={!canCreate}>Edit Client</Button>
             <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsOpportunityModalOpen(true)} disabled={!canCreate}>New Opportunity</Button>
@@ -226,20 +250,24 @@ export default function ClientDetailPage() {
                                         { title: 'Opportunity', dataIndex: 'title', key: 'title' },
                                         { title: 'Stage', dataIndex: 'stage', key: 'stage',
                                             render: (stage: OpportunityStage, record: Opportunity) => (
-                                                <Select
-                                                    value={stage}
-                                                    onChange={(value) => handleStageUpdate(record.id, value)}
-                                                    style={{ width: 140 }}
-                                                    size="small"
-                                                    options={[
-                                                        { value: 1, label: 'Lead' },
-                                                        { value: 2, label: 'Qualified' },
-                                                        { value: 3, label: 'Proposal' },
-                                                        { value: 4, label: 'Negotiation' },
-                                                        { value: 5, label: 'Closed Won' },
-                                                        { value: 6, label: 'Closed Lost' }
-                                                    ]}
-                                                />
+                                                canCreate ? (
+                                                    <Select
+                                                        value={stage}
+                                                        onChange={(value) => handleStageUpdate(record.id, value)}
+                                                        style={{ width: 140 }}
+                                                        size="small"
+                                                        options={[
+                                                            { value: 1, label: 'Lead' },
+                                                            { value: 2, label: 'Qualified' },
+                                                            { value: 3, label: 'Proposal' },
+                                                            { value: 4, label: 'Negotiation' },
+                                                            { value: 5, label: 'Closed Won' },
+                                                            { value: 6, label: 'Closed Lost' }
+                                                        ]}
+                                                    />
+                                                ) : (
+                                                    <span>{stage}</span>
+                                                )
                                             ),
                                         },
                                         { title: 'Value', dataIndex: 'estimatedValue', key: 'estimatedValue', render: (v: number) => `R${v?.toLocaleString()}` },

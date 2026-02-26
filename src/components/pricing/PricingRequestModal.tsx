@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Select, DatePicker, message } from 'antd';
+import { Modal, Form, Input, Select, DatePicker, App } from 'antd';
 import pricingRequestService, { CreatePricingRequestPayload } from '@/services/pricingRequestService';
 import opportunityService from '@/services/opportunityService';
 import dashboardService from '@/services/dashboardService';
@@ -15,6 +15,7 @@ interface PricingRequestModalProps {
 }
 
 export default function PricingRequestModal({ open, onClose, onSuccess, preselectedOpportunityId }: PricingRequestModalProps) {
+    const { message } = App.useApp();
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Select, App } from 'antd';
+import { Modal, Form, Input, Select, App, Switch } from 'antd';
 import { useClientActions } from '@/providers/clientProvider';
 import { Client } from '@/types';
 
@@ -69,6 +69,15 @@ export default function ClientModal({ open, onClose, onSuccess, client }: Client
             okText={isEditing ? 'Save Changes' : 'Create Client'}
         >
             <Form form={form} layout="vertical" name="client_form">
+                {isEditing && (
+                    <Form.Item
+                        name="isActive"
+                        label="Status"
+                        valuePropName="checked"
+                    >
+                        <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
+                    </Form.Item>
+                )}
                 <Form.Item
                     name="name"
                     label="Client Name"

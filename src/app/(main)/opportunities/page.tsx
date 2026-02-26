@@ -16,6 +16,7 @@ import { useHasRole } from '@/hooks/useHasRole';
 import { UserRole } from '@/types';
 import { App, Popconfirm } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
+import { useAuth } from '@/providers/authProvider';
 
 const OpportunityModal = dynamic(() => import('@/components/opportunities/OpportunityModal'), { 
     ssr: false,
@@ -24,6 +25,7 @@ const OpportunityModal = dynamic(() => import('@/components/opportunities/Opport
 
 export default function OpportunitiesPage() {
     const { message } = App.useApp();
+    const { user } = useAuth();
     const { opportunities, isPending, filters, totalCount } = useOpportunities();
     const { fetchOpportunities, fetchMyOpportunities, setFilters, updateStage, assignOpportunity, deleteOpportunity } = useOpportunityActions();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -123,8 +125,11 @@ export default function OpportunitiesPage() {
             title: 'Stage',
             dataIndex: 'stage',
             key: 'stage',
-            render: (stage: OpportunityStage, record) => (
-                canCreate ? (
+            render: (stage: OpportunityStage, record) => {
+                const isOwner = user?.id === record.ownerId;
+                const canUpdate = canCreate || isOwner;
+                
+                return canUpdate ? (
                     <Select
                         value={stage}
                         onChange={(value) => handleUpdateStage(record.id, value)}
@@ -141,8 +146,8 @@ export default function OpportunitiesPage() {
                     />
                 ) : (
                     <span>{stage}</span>
-                )
-            ),
+                );
+            },
         },
         {
             title: 'Actions',

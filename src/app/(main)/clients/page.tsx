@@ -11,8 +11,9 @@ import { useClients, useClientActions } from '@/providers/clientProvider';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
 import { useHasRole } from '@/hooks/useHasRole';
-import { DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { App, Popconfirm } from 'antd';
+import clientService from '@/services/clientService';
 
 const ClientModal = dynamic(() => import('@/components/clients/ClientModal'), { 
     ssr: false,
@@ -50,6 +51,17 @@ export default function ClientsPage() {
             fetchClients();
         } catch {
             message.error('Failed to delete client');
+        }
+    };
+
+    const handleReactivate = async (id: string, client: Client) => {
+        try {
+            const { id: _, ...updateData } = client;
+            await clientService.updateClient(id, { ...updateData, isActive: true });
+            message.success('Client reactivated successfully');
+            fetchClients();
+        } catch {
+            message.error('Failed to reactivate client');
         }
     };
 
@@ -95,7 +107,7 @@ export default function ClientsPage() {
                     <Link href={`/clients/${record.id}`}>
                         <Button size="small">View</Button>
                     </Link>
-                    {canDelete && (
+                    {canDelete && record.isActive && (
                         <Popconfirm
                             title="Delete Client?"
                             description="Are you sure?"
@@ -106,6 +118,15 @@ export default function ClientsPage() {
                         >
                             <Button size="small" danger icon={<DeleteOutlined />} />
                         </Popconfirm>
+                    )}
+                    {canDelete && !record.isActive && (
+                        <Button 
+                            size="small" 
+                            type="primary" 
+                            icon={<CheckCircleOutlined />} 
+                            onClick={() => handleReactivate(record.id, record)}
+                            style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                        />
                     )}
                 </Space>
             ),
