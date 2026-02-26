@@ -36,10 +36,12 @@ export enum ContractStatus {
 }
 
 export enum ActivityType {
-  CALL = 'Call',
-  MEETING = 'Meeting',
-  EMAIL = 'Email',
-  TASK = 'Task',
+  MEETING = 1,
+  CALL = 2,
+  EMAIL = 3,
+  TASK = 4,
+  PRESENTATION = 5,
+  OTHER = 6,
 }
 
 export enum UserRole {

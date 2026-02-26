@@ -22,7 +22,9 @@ import dashboardService, {
 import { useHasRole } from '@/hooks/useHasRole';
 import { UserRole } from '@/types';
 import CreateRenewalModal from '@/components/contracts/CreateRenewalModal';
-import { Button } from 'antd';
+import { Button, Tabs, List, Tag } from 'antd';
+import { useActivities, useActivityActions } from '@/providers/activityProvider';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
@@ -46,6 +48,9 @@ export default function DashboardPage() {
     expiring: []
   });
   
+  const { upcomingActivities, overdueActivities } = useActivities();
+  const { fetchUpcomingActivities, fetchOverdueActivities } = useActivityActions();
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,6 +65,9 @@ export default function DashboardPage() {
   useEffect(() => {
     // Wait until roles are fully loaded before fetching
     if (isRoleLoading) return;
+
+    fetchUpcomingActivities(7);
+    fetchOverdueActivities();
 
     const fetchData = async () => {
       try {
@@ -248,39 +256,89 @@ export default function DashboardPage() {
         {/* Right Column */}
         <Col xs={24} lg={8}>
           <Card title="Activities Summary" style={{ marginBottom: '16px' }} className="shadow-sm">
-            <Row gutter={[16, 16]}>
-              <Col span={12}>
-                <Statistic 
-                  title="Total" 
-                  value={activities?.totalCount || 0} 
-                  prefix={<CalendarOutlined style={{ color: '#1890ff' }} />} 
-                />
-              </Col>
-              <Col span={12}>
-                <div style={{ color: '#52c41a' }}>
-                  <Statistic 
-                    title="Completed Today" 
-                    value={activities?.completedTodayCount || 0} 
-                    prefix={<CheckCircleOutlined />} 
-                  />
-                </div>
-              </Col>
-              <Col span={12}>
-                <Statistic 
-                  title="Upcoming" 
-                  value={activities?.upcomingCount || 0} 
-                />
-              </Col>
-              <Col span={12}>
-                <div style={{ color: '#cf1322' }}>
-                  <Statistic 
-                    title="Overdue" 
-                    value={activities?.overdueCount || 0} 
-                    prefix={<WarningOutlined />} 
-                  />
-                </div>
-              </Col>
-            </Row>
+            <Tabs 
+              defaultActiveKey="summary" 
+              items={[
+                {
+                  key: 'summary',
+                  label: 'Summary',
+                  children: (
+                    <Row gutter={[16, 16]}>
+                      <Col span={12}>
+                        <Statistic 
+                          title="Total" 
+                          value={activities?.totalCount || 0} 
+                          prefix={<CalendarOutlined style={{ color: '#1890ff' }} />} 
+                        />
+                      </Col>
+                      <Col span={12}>
+                        <div style={{ color: '#52c41a' }}>
+                          <Statistic 
+                            title="Completed Today" 
+                            value={activities?.completedTodayCount || 0} 
+                            prefix={<CheckCircleOutlined />} 
+                          />
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <Statistic 
+                          title="Upcoming" 
+                          value={activities?.upcomingCount || 0} 
+                        />
+                      </Col>
+                      <Col span={12}>
+                        <div style={{ color: '#cf1322' }}>
+                          <Statistic 
+                            title="Overdue" 
+                            value={activities?.overdueCount || 0} 
+                            prefix={<WarningOutlined />} 
+                          />
+                        </div>
+                      </Col>
+                    </Row>
+                  )
+                },
+                {
+                  key: 'upcoming',
+                  label: 'Upcoming',
+                  children: (
+                    <List
+                      dataSource={upcomingActivities.slice(0, 5)}
+                      size="small"
+                      renderItem={item => (
+                        <List.Item>
+                          <List.Item.Meta
+                            title={item.subject}
+                            description={dayjs(item.dueDate).format('MMM D, HH:mm')}
+                          />
+                        </List.Item>
+                      )}
+                      locale={{ emptyText: 'No upcoming activities' }}
+                    />
+                  )
+                },
+                {
+                  key: 'overdue',
+                  label: <span style={{ color: 'red' }}>Overdue</span>,
+                  children: (
+                    <List
+                      dataSource={overdueActivities.slice(0, 5)}
+                      size="small"
+                      renderItem={item => (
+                        <List.Item>
+                          <List.Item.Meta
+                            title={<span style={{ color: 'red' }}>{item.subject}</span>}
+                            description={dayjs(item.dueDate).format('MMM D, HH:mm')}
+                          />
+                          <Tag color="red">Overdue</Tag>
+                        </List.Item>
+                      )}
+                      locale={{ emptyText: 'No overdue activities!' }}
+                    />
+                  )
+                }
+              ]}
+            />
           </Card>
 
           <Card title="Contracts Expiring (30 days)" className="shadow-sm">

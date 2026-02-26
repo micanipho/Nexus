@@ -6,6 +6,7 @@ import { ClientProvider } from './clientProvider';
 import { OpportunityProvider } from './opportunityProvider';
 import { ProposalProvider } from './proposalProvider';
 import { ContractProvider } from './contractProvider';
+import { ActivityProvider } from './activityProvider';
 
 export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
@@ -14,7 +15,9 @@ export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children
         <OpportunityProvider>
           <ProposalProvider>
             <ContractProvider>
-              {children}
+              <ActivityProvider>
+                {children}
+              </ActivityProvider>
             </ContractProvider>
           </ProposalProvider>
         </OpportunityProvider>
