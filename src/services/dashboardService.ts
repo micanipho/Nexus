@@ -61,8 +61,9 @@ export interface SalesPerformance {
   topPerformers: Array<{
     userId: string;
     userName: string;
-    wonDeals: number;
-    revenue: number;
+    wonCount: number;
+    totalRevenue: number;
+    opportunitiesCount: number;
     winRate: number;
   }>;
   averageDealsPerUser: number;
