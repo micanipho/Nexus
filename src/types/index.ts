@@ -96,3 +96,14 @@ export interface DashboardMetrics {
   winRate: number;
   activeContracts: number;
 }
+
+export interface Contact {
+  id: string;
+  clientId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber?: string;
+  position?: string;
+  isPrimaryContact: boolean;
+}
