@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Button, Input, Select, Space, Tag } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
@@ -9,14 +10,22 @@ import { Client, UserRole } from '@/types';
 import { useClients, useClientActions } from '@/providers/clientProvider';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
-import ClientModal from '@/components/clients/ClientModal';
 import { useHasRole } from '@/hooks/useHasRole';
+import { DeleteOutlined } from '@ant-design/icons';
+import { App, Popconfirm } from 'antd';
+
+const ClientModal = dynamic(() => import('@/components/clients/ClientModal'), { 
+    ssr: false,
+    loading: () => null
+});
 
 export default function ClientsPage() {
+    const { message } = App.useApp();
     const { clients, isPending, filters, totalCount } = useClients();
-    const { fetchClients, setFilters } = useClientActions();
+    const { fetchClients, setFilters, deleteClient } = useClientActions();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
+    const { hasRole: canDelete } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
 
     useEffect(() => {
         fetchClients();
@@ -32,6 +41,16 @@ export default function ClientsPage() {
 
     const handleStatusChange = (value: boolean | undefined) => {
         setFilters({ ...filters, isActive: value, pageNumber: 1 });
+    };
+
+    const handleDelete = async (id: string) => {
+        try {
+            await deleteClient(id);
+            message.success('Client deleted successfully');
+            fetchClients();
+        } catch {
+            message.error('Failed to delete client');
+        }
     };
 
     const columns: ColumnsType<Client> = [
@@ -58,11 +77,6 @@ export default function ClientsPage() {
             key: 'contractsCount',
             sorter: (a, b) => (a.contractsCount || 0) - (b.contractsCount || 0),
         },
-        { 
-            title: 'Created By', 
-            dataIndex: 'createdByName',
-            key: 'createdByName',
-        },
         {
             title: 'Status',
             dataIndex: 'isActive',
@@ -71,6 +85,29 @@ export default function ClientsPage() {
                 <Tag color={isActive ? 'green' : 'red'}>
                     {isActive ? 'Active' : 'Inactive'}
                 </Tag>
+            ),
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            render: (_, record) => (
+                <Space size="small">
+                    <Link href={`/clients/${record.id}`}>
+                        <Button size="small">View</Button>
+                    </Link>
+                    {canDelete && (
+                        <Popconfirm
+                            title="Delete Client?"
+                            description="Are you sure?"
+                            onConfirm={() => handleDelete(record.id)}
+                            okText="Yes"
+                            cancelText="No"
+                            okButtonProps={{ danger: true }}
+                        >
+                            <Button size="small" danger icon={<DeleteOutlined />} />
+                        </Popconfirm>
+                    )}
+                </Space>
             ),
         },
     ];

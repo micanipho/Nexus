@@ -1,15 +1,16 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
     Card, Typography, Tag, Button, Space, Tabs, Select, message,
-    Descriptions, Statistic, Table, Row, Col, Skeleton, App
+    Descriptions, Statistic, Table, Row, Col, Skeleton, App, Popconfirm
 } from 'antd';
 import {
     PlusOutlined,
     HistoryOutlined,
-    EditOutlined
+    EditOutlined,
+    DeleteOutlined
 } from '@ant-design/icons';
 import { Client, Contact, Opportunity, UserRole, Activity, ActivityType } from '@/types';
 import { OpportunityStage } from '@/types/enums';
@@ -18,18 +19,21 @@ import clientService from '@/services/clientService';
 import contactService from '@/services/contactService';
 import activityService from '@/services/activityService';
 import PageHeader from '@/components/shared/PageHeader';
+import ClientModal from '@/components/clients/ClientModal';
 import ContactModal from '@/components/clients/ContactModal';
 import OpportunityModal from '@/components/opportunities/OpportunityModal';
 import CreateActivityModal from '@/components/activities/CreateActivityModal';
 import CompleteActivityModal from '@/components/activities/CompleteActivityModal';
 import { useHasRole } from '@/hooks/useHasRole';
 import { useActivityActions } from '@/providers/activityProvider';
+import { useClientActions } from '@/providers/clientProvider';
 import dayjs from 'dayjs';
 
 const { Text } = Typography;
 
 export default function ClientDetailPage() {
     const { id } = useParams<{ id: string }>();
+    const router = useRouter();
     const { message } = App.useApp();
     const [client, setClient] = useState<Client | null>(null);
     const [contacts, setContacts] = useState<Contact[]>([]);
@@ -38,13 +42,16 @@ export default function ClientDetailPage() {
     const [loading, setLoading] = useState(true);
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
     const [isOpportunityModalOpen, setIsOpportunityModalOpen] = useState(false);
+    const [isClientModalOpen, setIsClientModalOpen] = useState(false);
     
     // Activities Modals State
     const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
     const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
     const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
     const { completeActivity, cancelActivity } = useActivityActions();
+    const { deleteClient } = useClientActions();
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
+    const { hasRole: canDelete } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
 
     const fetchClientAndContacts = async () => {
         if (!id) return;
@@ -76,6 +83,17 @@ export default function ClientDetailPage() {
         }
     };
 
+    const handleDelete = async () => {
+        if (!id) return;
+        try {
+            await deleteClient(id);
+            message.success('Client deleted successfully');
+            router.push('/clients');
+        } catch {
+            message.error('Failed to delete client');
+        }
+    };
+
     useEffect(() => {
         fetchClientAndContacts();
     }, [id, message]);
@@ -104,7 +122,19 @@ export default function ClientDetailPage() {
 
     const extra = (
         <Space size="middle">
-            <Button icon={<EditOutlined />} disabled={!canCreate}>Edit Client</Button>
+            {canDelete && (
+                <Popconfirm
+                    title="Delete Client"
+                    description="Are you sure you want to delete this client? This action cannot be undone."
+                    onConfirm={handleDelete}
+                    okText="Yes, Delete"
+                    cancelText="No"
+                    okButtonProps={{ danger: true }}
+                >
+                    <Button danger icon={<DeleteOutlined />}>Delete</Button>
+                </Popconfirm>
+            )}
+            <Button icon={<EditOutlined />} onClick={() => setIsClientModalOpen(true)} disabled={!canCreate}>Edit Client</Button>
             <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsOpportunityModalOpen(true)} disabled={!canCreate}>New Opportunity</Button>
         </Space>
     );
@@ -121,7 +151,7 @@ export default function ClientDetailPage() {
             <Row gutter={[16, 16]}>
                 <Col xs={24} sm={8}>
                     <Card variant="borderless">
-                        <Statistic title="Total Contacts" value={client.contactsCount} valueStyle={{ fontWeight: 700 }} />
+                        <Statistic title="Total Contacts" value={client.contactsCount} styles={{ content: { fontWeight: 700 } }} />
                     </Card>
                 </Col>
                 <Col xs={24} sm={8}>
@@ -279,6 +309,13 @@ export default function ClientDetailPage() {
                     ]}
                 />
             </Card>
+
+            <ClientModal
+                open={isClientModalOpen}
+                onClose={() => setIsClientModalOpen(false)}
+                client={client}
+                onSuccess={fetchClientAndContacts}
+            />
 
             <ContactModal 
                 open={isContactModalOpen} 

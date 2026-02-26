@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Button, Input, Select, Space, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
@@ -9,20 +10,28 @@ import { Opportunity, OpportunityStage } from '@/types';
 import { useOpportunities, useOpportunityActions } from '@/providers/opportunityProvider';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
-import OpportunityModal from '@/components/opportunities/OpportunityModal';
 import dashboardService from '@/services/dashboardService';
 import RoleGate from '@/components/shared/RoleGate';
 import { useHasRole } from '@/hooks/useHasRole';
 import { UserRole } from '@/types';
+import { App, Popconfirm } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons';
+
+const OpportunityModal = dynamic(() => import('@/components/opportunities/OpportunityModal'), { 
+    ssr: false,
+    loading: () => null
+});
 
 export default function OpportunitiesPage() {
+    const { message } = App.useApp();
     const { opportunities, isPending, filters, totalCount } = useOpportunities();
-    const { fetchOpportunities, fetchMyOpportunities, setFilters, updateStage, assignOpportunity } = useOpportunityActions();
+    const { fetchOpportunities, fetchMyOpportunities, setFilters, updateStage, assignOpportunity, deleteOpportunity } = useOpportunityActions();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [salesReps, setSalesReps] = useState<Array<{ userId: string; userName: string }>>([]);
     const { hasRole: canAssign } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
     const { hasRole: isSalesRep } = useHasRole([UserRole.SALES_REP]);
+    const { hasRole: canDelete } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
 
     useEffect(() => {
         const loadSalesReps = async () => {
@@ -53,6 +62,20 @@ export default function OpportunitiesPage() {
             fetchOpportunities();
         } catch {
             message.error('Failed to assign opportunity');
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        try {
+            await deleteOpportunity(id);
+            message.success('Opportunity deleted successfully');
+            if (isSalesRep) {
+                fetchMyOpportunities(filters);
+            } else {
+                fetchOpportunities();
+            }
+        } catch {
+            message.error('Failed to delete opportunity');
         }
     };
 
@@ -122,38 +145,28 @@ export default function OpportunitiesPage() {
             ),
         },
         {
-            title: 'Probability',
-            dataIndex: 'probability',
-            key: 'probability',
-            render: (p) => `${p}%`,
-        },
-        {
-            title: 'Close Date',
-            dataIndex: 'expectedCloseDate',
-            key: 'expectedCloseDate',
-        },
-        {
-            title: 'Owner',
-            dataIndex: 'ownerName',
-            key: 'ownerName',
-        },
-        ...(canAssign ? [{
-            title: 'Assign',
-            key: 'assign' as const,
-            width: 180,
-            render: (_: any, record: Opportunity) => (
-                <Select
-                    value={record.ownerId || undefined}
-                    onChange={(value: string) => handleAssign(record.id, value)}
-                    placeholder="Assign rep"
-                    style={{ width: 160 }}
-                    size="small"
-                    showSearch
-                    optionFilterProp="label"
-                    options={salesReps.map(rep => ({ value: rep.userId, label: rep.userName }))}
-                />
+            title: 'Actions',
+            key: 'actions',
+            render: (_, record) => (
+                <Space size="small">
+                    <Link href={`/opportunities/${record.id}`}>
+                        <Button size="small">View</Button>
+                    </Link>
+                    {canDelete && (
+                        <Popconfirm
+                            title="Delete Opportunity?"
+                            description="Are you sure?"
+                            onConfirm={() => handleDelete(record.id)}
+                            okText="Yes"
+                            cancelText="No"
+                            okButtonProps={{ danger: true }}
+                        >
+                            <Button size="small" danger icon={<DeleteOutlined />} />
+                        </Popconfirm>
+                    )}
+                </Space>
             ),
-        }] : []),
+        },
     ];
 
     const extra = (

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Button, Input, Select, Space, Popconfirm, message } from 'antd';
 import { CheckOutlined, SendOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
@@ -11,7 +12,11 @@ import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { useHasRole } from '@/hooks/useHasRole';
-import ProposalModal from '@/components/proposals/ProposalModal';
+
+const ProposalModal = dynamic(() => import('@/components/proposals/ProposalModal'), { 
+    ssr: false,
+    loading: () => null
+});
 
 export default function ProposalsPage() {
     const { proposals, isPending, filters, totalCount } = useProposals();

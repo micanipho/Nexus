@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { Button, Input, Select, Space, Tag, message, Tooltip } from 'antd';
 import { CheckCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
@@ -10,8 +11,12 @@ import pricingRequestService, { PricingRequestFilters } from '@/services/pricing
 import dashboardService from '@/services/dashboardService';
 import PageHeader from '@/components/shared/PageHeader';
 import DataTable from '@/components/shared/DataTable';
-import PricingRequestModal from '@/components/pricing/PricingRequestModal';
 import { useHasRole } from '@/hooks/useHasRole';
+
+const PricingRequestModal = dynamic(() => import('@/components/pricing/PricingRequestModal'), { 
+    ssr: false,
+    loading: () => null
+});
 
 const priorityLabels: Record<number, { label: string; color: string }> = {
     1: { label: 'Low', color: 'green' },

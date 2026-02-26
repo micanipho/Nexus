@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Button, Input, Select, Space, message, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
@@ -11,10 +12,18 @@ import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { useHasRole } from '@/hooks/useHasRole';
-import CreateContractModal from '@/components/contracts/CreateContractModal';
-import CreateRenewalModal from '@/components/contracts/CreateRenewalModal';
 import contractService from '@/services/contractService';
 import { ContractRenewal } from '@/types';
+
+const CreateContractModal = dynamic(() => import('@/components/contracts/CreateContractModal'), { 
+    ssr: false,
+    loading: () => null
+});
+
+const CreateRenewalModal = dynamic(() => import('@/components/contracts/CreateRenewalModal'), { 
+    ssr: false,
+    loading: () => null
+});
 
 export default function ContractsPage() {
     const { contracts, isPending, filters, totalCount } = useContracts();

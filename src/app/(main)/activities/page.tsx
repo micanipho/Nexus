@@ -1,14 +1,23 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Tabs, Button, Tag, Space, Dropdown } from 'antd';
 import { Activity, ActivityType, UserRole } from '@/types';
 import { useActivities, useActivityActions } from '@/providers/activityProvider';
 import { useHasRole } from '@/hooks/useHasRole';
 import PageHeader from '@/components/shared/PageHeader';
 import DataTable from '@/components/shared/DataTable';
-import CreateActivityModal from '@/components/activities/CreateActivityModal';
-import CompleteActivityModal from '@/components/activities/CompleteActivityModal';
+
+const CreateActivityModal = dynamic(() => import('@/components/activities/CreateActivityModal'), { 
+    ssr: false,
+    loading: () => null
+});
+
+const CompleteActivityModal = dynamic(() => import('@/components/activities/CompleteActivityModal'), { 
+    ssr: false,
+    loading: () => null
+});
 import { 
     ClockCircleOutlined, 
     CheckCircleOutlined, 
