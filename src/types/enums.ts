@@ -34,3 +34,10 @@ export enum ActivityType {
   EMAIL = 'Email',
   TASK = 'Task',
 }
+
+export enum UserRole {
+  ADMIN = 'Admin',
+  SALES_MANAGER = 'SalesManager',
+  BUSINESS_DEVELOPMENT_MANAGER = 'BusinessDevelopmentManager',
+  SALES_REP = 'SalesRep',
+}
