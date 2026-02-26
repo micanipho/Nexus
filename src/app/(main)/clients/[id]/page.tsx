@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import {
-    Card, Typography, Tag, Button, Space, Tabs,
+    Card, Typography, Tag, Button, Space, Tabs, Select, message,
     Descriptions, Statistic, Table, Row, Col, Skeleton, App
 } from 'antd';
 import {
@@ -11,12 +11,14 @@ import {
     HistoryOutlined,
     EditOutlined
 } from '@ant-design/icons';
-import { Client, Contact } from '@/types';
+import { Client, Contact, Opportunity } from '@/types';
 import { OpportunityStage } from '@/types/enums';
+import opportunityService from '@/services/opportunityService';
 import clientService from '@/services/clientService';
 import contactService from '@/services/contactService';
 import PageHeader from '@/components/shared/PageHeader';
 import ContactModal from '@/components/clients/ContactModal';
+import OpportunityModal from '@/components/opportunities/OpportunityModal';
 
 const { Text } = Typography;
 
@@ -25,22 +27,36 @@ export default function ClientDetailPage() {
     const { message } = App.useApp();
     const [client, setClient] = useState<Client | null>(null);
     const [contacts, setContacts] = useState<Contact[]>([]);
+    const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
     const [loading, setLoading] = useState(true);
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+    const [isOpportunityModalOpen, setIsOpportunityModalOpen] = useState(false);
 
     const fetchClientAndContacts = async () => {
         if (!id) return;
         try {
-            const [clientData, contactsData] = await Promise.all([
+            const [clientData, contactsData, oppsData] = await Promise.all([
                 clientService.getClientById(id),
-                contactService.getContactsByClient(id)
+                contactService.getContactsByClient(id),
+                opportunityService.getOpportunities({ clientId: id, pageNumber: 1, pageSize: 50 })
             ]);
             setClient(clientData);
             setContacts(contactsData);
+            setOpportunities(oppsData.items || []);
         } catch (err) {
             message.error('Failed to load client details');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleStageUpdate = async (oppId: string, newStage: OpportunityStage) => {
+        try {
+            await opportunityService.updateStage(oppId, newStage);
+            message.success('Stage updated');
+            fetchClientAndContacts();
+        } catch {
+            message.error('Failed to update stage');
         }
     };
 
@@ -73,7 +89,7 @@ export default function ClientDetailPage() {
     const extra = (
         <Space size="middle">
             <Button icon={<EditOutlined />}>Edit Client</Button>
-            <Button type="primary" icon={<PlusOutlined />}>New Opportunity</Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsOpportunityModalOpen(true)}>New Opportunity</Button>
         </Space>
     );
 
@@ -158,14 +174,31 @@ export default function ClientDetailPage() {
                                 <Table
                                     size="small"
                                     rowKey="id"
-                                    dataSource={[
-                                        { id: 'o-1', name: 'Expansion Project', stage: OpportunityStage.NEGOTIATION, amount: 450000, probability: 75 },
-                                    ]}
+                                    dataSource={opportunities}
                                     columns={[
-                                        { title: 'Opportunity', dataIndex: 'name', key: 'name' },
-                                        { title: 'Stage', dataIndex: 'stage', render: (s) => <Tag color="blue">{s}</Tag> },
-                                        { title: 'Value', dataIndex: 'amount', render: (v) => `R${v.toLocaleString()}` },
+                                        { title: 'Opportunity', dataIndex: 'title', key: 'title' },
+                                        { title: 'Stage', dataIndex: 'stage', key: 'stage',
+                                            render: (stage: OpportunityStage, record: Opportunity) => (
+                                                <Select
+                                                    value={stage}
+                                                    onChange={(value) => handleStageUpdate(record.id, value)}
+                                                    style={{ width: 140 }}
+                                                    size="small"
+                                                    options={[
+                                                        { value: 1, label: 'Lead' },
+                                                        { value: 2, label: 'Qualified' },
+                                                        { value: 3, label: 'Proposal' },
+                                                        { value: 4, label: 'Negotiation' },
+                                                        { value: 5, label: 'Closed Won' },
+                                                        { value: 6, label: 'Closed Lost' }
+                                                    ]}
+                                                />
+                                            ),
+                                        },
+                                        { title: 'Value', dataIndex: 'estimatedValue', key: 'estimatedValue', render: (v: number) => `R${v?.toLocaleString()}` },
+                                        { title: 'Probability', dataIndex: 'probability', key: 'probability', render: (p: number) => `${p}%` },
                                     ]}
+                                    locale={{ emptyText: 'No opportunities yet. Click "New Opportunity" to create one.' }}
                                 />
                             ),
                         },
@@ -178,6 +211,11 @@ export default function ClientDetailPage() {
                 onClose={() => setIsContactModalOpen(false)} 
                 clientId={id} 
                 onSuccess={fetchClientAndContacts} 
+            />
+
+            <OpportunityModal
+                open={isOpportunityModalOpen}
+                onClose={() => setIsOpportunityModalOpen(false)}
             />
         </Space>
     );
