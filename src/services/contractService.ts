@@ -10,6 +10,21 @@ export interface ContractFilters {
   searchTerm?: string;
 }
 
+export interface CreateContractPayload {
+  clientId: string;
+  opportunityId: string;
+  proposalId: string;
+  title: string;
+  contractValue: number;
+  currency: string;
+  startDate: string;
+  endDate: string;
+  ownerId: string;
+  renewalNoticePeriod?: number;
+  autoRenew?: boolean;
+  terms?: string;
+}
+
 const contractService = {
   async getContracts(filters: ContractFilters): Promise<{ items: Contract[]; totalCount: number; pageNumber: number; pageSize: number }> {
     const response = await api.get('/contracts', { params: filters });
@@ -21,7 +36,7 @@ const contractService = {
     return response.data;
   },
 
-  async createContract(data: Partial<Contract>): Promise<Contract> {
+  async createContract(data: CreateContractPayload): Promise<Contract> {
     const response = await api.post('/contracts', data);
     return response.data;
   },

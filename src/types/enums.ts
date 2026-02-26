@@ -28,10 +28,11 @@ export enum PricingRequestPriority {
 }
 
 export enum ContractStatus {
+  DRAFT = 'Draft',
   ACTIVE = 'Active',
-  EXPIRING = 'Expiring',
   EXPIRED = 'Expired',
-  TERMINATED = 'Terminated',
+  RENEWED = 'Renewed',
+  CANCELLED = 'Cancelled',
 }
 
 export enum ActivityType {
