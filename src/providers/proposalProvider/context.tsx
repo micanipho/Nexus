@@ -1,6 +1,6 @@
 import { createContext } from 'react';
-import { Proposal, ProposalStatus, ProposalLineItem } from '../../types';
-import { ProposalFilters } from '../../services/proposalService';
+import { Proposal } from '../../types';
+import { ProposalFilters, CreateProposalPayload, CreateLineItemPayload } from '../../services/proposalService';
 
 export interface ProposalState {
     proposals: Proposal[];
@@ -14,14 +14,14 @@ export interface ProposalState {
 export interface ProposalActions {
     fetchProposals: (filters?: ProposalFilters) => Promise<void>;
     fetchProposalById: (id: string) => Promise<void>;
-    createProposal: (data: any) => Promise<void>;
+    createProposal: (data: CreateProposalPayload) => Promise<void>;
     updateProposal: (id: string, data: any) => Promise<void>;
     deleteProposal: (id: string) => Promise<void>;
     submitProposal: (id: string) => Promise<void>;
     approveProposal: (id: string) => Promise<void>;
     rejectProposal: (id: string) => Promise<void>;
-    addLineItem: (proposalId: string, item: Partial<ProposalLineItem>) => Promise<void>;
-    updateLineItem: (proposalId: string, lineItemId: string, item: Partial<ProposalLineItem>) => Promise<void>;
+    addLineItem: (proposalId: string, item: CreateLineItemPayload) => Promise<void>;
+    updateLineItem: (proposalId: string, lineItemId: string, item: Partial<CreateLineItemPayload>) => Promise<void>;
     deleteLineItem: (proposalId: string, lineItemId: string) => Promise<void>;
     setFilters: (filters: ProposalFilters) => void;
     clearError: () => void;

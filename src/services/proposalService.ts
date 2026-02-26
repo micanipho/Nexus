@@ -10,6 +10,24 @@ export interface ProposalFilters {
   searchTerm?: string;
 }
 
+export interface CreateLineItemPayload {
+  productServiceName: string;
+  description?: string;
+  quantity: number;
+  unitPrice: number;
+  discount: number;
+  taxRate: number;
+}
+
+export interface CreateProposalPayload {
+  opportunityId: string;
+  title: string;
+  description?: string;
+  currency: string;
+  validUntil: string;
+  lineItems: CreateLineItemPayload[];
+}
+
 const proposalService = {
   async getProposals(filters: ProposalFilters): Promise<{ items: Proposal[]; totalCount: number; pageNumber: number; pageSize: number }> {
     const response = await api.get('/proposals', { params: filters });
@@ -21,9 +39,16 @@ const proposalService = {
     return response.data;
   },
 
-  async createProposal(data: Partial<Proposal>): Promise<Proposal> {
-    const response = await api.post('/proposals', data);
-    return response.data;
+  async createProposal(data: CreateProposalPayload): Promise<Proposal> {
+    try {
+      const response = await api.post('/proposals', data);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.data) {
+        throw new Error(error.response.data.message || error.response.data.error || 'Failed to create proposal');
+      }
+      throw new Error('An error occurred while creating the proposal.');
+    }
   },
 
   async updateProposal(id: string, data: Partial<Proposal>): Promise<Proposal> {
@@ -50,12 +75,12 @@ const proposalService = {
     return response.data;
   },
 
-  async addLineItem(proposalId: string, item: Partial<ProposalLineItem>): Promise<ProposalLineItem> {
+  async addLineItem(proposalId: string, item: CreateLineItemPayload): Promise<ProposalLineItem> {
     const response = await api.post(`/proposals/${proposalId}/line-items`, item);
     return response.data;
   },
 
-  async updateLineItem(proposalId: string, lineItemId: string, item: Partial<ProposalLineItem>): Promise<ProposalLineItem> {
+  async updateLineItem(proposalId: string, lineItemId: string, item: Partial<CreateLineItemPayload>): Promise<ProposalLineItem> {
     const response = await api.put(`/proposals/${proposalId}/line-items/${lineItemId}`, item);
     return response.data;
   },
