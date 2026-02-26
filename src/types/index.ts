@@ -119,11 +119,25 @@ export interface ContractRenewal {
 export interface Activity {
   id: string;
   type: ActivityType;
-  title: string;
-  description: string;
-  date: string;
-  clientId: string;
-  userId: string;
+  typeName: string;
+  subject: string;
+  description?: string;
+  priority: number;
+  priorityName?: string;
+  dueDate: string;
+  assignedToId: string;
+  assignedToName?: string;
+  relatedToType?: number;
+  relatedToId?: string;
+  relatedToName?: string;
+  duration?: number;
+  location?: string;
+  status: number;
+  statusName: string;
+  outcome?: string;
+  completedDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface DashboardMetrics {

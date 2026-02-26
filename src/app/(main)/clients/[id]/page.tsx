@@ -11,15 +11,20 @@ import {
     HistoryOutlined,
     EditOutlined
 } from '@ant-design/icons';
-import { Client, Contact, Opportunity, UserRole } from '@/types';
+import { Client, Contact, Opportunity, UserRole, Activity, ActivityType } from '@/types';
 import { OpportunityStage } from '@/types/enums';
 import opportunityService from '@/services/opportunityService';
 import clientService from '@/services/clientService';
 import contactService from '@/services/contactService';
+import activityService from '@/services/activityService';
 import PageHeader from '@/components/shared/PageHeader';
 import ContactModal from '@/components/clients/ContactModal';
 import OpportunityModal from '@/components/opportunities/OpportunityModal';
+import CreateActivityModal from '@/components/activities/CreateActivityModal';
+import CompleteActivityModal from '@/components/activities/CompleteActivityModal';
 import { useHasRole } from '@/hooks/useHasRole';
+import { useActivityActions } from '@/providers/activityProvider';
+import dayjs from 'dayjs';
 
 const { Text } = Typography;
 
@@ -29,22 +34,31 @@ export default function ClientDetailPage() {
     const [client, setClient] = useState<Client | null>(null);
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+    const [activities, setActivities] = useState<Activity[]>([]);
     const [loading, setLoading] = useState(true);
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
     const [isOpportunityModalOpen, setIsOpportunityModalOpen] = useState(false);
+    
+    // Activities Modals State
+    const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+    const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+    const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+    const { completeActivity, cancelActivity } = useActivityActions();
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
 
     const fetchClientAndContacts = async () => {
         if (!id) return;
         try {
-            const [clientData, contactsData, oppsData] = await Promise.all([
+            const [clientData, contactsData, oppsData, actsData] = await Promise.all([
                 clientService.getClientById(id),
                 contactService.getContactsByClient(id),
-                opportunityService.getOpportunities({ clientId: id, pageNumber: 1, pageSize: 50 })
+                opportunityService.getOpportunities({ clientId: id, pageNumber: 1, pageSize: 50 }),
+                activityService.getActivities({ relatedToId: id, relatedToType: 1, pageNumber: 1, pageSize: 50 })
             ]);
             setClient(clientData);
             setContacts(contactsData);
             setOpportunities(oppsData.items || []);
+            setActivities(actsData.items || []);
         } catch (err) {
             message.error('Failed to load client details');
         } finally {
@@ -204,6 +218,61 @@ export default function ClientDetailPage() {
                                 />
                             ),
                         },
+                        {
+                            key: 'activities',
+                            label: 'Activities',
+                            children: (
+                                <>
+                                    <Table
+                                        size="small"
+                                        rowKey="id"
+                                        dataSource={activities}
+                                        columns={[
+                                            { title: 'Subject', dataIndex: 'subject', key: 'subject', render: (text) => <Text strong>{text}</Text> },
+                                            { 
+                                                title: 'Due Date', 
+                                                dataIndex: 'dueDate', 
+                                                key: 'dueDate',
+                                                render: (date: string) => {
+                                                    const isOverdue = dayjs(date).isBefore(dayjs());
+                                                    return <span style={{ color: isOverdue ? 'red' : 'inherit' }}>{dayjs(date).format('MMM D, HH:mm')}</span>;
+                                                }
+                                            },
+                                            { 
+                                                title: 'Status', 
+                                                dataIndex: 'statusName', 
+                                                key: 'statusName',
+                                                render: (status: string) => {
+                                                    let color = 'gold';
+                                                    if (status === 'Completed') color = 'green';
+                                                    if (status === 'Cancelled') color = 'default';
+                                                    return <Tag color={color}>{status}</Tag>;
+                                                }
+                                            },
+                                            {
+                                                title: 'Actions',
+                                                key: 'actions',
+                                                render: (_: any, record: Activity) => {
+                                                    if (record.statusName !== 'Scheduled') return <span style={{ color: '#aaa' }}>Closed</span>;
+                                                    return (
+                                                        <Space>
+                                                            <Button type="link" size="small" onClick={() => { setSelectedActivity(record); setIsCompleteModalOpen(true); }}>Complete</Button>
+                                                            <Button type="text" danger size="small" onClick={async () => { await cancelActivity(record.id); fetchClientAndContacts(); }}>Cancel</Button>
+                                                        </Space>
+                                                    );
+                                                }
+                                            }
+                                        ]}
+                                        locale={{ emptyText: 'No activities yet.' }}
+                                    />
+                                    <div style={{ marginTop: 16 }}>
+                                        <Button type="dashed" block icon={<PlusOutlined />} onClick={() => setIsActivityModalOpen(true)} disabled={!canCreate}>
+                                            Log Activity
+                                        </Button>
+                                    </div>
+                                </>
+                            ),
+                        },
                     ]}
                 />
             </Card>
@@ -218,6 +287,22 @@ export default function ClientDetailPage() {
             <OpportunityModal
                 open={isOpportunityModalOpen}
                 onClose={() => setIsOpportunityModalOpen(false)}
+                onSuccess={fetchClientAndContacts}
+            />
+
+            <CreateActivityModal 
+                open={isActivityModalOpen}
+                onClose={() => setIsActivityModalOpen(false)}
+                onSuccess={fetchClientAndContacts}
+                initialRelatedToType={1}
+                initialRelatedToId={id}
+            />
+
+            <CompleteActivityModal
+                open={isCompleteModalOpen}
+                onClose={() => setIsCompleteModalOpen(false)}
+                activity={selectedActivity}
+                onSuccess={fetchClientAndContacts}
             />
         </Space>
     );
