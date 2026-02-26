@@ -14,6 +14,13 @@ export enum PricingRequestStatus {
   REJECTED = 'Rejected',
 }
 
+export enum ProposalStatus {
+  DRAFT = 'Draft',
+  SUBMITTED = 'Submitted',
+  APPROVED = 'Approved',
+  REJECTED = 'Rejected',
+}
+
 export enum PricingRequestPriority {
   LOW = 'Low',
   MEDIUM = 'Medium',
