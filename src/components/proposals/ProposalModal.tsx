@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Select, DatePicker, InputNumber, Button, Space, Divider, message } from 'antd';
+import { Modal, Form, Input, Select, DatePicker, InputNumber, Button, Space, Divider, App } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import proposalService, { CreateProposalPayload, CreateLineItemPayload } from '@/services/proposalService';
 import opportunityService from '@/services/opportunityService';
@@ -24,6 +24,7 @@ const EMPTY_LINE_ITEM: CreateLineItemPayload = {
 };
 
 export default function ProposalModal({ open, onClose, onSuccess, preselectedOpportunityId }: ProposalModalProps) {
+    const { message } = App.useApp();
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);

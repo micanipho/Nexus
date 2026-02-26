@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Select, message } from 'antd';
+import { Modal, Form, Input, Select, App } from 'antd';
 import { useContractActions } from '@/providers/contractProvider';
 import opportunityService from '@/services/opportunityService';
 import { Opportunity } from '@/types';
@@ -15,6 +15,7 @@ interface CreateRenewalModalProps {
 }
 
 export default function CreateRenewalModal({ open, onClose, contractId, clientName, clientId }: CreateRenewalModalProps) {
+    const { message } = App.useApp();
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
     const [clientOpportunities, setClientOpportunities] = useState<Opportunity[]>([]);

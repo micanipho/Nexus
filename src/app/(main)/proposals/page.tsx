@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { Button, Input, Select, Space, Popconfirm, message } from 'antd';
+import { Button, Input, Select, Space, Popconfirm, App } from 'antd';
 import { CheckOutlined, SendOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { Proposal, ProposalStatus, UserRole } from '@/types';
@@ -19,6 +19,7 @@ const ProposalModal = dynamic(() => import('@/components/proposals/ProposalModal
 });
 
 export default function ProposalsPage() {
+    const { message } = App.useApp();
     const { proposals, isPending, filters, totalCount } = useProposals();
     const { fetchProposals, setFilters, submitProposal, approveProposal, rejectProposal } = useProposalActions();
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);

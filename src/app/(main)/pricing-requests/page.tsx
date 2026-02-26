@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { Button, Input, Select, Space, Tag, message, Tooltip } from 'antd';
+import { Button, Input, Select, Space, Tag, App, Tooltip } from 'antd';
 import { CheckCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { PricingRequest } from '@/types';
@@ -32,6 +32,7 @@ const statusLabels: Record<number, { label: string; color: string }> = {
 };
 
 export default function PricingRequestsPage() {
+    const { message } = App.useApp();
     const [requests, setRequests] = useState<PricingRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [totalCount, setTotalCount] = useState(0);

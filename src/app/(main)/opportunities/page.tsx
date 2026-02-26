@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { Button, Input, Select, Space, message } from 'antd';
+import { Button, Input, Select, Space } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { Opportunity, OpportunityStage } from '@/types';

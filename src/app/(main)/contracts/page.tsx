@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { Button, Input, Select, Space, message, Popconfirm } from 'antd';
+import { Button, Input, Select, Space, App, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { Contract, ContractStatus, UserRole } from '@/types';
@@ -26,6 +26,7 @@ const CreateRenewalModal = dynamic(() => import('@/components/contracts/CreateRe
 });
 
 export default function ContractsPage() {
+    const { message } = App.useApp();
     const { contracts, isPending, filters, totalCount } = useContracts();
     const { fetchContracts, setFilters, activateContract, cancelContract } = useContractActions();
     const { hasRole: canManage } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);

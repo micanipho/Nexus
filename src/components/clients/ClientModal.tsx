@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Select, message } from 'antd';
+import { Modal, Form, Input, Select, App } from 'antd';
 import { useClientActions } from '@/providers/clientProvider';
 import { Client } from '@/types';
 
@@ -11,6 +11,7 @@ interface ClientModalProps {
 }
 
 export default function ClientModal({ open, onClose, onSuccess, client }: ClientModalProps) {
+    const { message } = App.useApp();
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
     const { createClient, updateClient } = useClientActions();
