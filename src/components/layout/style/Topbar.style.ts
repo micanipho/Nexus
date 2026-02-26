@@ -32,6 +32,26 @@ const useStyles = createStyles(({ token, css }) => ({
     font-size: 14px;
     color: ${token.colorText};
   `,
+  tenantInfo: css`
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: 8px;
+    padding: 2px 8px;
+    background: ${token.colorFillQuaternary};
+    border-radius: 4px;
+    border: 1px solid ${token.colorBorderSecondary};
+    @media (max-width: 640px) {
+      display: none;
+    }
+  `,
+  tenantName: css`
+    font-size: 11px;
+    font-weight: 600;
+    color: ${token.colorTextSecondary};
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  `,
   logoutDesktop: css`
     @media (max-width: 768px) {
       display: none !important;
