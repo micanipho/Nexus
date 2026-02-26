@@ -2,7 +2,7 @@ import { createStyles } from 'antd-style';
 
 const useStyles = createStyles(({ token, css }) => ({
   header: css`
-    padding: 0 24px;
+    padding: 0 24px 0 0;
     background: ${token.colorBgContainer};
     display: flex;
     align-items: center;
