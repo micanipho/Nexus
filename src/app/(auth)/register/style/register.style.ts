@@ -49,6 +49,14 @@ const useStyles = createStyles(({ token, css }) => ({
   errorAlert: css`
     margin-bottom: 24px;
   `,
+  segmentedWrapper: css`
+    margin-bottom: 24px;
+  `,
+  segmented: css`
+    padding: 4px;
+    border-radius: 10px;
+    background: ${token.colorBgLayout};
+  `,
   formItem: css`
     margin-bottom: 16px;
   `,

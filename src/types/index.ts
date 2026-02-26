@@ -5,18 +5,12 @@ import {
   PricingRequestPriority,
   ContractStatus,
   ActivityType,
+  UserRole,
 } from './enums';
 
 export * from './enums';
-
-export interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-  avatar?: string;
-}
+export * from './auth';
+export * from './user';
 
 export interface Client {
   id: string;
