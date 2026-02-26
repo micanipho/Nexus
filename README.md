@@ -1,99 +1,92 @@
-# Nexus: Sales Automation & Intelligence
+# Nexus Sales Automation
 
-**Nexus** is an Enterprise Sales Automation System designed to streamline B2B sales operations, pipeline tracking, and contract renewals. It provides a structured platform for managing high-value enterprise sales lifecycles within a single solution.
+## What is Nexus?
 
-**Live Demo:** [https://nexus-alpha-gules.vercel.app/](https://nexus-alpha-gules.vercel.app/)
+Nexus is an Enterprise Sales Automation System designed to revolutionize the way B2B sales teams track, manage, and close high-value deals. With a streamlined interface and powerful intelligence features, our application connects sales representatives, managers, and directors with real-time pipeline data, providing personalized sales insights tailored to individual organizational goals.
 
----
+## Why Choose Nexus?
 
-## Overview
+**Operational Excellence:** We prioritize efficiency and accuracy in sales tracking, ensuring that every opportunity is monitored from discovery to closed-won.
+**Convenience:** With cloud-native access and mobile-optimized views, sales teams can manage their pipeline from anywhere, eliminating the friction of manual spreadsheet updates.
+**Affordability:** We believe every organization deserves access to enterprise-grade tools. Our scalable multi-tenant architecture provides powerful features without the overhead of legacy CRM systems.
+**Intelligence & Insights:** Join a data-driven sales culture where metrics like weighted pipeline value, win rates, and activity completion are at your fingertips to enhance your revenue growth.
 
-Nexus addresses the challenges of manual sales processes and fragmented tracking by providing organizational visibility, accountability, and proactive revenue protection.
+# Documentation
 
-### Core Modules:
-*   **Pipeline & Opportunity Tracking:** Real-time visibility into deal stages from discovery to closed-won.
-*   **Pricing & Proposal Management:** Structured workflows for pricing requests with priority-based monitoring.
-*   **Contract & Renewal Monitoring:** Proactive tracking of active SLAs to prevent revenue leakage.
-*   **Client & Contact CRM:** Centralized directory for enterprise accounts and engagement history.
-*   **Activity & Engagement Tracking:** Integrated logging for meetings, calls, and tasks.
-*   **Executive & Personal Analytics:** High-level organizational dashboards and individual performance tracking.
+## Software Requirement Specification
 
----
+### Overview
 
-## Technology Stack
+Nexus is a cutting-edge Sales Automation & Intelligence platform designed to streamline the B2B sales lifecycle. It provides a unified workspace for managing clients, tracking opportunities, generating proposals, and monitoring contract renewals with built-in Role-Based Access Control (RBAC).
 
-*   **Framework:** [Next.js 16 (App Router)](https://nextjs.org/)
-*   **UI Library:** [Ant Design (antd) 6.x](https://ant.design/)
-*   **State Management:** [Provider Pattern](./providerPattern.md) (Context API + `redux-actions`)
-*   **Language:** [TypeScript (Strict Mode)](https://www.typescriptlang.org/)
-*   **HTTP Client:** [Axios](https://axios-http.com/)
-*   **Visualization:** [@ant-design/plots](https://ant-design-charts.antgroup.com/)
+### Components and Functional Requirement
 
----
+**1. Authentication and Authorisation Management**
+  * User can register as a New Org (Admin), Join an Org (via invite/tenant ID), or use Quick Start.
+  * User can log into the Nexus web app with secure JWT-based authentication.
+  * User can access their unique profile and data scoped to their specific Tenant.
 
-## Project Architecture
+**2. Client & CRM Management**
+ * User can create and manage client organizations and their primary contacts.
+ * User can track engagement history and client-specific statistics.
+ * Admin/Managers can deactivate or reactivate client profiles.
+ 
+**3. Pipeline & Opportunity Management**
+ * User can track sales opportunities through stages (Lead, Qualified, Proposal, Negotiation, Closed).
+ * Owners can update stages and probability to reflect real-time progress.
+ * Automatic calculation of pipeline value and weighted revenue.
 
-The project follows a domain-driven structure within the `src/` directory:
+**4. Pricing & Proposal Subsystem**
 
-```text
-src/
-├── app/                              # Next.js App Router (Pages & Layouts)
-│   ├── (auth)/                       # Auth group (Login, Register)
-│   ├── (main)/                       # Main application shell
-│   └── layout.tsx                    # Root layout (Config, AppProviders)
-│
-├── providers/                        # State Management Layer (Context Providers)
-│   ├── authProvider/                 # Auth state & actions
-│   ├── clientProvider/               # CRM state
-│   ├── dashboardProvider/            # Analytics state
-│   └── ...                           # Domain-specific providers
-│
-├── components/                       # UI Components
-│   ├── layout/                       # Sidebar, Topbar, Shell components
-│   ├── shared/                       # Reusable UI (DataTable, StatusBadge, etc.)
-│   └── features/                     # Domain-specific complex components
-│
-├── services/                         # API Integration Layer (Axios)
-│   ├── api.ts                        # Axios instance & interceptors
-│   ├── authService.ts                # Auth API
-│   └── ...                           # Domain services with mock fallbacks
-│
-└── types/                            # Strict TypeScript Contracts
-    ├── index.ts                      # Centralized Domain Interfaces
-    ├── enums.ts                      # Business logic Enums
-    └── auth.ts                       # Auth-specific types
-```
+BDM / Manager
+ * Log pricing requests for complex deal structures.
+ * Generate professional proposals with detailed line items (Product, Quantity, Price, Tax).
+ * Submit proposals for internal approval workflow.
 
----
+Admin / Sales Manager
+ * Review, approve, or reject pending proposals.
+ * Assign pricing requests to specific team members.
 
-## State Management: The Provider Pattern
+**5. Contract & Renewal Monitoring**
 
-This project uses a strictly typed, Redux-like architecture utilizing the React Context API. Each domain (e.g., Clients, Auth) has a dedicated provider directory containing:
-- `context.tsx`: State and Action context definitions.
-- `actions.tsx`: Action types and synchronous creators.
-- `reducer.tsx`: State transition logic using `handleActions`.
-- `index.tsx`: The Provider component and custom hooks (`useDomain`, `useDomainActions`).
+Management
+ * Convert approved proposals into active legal contracts.
+ * Activate or cancel contracts based on fulfillment status.
 
-Refer to [providerPattern.md](./providerPattern.md) for detailed documentation.
+Monitoring
+ * Automatic tracking of contract expiry dates.
+ * Initiate and track renewal records for expiring agreements.
+ * Dashboard alerts for contracts expiring within 30 days.
 
----
+**6. Activity & Engagement Tracking**
 
-## Getting Started
+* Log and track meetings, calls, emails, and tasks.
+* Mark activities as completed with specific outcomes.
+* View upcoming and overdue activity summaries on the personal dashboard.
 
-### Prerequisites
-- Node.js 20.x or higher
-- npm
+**7. Analytics & Executive Overview**
 
-### Installation
-1.  **Clone and Install:**
-    ```bash
-    git clone https://github.com/your-org/nexus-sales.git
-    cd nexus-sales
-    npm install
-    ```
+* Real-time dashboard showing projected revenue and pipeline health.
+* Sales performance tracking (Top Performers, Win Rates).
+* Conversion rate monitoring across different pipeline stages.
 
-2.  **Run Development Server:**
-    ```bash
-    npm run dev
-    ```
+### Architecture Diagram
+Nexus utilizes a modern decoupled architecture:
+* **Frontend:** Next.js 16 (Turbopack), React 19, Ant Design v5 (CSS-in-JS).
+* **Security:** JWT Authentication with Tenant-based data isolation.
 
+
+## FRONTEND
+Navigate to the project root and install dependencies:
+`npm install`
+
+## Development
+Run the development server with Turbopack:
+`npm run dev`
+
+## Production
+* `npm run build`
+* `npm run start`
+
+The application uses an environment variable for the API endpoint:
+* `NEXT_PUBLIC_API_BASE_URI` (Defaults to Production Azure URL if not set)
