@@ -1,5 +1,5 @@
 import { createAction } from 'redux-actions';
-import { User, AuthResponse } from '@/types';
+import { User, AuthResponse } from '../../types';
 
 export const AUTH_LOGIN_REQUEST = 'AUTH_LOGIN_REQUEST';
 export const AUTH_LOGIN_SUCCESS = 'AUTH_LOGIN_SUCCESS';

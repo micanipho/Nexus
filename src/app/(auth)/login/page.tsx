@@ -26,7 +26,7 @@ export default function LoginPage() {
       message.success('Login successful!');
       router.push('/dashboard');
     } catch (err) {
-      // Error is handled by provider state
+      message.error('Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }

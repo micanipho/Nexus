@@ -49,6 +49,28 @@ const useStyles = createStyles(({ token, css }) => ({
   errorAlert: css`
     margin-bottom: 24px;
   `,
+  segmentedWrapper: css`
+    margin-bottom: 24px;
+  `,
+  segmented: css`
+    padding: 4px;
+    border-radius: 10px;
+    background: ${token.colorBgLayout};
+
+    .ant-segmented-item-selected {
+      background: ${token.colorInfoBg};
+      color: ${token.colorInfo};
+      font-weight: 600;
+    }
+
+    .ant-segmented-item-label {
+      transition: color 0.2s ease;
+    }
+
+    .ant-segmented-item:hover:not(.ant-segmented-item-selected) .ant-segmented-item-label {
+      color: ${token.colorInfo};
+    }
+  `,
   formItem: css`
     margin-bottom: 16px;
   `,

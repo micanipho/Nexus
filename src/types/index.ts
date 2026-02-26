@@ -10,18 +10,7 @@ import {
 
 export * from './enums';
 export * from './auth';
-
-export interface User {
-  id: string;
-  userId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  roles: UserRole[];
-  tenantId: string;
-  expiresAt: string;
-  avatar?: string;
-}
+export * from './user';
 
 export interface Client {
   id: string;

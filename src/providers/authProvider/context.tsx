@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { User } from '@/types';
+import { User } from '../../types';
 
 export interface AuthState {
   user: User | null;
@@ -17,5 +17,20 @@ export const initialState: AuthState = {
   error: null,
 };
 
+export interface AuthActions {
+  login: (email: string, password: string) => Promise<void>;
+  register: (
+    firstName: string, 
+    lastName: string, 
+    email: string, 
+    password: string, 
+    tenantName?: string,
+    tenantId?: string, 
+    role?: string
+  ) => Promise<void>;
+  logout: () => Promise<void>;
+  checkAuth: () => Promise<void>;
+}
+
 export const AuthContext = createContext<AuthState>(initialState);
-export const AuthActionsContext = createContext<any>(null);
+export const AuthActionsContext = createContext<AuthActions | undefined>(undefined);
