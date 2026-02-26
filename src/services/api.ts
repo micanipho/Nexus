@@ -10,7 +10,7 @@ const api = axios.create({
 // Request Interceptor: Add Authorization header
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('nexus_token') : null;
+    const token = typeof window !== 'undefined' ? sessionStorage.getItem('nexus_token') : null;
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -28,7 +28,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Logic for handling unauthorized access (e.g., redirect to login)
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('nexus_token');
+        sessionStorage.removeItem('nexus_token');
         // window.location.href = '/login';
       }
     }

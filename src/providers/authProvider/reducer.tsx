@@ -54,6 +54,7 @@ const authReducer = handleActions<AuthState, any>(
       ...state,
       user: action.payload,
       isAuthenticated: !!action.payload,
+      loading: false,
     }),
   },
   initialState
