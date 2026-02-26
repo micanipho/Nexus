@@ -4,8 +4,7 @@ import React, { useReducer, useContext, useMemo } from 'react';
 import { ProposalStateContext, ProposalActionContext, INITIAL_STATE, ProposalActions } from './context';
 import { proposalReducer } from './reducer';
 import * as actions from './actions';
-import proposalService, { ProposalFilters } from '../../services/proposalService';
-import { ProposalLineItem } from '../../types';
+import proposalService, { ProposalFilters, CreateProposalPayload, CreateLineItemPayload } from '../../services/proposalService';
 
 export const ProposalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [state, dispatch] = useReducer(proposalReducer, INITIAL_STATE);
@@ -30,7 +29,7 @@ export const ProposalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                     dispatch(actions.fetchProposalByIdError(error.response?.data?.message || 'Failed to fetch proposal'));
                 }
             },
-            createProposal: async (data: any) => {
+            createProposal: async (data: CreateProposalPayload) => {
                 dispatch(actions.createProposalPending());
                 try {
                     const response = await proposalService.createProposal(data);
@@ -84,7 +83,7 @@ export const ProposalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                     dispatch(actions.updateProposalError(error.response?.data?.message || 'Failed to reject proposal'));
                 }
             },
-            addLineItem: async (proposalId: string, item: Partial<ProposalLineItem>) => {
+            addLineItem: async (proposalId: string, item: CreateLineItemPayload) => {
                 try {
                     await proposalService.addLineItem(proposalId, item);
                     // Refresh proposal to get updated total value and items
@@ -94,7 +93,7 @@ export const ProposalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                     dispatch(actions.updateProposalError(error.response?.data?.message || 'Failed to add line item'));
                 }
             },
-            updateLineItem: async (proposalId: string, lineItemId: string, item: Partial<ProposalLineItem>) => {
+            updateLineItem: async (proposalId: string, lineItemId: string, item: Partial<CreateLineItemPayload>) => {
                 try {
                     await proposalService.updateLineItem(proposalId, lineItemId, item);
                     const updated = await proposalService.getProposalById(proposalId);
