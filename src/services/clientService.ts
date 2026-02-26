@@ -118,9 +118,6 @@ const clientService = {
 
   async getClientById(id: string): Promise<Client> {
     try {
-      // const response = await api.get(`/Clients/${id}`);
-      // return response.data;
-
       const client = MOCK_CLIENTS.find(c => c.id === id);
       if (!client) throw new Error('Client not found');
 

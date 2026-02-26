@@ -21,8 +21,8 @@ export enum ClientActionEnums {
     FetchClientStatsPending = 'FETCH_CLIENT_STATS_PENDING',
     FetchClientStatsSuccess = 'FETCH_CLIENT_STATS_SUCCESS',
     FetchClientStatsError = 'FETCH_CLIENT_STATS_ERROR',
-    SetFilters = 'SET_FILTERS',
-    ClearError = 'CLEAR_ERROR',
+    SetFilters = 'SET_CLIENT_FILTERS',
+    ClearError = 'CLEAR_CLIENT_ERROR',
 }
 
 export const fetchClientsPending = createAction(ClientActionEnums.FetchClientsPending);

@@ -32,12 +32,15 @@ export interface Client {
 export interface Opportunity {
   id: string;
   clientId: string;
+  clientName: string;
   title: string;
   value: number;
   stage: OpportunityStage;
   probability: number;
   expectedCloseDate: string;
   ownerId: string;
+  ownerName: string;
+  isActive: boolean;
 }
 
 export interface PricingRequest {

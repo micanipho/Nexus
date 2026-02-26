@@ -1,11 +1,11 @@
 import { createContext } from 'react';
 import { Client } from '../../types';
-import { ClientFilters } from '../../services/clientService';
+import { ClientFilters, ClientStats } from '../../services/clientService';
 
 export interface ClientState {
     clients: Client[];
     selectedClient: Client | null;
-    clientStats: any | null;
+    clientStats: ClientStats | null;
     isPending: boolean;
     error: string | null;
     filters: ClientFilters;
