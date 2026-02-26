@@ -1,3 +1,4 @@
+import api from './api';
 import { Client } from '@/types';
 
 export interface ClientFilters {
