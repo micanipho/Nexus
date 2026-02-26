@@ -55,7 +55,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       },
       logout: async () => {
         await authService.logout();
+        localStorage.removeItem("nexus_token");
         dispatch(actions.authLogout());
+        globalThis.location.href = '/login';
       },
       checkAuth: async () => {
         const token = localStorage.getItem("nexus_token");
