@@ -9,10 +9,13 @@ import { useProposals, useProposalActions } from '@/providers/proposalProvider';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
+import { useHasRole } from '@/hooks/useHasRole';
+import { UserRole } from '@/types';
 
 export default function ProposalsPage() {
     const { proposals, isPending, filters, totalCount } = useProposals();
     const { fetchProposals, setFilters } = useProposalActions();
+    const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
 
     useEffect(() => {
         fetchProposals();
@@ -90,7 +93,7 @@ export default function ProposalsPage() {
                 style={{ width: 160 }}
                 value={filters.status}
             />
-            <Button type="primary">New Proposal</Button>
+            <Button type="primary" disabled={!canCreate}>New Proposal</Button>
         </Space>
     );
 

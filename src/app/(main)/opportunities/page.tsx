@@ -10,12 +10,18 @@ import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
 import OpportunityModal from '@/components/opportunities/OpportunityModal';
 import dashboardService from '@/services/dashboardService';
+import RoleGate from '@/components/shared/RoleGate';
+import { useHasRole } from '@/hooks/useHasRole';
+import { UserRole } from '@/types';
 
 export default function OpportunitiesPage() {
     const { opportunities, isPending, filters, totalCount } = useOpportunities();
-    const { fetchOpportunities, setFilters, updateStage, assignOpportunity } = useOpportunityActions();
+    const { fetchOpportunities, fetchMyOpportunities, setFilters, updateStage, assignOpportunity } = useOpportunityActions();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [salesReps, setSalesReps] = useState<Array<{ userId: string; userName: string }>>([]);
+    const { hasRole: canAssign } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
+    const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
+    const { hasRole: isSalesRep } = useHasRole([UserRole.SALES_REP]);
 
     useEffect(() => {
         const loadSalesReps = async () => {
@@ -50,8 +56,12 @@ export default function OpportunitiesPage() {
     };
 
     useEffect(() => {
-        fetchOpportunities();
-    }, [filters, fetchOpportunities]);
+        if (isSalesRep) {
+            fetchMyOpportunities(filters);
+        } else {
+            fetchOpportunities();
+        }
+    }, [filters, fetchOpportunities, fetchMyOpportunities, isSalesRep]);
 
     const handleSearch = (value: string) => {
         setFilters({ ...filters, searchTerm: value, pageNumber: 1 });
@@ -90,20 +100,24 @@ export default function OpportunitiesPage() {
             dataIndex: 'stage',
             key: 'stage',
             render: (stage: OpportunityStage, record) => (
-                <Select
-                    value={stage}
-                    onChange={(value) => handleUpdateStage(record.id, value)}
-                    style={{ width: 140 }}
-                    size="small"
-                    options={[
-                        { value: 1, label: 'Lead' },
-                        { value: 2, label: 'Qualified' },
-                        { value: 3, label: 'Proposal' },
-                        { value: 4, label: 'Negotiation' },
-                        { value: 5, label: 'Closed Won' },
-                        { value: 6, label: 'Closed Lost' }
-                    ]}
-                />
+                canCreate ? (
+                    <Select
+                        value={stage}
+                        onChange={(value) => handleUpdateStage(record.id, value)}
+                        style={{ width: 140 }}
+                        size="small"
+                        options={[
+                            { value: 1, label: 'Lead' },
+                            { value: 2, label: 'Qualified' },
+                            { value: 3, label: 'Proposal' },
+                            { value: 4, label: 'Negotiation' },
+                            { value: 5, label: 'Closed Won' },
+                            { value: 6, label: 'Closed Lost' }
+                        ]}
+                    />
+                ) : (
+                    <span>{stage}</span>
+                )
             ),
         },
         {
@@ -122,14 +136,14 @@ export default function OpportunitiesPage() {
             dataIndex: 'ownerName',
             key: 'ownerName',
         },
-        {
+        ...(canAssign ? [{
             title: 'Assign',
-            key: 'assign',
+            key: 'assign' as const,
             width: 180,
-            render: (_, record) => (
+            render: (_: any, record: Opportunity) => (
                 <Select
                     value={record.ownerId || undefined}
-                    onChange={(value) => handleAssign(record.id, value)}
+                    onChange={(value: string) => handleAssign(record.id, value)}
                     placeholder="Assign rep"
                     style={{ width: 160 }}
                     size="small"
@@ -138,7 +152,7 @@ export default function OpportunitiesPage() {
                     options={salesReps.map(rep => ({ value: rep.userId, label: rep.userName }))}
                 />
             ),
-        },
+        }] : []),
     ];
 
     const extra = (
@@ -173,7 +187,7 @@ export default function OpportunitiesPage() {
                 style={{ width: 120 }}
                 value={filters.isActive}
             />
-            <Button type="primary" onClick={() => setIsModalOpen(true)}>New Opportunity</Button>
+            <Button type="primary" onClick={() => setIsModalOpen(true)} disabled={!canCreate}>New Opportunity</Button>
         </Space>
     );
 

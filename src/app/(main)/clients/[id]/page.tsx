@@ -11,7 +11,7 @@ import {
     HistoryOutlined,
     EditOutlined
 } from '@ant-design/icons';
-import { Client, Contact, Opportunity } from '@/types';
+import { Client, Contact, Opportunity, UserRole } from '@/types';
 import { OpportunityStage } from '@/types/enums';
 import opportunityService from '@/services/opportunityService';
 import clientService from '@/services/clientService';
@@ -19,6 +19,7 @@ import contactService from '@/services/contactService';
 import PageHeader from '@/components/shared/PageHeader';
 import ContactModal from '@/components/clients/ContactModal';
 import OpportunityModal from '@/components/opportunities/OpportunityModal';
+import { useHasRole } from '@/hooks/useHasRole';
 
 const { Text } = Typography;
 
@@ -31,6 +32,7 @@ export default function ClientDetailPage() {
     const [loading, setLoading] = useState(true);
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
     const [isOpportunityModalOpen, setIsOpportunityModalOpen] = useState(false);
+    const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
 
     const fetchClientAndContacts = async () => {
         if (!id) return;
@@ -88,8 +90,8 @@ export default function ClientDetailPage() {
 
     const extra = (
         <Space size="middle">
-            <Button icon={<EditOutlined />}>Edit Client</Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsOpportunityModalOpen(true)}>New Opportunity</Button>
+            <Button icon={<EditOutlined />} disabled={!canCreate}>Edit Client</Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsOpportunityModalOpen(true)} disabled={!canCreate}>New Opportunity</Button>
         </Space>
     );
 

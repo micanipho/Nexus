@@ -4,16 +4,18 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button, Input, Select, Space, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { Client } from '@/types';
+import { Client, UserRole } from '@/types';
 import { useClients, useClientActions } from '@/providers/clientProvider';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
 import ClientModal from '@/components/clients/ClientModal';
+import { useHasRole } from '@/hooks/useHasRole';
 
 export default function ClientsPage() {
     const { clients, isPending, filters, totalCount } = useClients();
     const { fetchClients, setFilters } = useClientActions();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
 
     useEffect(() => {
         fetchClients();
@@ -103,7 +105,7 @@ export default function ClientsPage() {
                 style={{ width: 120 }}
                 value={filters.isActive}
             />
-            <Button type="primary" onClick={() => setIsModalOpen(true)}>New Client</Button>
+            <Button type="primary" onClick={() => setIsModalOpen(true)} disabled={!canCreate}>New Client</Button>
         </Space>
     );
 
