@@ -8,10 +8,9 @@ export enum OpportunityStage {
 }
 
 export enum PricingRequestStatus {
-  PENDING = 'Pending',
-  REVIEWING = 'Reviewing',
-  APPROVED = 'Approved',
-  REJECTED = 'Rejected',
+  PENDING = 1,
+  IN_PROGRESS = 2,
+  COMPLETED = 3,
 }
 
 export enum ProposalStatus {
