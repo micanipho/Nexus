@@ -9,10 +9,13 @@ import { useContracts, useContractActions } from '@/providers/contractProvider';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
+import { useHasRole } from '@/hooks/useHasRole';
+import { UserRole } from '@/types';
 
 export default function ContractsPage() {
     const { contracts, isPending, filters, totalCount } = useContracts();
     const { fetchContracts, setFilters } = useContractActions();
+    const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
 
     useEffect(() => {
         fetchContracts();
@@ -89,7 +92,7 @@ export default function ContractsPage() {
                 style={{ width: 160 }}
                 value={filters.status}
             />
-            <Button type="primary">New Contract</Button>
+            <Button type="primary" disabled={!canCreate}>New Contract</Button>
         </Space>
     );
 
