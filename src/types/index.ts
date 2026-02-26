@@ -5,16 +5,21 @@ import {
   PricingRequestPriority,
   ContractStatus,
   ActivityType,
+  UserRole,
 } from './enums';
 
 export * from './enums';
+export * from './auth';
 
 export interface User {
   id: string;
+  userId: string;
   firstName: string;
   lastName: string;
   email: string;
-  role: string;
+  roles: UserRole[];
+  tenantId: string;
+  expiresAt: string;
   avatar?: string;
 }
 

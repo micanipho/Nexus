@@ -1,18 +1,21 @@
 import api from './api';
-import { User } from '@/types';
+import { User, UserRole, AuthResponse } from '@/types';
 
 // Mock data for development
 const MOCK_USER: User = {
   id: '1',
+  userId: '1',
   firstName: 'John',
   lastName: 'Doe',
   email: 'john.doe@example.com',
-  role: 'Sales Executive',
+  roles: [UserRole.SALES_REP],
+  tenantId: 'tenant-1',
+  expiresAt: '2026-12-31T23:59:59Z',
   avatar: 'https://i.pravatar.cc/150?u=1',
 };
 
 export const authService = {
-  async login(email: string, password: string): Promise<{ user: User; token: string }> {
+  async login(email: string, password: string): Promise<AuthResponse> {
     try {
       // Real API call
       // const response = await api.post('/auth/login', { email, password });
@@ -37,7 +40,7 @@ export const authService = {
     localStorage.removeItem('nexus_token');
   },
 
-  async register(firstName: string, lastName: string, email: string, password: string): Promise<{ user: User; token: string }> {
+  async register(firstName: string, lastName: string, email: string, password: string): Promise<AuthResponse> {
     try {
       // Real API call
       // const response = await api.post('/auth/register', { firstName, lastName, email, password });
