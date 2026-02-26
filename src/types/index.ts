@@ -75,22 +75,37 @@ export interface ProposalLineItem {
 
 export interface Contract {
   id: string;
+  contractNumber: string;
   clientId: string;
   clientName: string;
   opportunityId: string;
+  proposalId?: string;
+  title: string;
+  contractValue: number;
+  currency: string;
   startDate: string;
   endDate: string;
   status: ContractStatus;
+  statusName: string;
   totalValue: number;
   ownerId: string;
   ownerName: string;
+  renewalNoticePeriod?: number;
+  autoRenew: boolean;
+  terms?: string;
+  daysUntilExpiry?: number;
+  isExpiringSoon?: boolean;
+  createdAt?: string;
 }
 
 export interface ContractRenewal {
   id: string;
   contractId: string;
   renewalDate: string;
-  status: 'Pending' | 'Completed';
+  renewalOpportunityId?: string;
+  notes?: string;
+  status: string;
+  statusName: string;
 }
 
 export interface Activity {
