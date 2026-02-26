@@ -43,12 +43,20 @@ export interface Opportunity {
 
 export interface Proposal {
   id: string;
+  proposalNumber: string;
   opportunityId: string;
   opportunityTitle: string;
   clientId: string;
   clientName: string;
+  title: string;
+  description?: string;
+  currency: string;
+  validUntil: string;
   status: ProposalStatus;
-  totalValue: number;
+  statusName: string;
+  totalAmount: number;
+  submittedDate?: string;
+  approvedDate?: string;
   createdAt: string;
   lineItems: ProposalLineItem[];
 }
@@ -56,11 +64,13 @@ export interface Proposal {
 export interface ProposalLineItem {
   id: string;
   proposalId: string;
-  sku: string;
+  productServiceName: string;
   description: string;
   quantity: number;
   unitPrice: number;
   discount: number;
+  taxRate: number;
+  totalPrice: number;
 }
 
 export interface Contract {

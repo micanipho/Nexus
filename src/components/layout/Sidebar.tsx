@@ -7,6 +7,7 @@ import {
   TeamOutlined,
   SolutionOutlined,
   FileProtectOutlined,
+  FileTextOutlined,
   AccountBookOutlined,
   HistoryOutlined,
   SettingOutlined,
@@ -52,6 +53,11 @@ const Sidebar: React.FC = () => {
       key: '/pricing-requests',
       icon: <AccountBookOutlined />,
       label: 'Pricing Requests',
+    },
+    {
+      key: '/proposals',
+      icon: <FileTextOutlined />,
+      label: 'Proposals',
     },
     {
       key: '/contracts',
