@@ -3,16 +3,23 @@ import { User, UserRole, AuthResponse } from '../types';
 
 export const authService = {
   async login(email: string, password: string): Promise<AuthResponse> {
-    const response = await api.post<any>('/auth/login', { email, password });
-    
-    const payload = response.data;
-    return {
-      user: {
-        ...payload,
-        roles: payload.roles || []
-      },
-      token: payload.token
-    };
+    try {
+      const response = await api.post<any>('/auth/login', { email, password });
+      
+      const payload = response.data;
+      return {
+        user: {
+          ...payload,
+          roles: payload.roles || []
+        },
+        token: payload.token
+      };
+    } catch (error: any) {
+      if (error.response && error.response.data) {
+        throw new Error(error.response.data.message || error.response.data.error || 'Invalid credentials');
+      }
+      throw new Error('An error occurred during login. Please try again later.');
+    }
   },
 
   async logout(): Promise<void> {

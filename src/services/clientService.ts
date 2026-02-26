@@ -30,8 +30,15 @@ const clientService = {
   },
 
   async createClient(clientData: Partial<Client>): Promise<Client> {
-    const response = await api.post('/clients', clientData);
-    return response.data;
+    try {
+      const response = await api.post('/clients', clientData);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.data) {
+        throw new Error(error.response.data.message || error.response.data.error || 'Failed to create client');
+      }
+      throw new Error('An error occurred while creating the client.');
+    }
   },
 
   async updateClient(id: string, clientData: Partial<Client>): Promise<Client> {

@@ -11,10 +11,12 @@ import {
     HistoryOutlined,
     EditOutlined
 } from '@ant-design/icons';
-import { Client } from '@/types';
+import { Client, Contact } from '@/types';
 import { OpportunityStage } from '@/types/enums';
 import clientService from '@/services/clientService';
+import contactService from '@/services/contactService';
 import PageHeader from '@/components/shared/PageHeader';
+import ContactModal from '@/components/clients/ContactModal';
 
 const { Text } = Typography;
 
@@ -22,21 +24,28 @@ export default function ClientDetailPage() {
     const { id } = useParams<{ id: string }>();
     const { message } = App.useApp();
     const [client, setClient] = useState<Client | null>(null);
+    const [contacts, setContacts] = useState<Contact[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+
+    const fetchClientAndContacts = async () => {
+        if (!id) return;
+        try {
+            const [clientData, contactsData] = await Promise.all([
+                clientService.getClientById(id),
+                contactService.getContactsByClient(id)
+            ]);
+            setClient(clientData);
+            setContacts(contactsData);
+        } catch (err) {
+            message.error('Failed to load client details');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchClient = async () => {
-            if (!id) return;
-            try {
-                const data = await clientService.getClientById(id);
-                setClient(data);
-            } catch (err) {
-                message.error('Failed to load client details');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchClient();
+        fetchClientAndContacts();
     }, [id, message]);
 
     if (loading) {
@@ -121,19 +130,25 @@ export default function ClientDetailPage() {
                             key: 'contacts',
                             label: 'Contacts',
                             children: (
-                                <Table
-                                    size="small"
-                                    pagination={false}
-                                    dataSource={[
-                                        { key: '1', name: 'Sarah Smith', role: 'CTO', email: 'sarah@example.com', phone: '+27 11 000 1234' },
-                                    ]}
-                                    columns={[
-                                        { title: 'Name', dataIndex: 'name', key: 'name', render: (t) => <Text strong>{t}</Text> },
-                                        { title: 'Role', dataIndex: 'role', key: 'role' },
-                                        { title: 'Email', dataIndex: 'email', key: 'email' },
-                                        { title: 'Actions', key: 'actions', render: () => <Button size="small" type="link">Contact</Button> }
-                                    ]}
-                                />
+                                <>
+                                    <Table
+                                        size="small"
+                                        pagination={false}
+                                        rowKey="id"
+                                        dataSource={contacts}
+                                        columns={[
+                                            { title: 'Name', key: 'name', render: (_, r) => <Text strong>{r.firstName} {r.lastName} {r.isPrimaryContact && <Tag color="blue" style={{marginLeft: 8}}>Primary</Tag>}</Text> },
+                                            { title: 'Role', dataIndex: 'position', key: 'position' },
+                                            { title: 'Email', dataIndex: 'email', key: 'email' },
+                                            { title: 'Actions', key: 'actions', render: () => <Button size="small" type="link">Contact</Button> }
+                                        ]}
+                                    />
+                                    <div style={{ marginTop: 16 }}>
+                                        <Button type="dashed" block icon={<PlusOutlined />} onClick={() => setIsContactModalOpen(true)}>
+                                            Add New Contact
+                                        </Button>
+                                    </div>
+                                </>
                             ),
                         },
                         {
@@ -157,6 +172,13 @@ export default function ClientDetailPage() {
                     ]}
                 />
             </Card>
+
+            <ContactModal 
+                open={isContactModalOpen} 
+                onClose={() => setIsContactModalOpen(false)} 
+                clientId={id} 
+                onSuccess={fetchClientAndContacts} 
+            />
         </Space>
     );
 }
