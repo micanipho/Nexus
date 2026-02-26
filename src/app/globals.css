@@ -39,8 +39,8 @@ a {
 .ant-input:-webkit-autofill:hover,
 .ant-input:-webkit-autofill:focus,
 .ant-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important; /* Ant Design default white */
-  -webkit-text-fill-color: rgba(0, 0, 0, 0.88) !important; /* Ant Design default text color */
+  -webkit-box-shadow: 0 0 0 30px #ffffff inset;
+  -webkit-text-fill-color: rgba(0, 0, 0, 0.88);
   transition: background-color 5000s ease-in-out 0s;
 }
 @media (prefers-color-scheme: dark) {
