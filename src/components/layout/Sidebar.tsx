@@ -10,8 +10,6 @@ import {
   FileTextOutlined,
   AccountBookOutlined,
   HistoryOutlined,
-  SettingOutlined,
-
 } from '@ant-design/icons';
 import { usePathname, useRouter } from 'next/navigation';
 import type { MenuProps } from 'antd';
@@ -73,15 +71,6 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) => {
       icon: <HistoryOutlined />,
       label: 'Activities',
     },
-    {
-      type: 'divider',
-    },
-    {
-      key: '/settings',
-      icon: <SettingOutlined />,
-      label: 'Settings',
-      roles: [UserRole.ADMIN],
-    },
   ];
 
   const menuItems = useMemo(() => {
@@ -137,7 +126,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) => {
         onClose={onMobileClose}
         open={mobileOpen}
         styles={{ body: { padding: 0, backgroundColor: '#0B3B73' } }}
-        width={250}
+        size={250 as any}
         className="mobile-sidebar-drawer"
         closable={false}
       >

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Form, Input, Checkbox, message } from 'antd';
+import { Modal, Form, Input, Checkbox, App } from 'antd';
 import contactService from '@/services/contactService';
 
 interface ContactModalProps {
@@ -10,6 +10,7 @@ interface ContactModalProps {
 }
 
 export default function ContactModal({ open, onClose, clientId, onSuccess }: ContactModalProps) {
+    const { message } = App.useApp();
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
 

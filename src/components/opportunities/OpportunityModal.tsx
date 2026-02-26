@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Select, InputNumber, DatePicker, message } from 'antd';
+import { Modal, Form, Input, Select, InputNumber, DatePicker, App } from 'antd';
 import { useOpportunityActions } from '@/providers/opportunityProvider';
 import clientService from '@/services/clientService';
 import { Client, OpportunityStage } from '@/types';
@@ -11,6 +11,7 @@ interface OpportunityModalProps {
 }
 
 export default function OpportunityModal({ open, onClose, onSuccess }: OpportunityModalProps) {
+    const { message } = App.useApp();
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
     const [clients, setClients] = useState<Client[]>([]);

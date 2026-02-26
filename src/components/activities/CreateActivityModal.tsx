@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Form, Input, Select, DatePicker, InputNumber, message } from 'antd';
+import { Modal, Form, Input, Select, DatePicker, InputNumber, App } from 'antd';
 import { useActivityActions } from '@/providers/activityProvider';
 import { ActivityType } from '@/types';
 
@@ -19,6 +19,7 @@ export default function CreateActivityModal({
     initialRelatedToType,
     initialRelatedToId 
 }: CreateActivityModalProps) {
+    const { message } = App.useApp();
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
     const { createActivity } = useActivityActions();

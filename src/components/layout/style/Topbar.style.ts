@@ -20,11 +20,28 @@ const useStyles = createStyles(({ token, css }) => ({
       align-items: center;
     }
   `,
-  bellIcon: css`
-    font-size: 18px;
-  `,
   userSpace: css`
-    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  `,
+  userName: css`
+    font-weight: 500;
+    font-size: 14px;
+    color: ${token.colorText};
+  `,
+  logoutDesktop: css`
+    @media (max-width: 768px) {
+      display: none !important;
+    }
+  `,
+  logoutMobile: css`
+    display: none !important;
+    @media (max-width: 768px) {
+      display: inline-flex !important;
+    }
   `,
 }));
 

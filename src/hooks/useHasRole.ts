@@ -15,16 +15,7 @@ export function useHasRole(requiredRoles: (UserRole | string)[]) {
   const { user, loading, isAuthenticated } = authState;
 
   const hasRole = useMemo(() => {
-    console.log("[RBAC Hook] Evaluating for:", requiredRoles);
-    console.log("[RBAC Hook] Current AuthState context:", { 
-      hasUserObj: !!user, 
-      userKeys: user ? Object.keys(user) : 'null',
-      loading, 
-      isAuthenticated 
-    });
-
     if (!user?.roles) {
-      console.log("[RBAC Hook] No user roles found.", user);
       return false;
     }
     
@@ -34,11 +25,6 @@ export function useHasRole(requiredRoles: (UserRole | string)[]) {
     );
     
     const userRolesLower = user.roles.map(r => String(r).toLowerCase());
-    
-    console.log("[RBAC Hook] Checking access:", {
-      userRoles: userRolesLower,
-      requiredMatches: Array.from(normalizedRequiredRoles)
-    });
 
     // Check if any of the user's roles match the normalized required roles
     return userRolesLower.some((role) => 

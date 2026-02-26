@@ -1,16 +1,13 @@
 'use client';
 
 import React from 'react';
-import { Layout, Avatar, Dropdown, Space, Typography, Button, Badge } from 'antd';
-import { UserOutlined, BellOutlined, LogoutOutlined, QuestionCircleOutlined, MenuOutlined } from '@ant-design/icons';
-import type { MenuProps } from 'antd';
+import { Layout, Space, Typography, Button, Popconfirm } from 'antd';
+import { LogoutOutlined, MenuOutlined } from '@ant-design/icons';
 import { useAuth, useAuthActions } from '@/providers/authProvider';
 import useStyles from './style/Topbar.style';
 
 const { Header } = Layout;
 const { Text } = Typography;
-
-type MenuItem = Required<MenuProps>['items'][number];
 
 interface TopbarProps {
   onMenuClick: () => void;
@@ -21,35 +18,11 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
   const { user } = useAuth();
   const authActions = useAuthActions();
   
-  const handleMenuClick: MenuProps['onClick'] = async (e) => {
-    if (e.key === 'logout') {
-      if (authActions) {
-        await authActions.logout();
-      }
+  const handleLogout = async () => {
+    if (authActions) {
+      await authActions.logout();
     }
   };
-
-  const userMenuItems: MenuItem[] = [
-    {
-      key: 'profile',
-      icon: <UserOutlined />,
-      label: 'My Profile',
-    },
-    {
-      key: 'help',
-      icon: <QuestionCircleOutlined />,
-      label: 'Help Center',
-    },
-    {
-      type: 'divider',
-    },
-    {
-      key: 'logout',
-      icon: <LogoutOutlined />,
-      label: 'Logout',
-      danger: true,
-    },
-  ];
 
   return (
     <Header className={styles.header}>
@@ -62,16 +35,36 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
         />
       </div>
       <div style={{ flex: 1 }} /> {/* Spacer if menu is hidden */}
-      <Space size={20}>
-        <Badge count={5} size="small">
-          <Button type="text" icon={<BellOutlined className={styles.bellIcon} />} />
-        </Badge>
-        <Dropdown menu={{ items: userMenuItems, onClick: handleMenuClick }} placement="bottomRight" arrow>
-          <Space className={styles.userSpace}>
-            <Avatar icon={user?.avatar ? undefined : <UserOutlined />} src={user?.avatar} />
-            <Text strong>{user ? `${user.firstName} ${user.lastName}` : 'John Doe'}</Text>
-          </Space>
-        </Dropdown>
+      <Space size={12}>
+        <div className={styles.userSpace}>
+          <Text className={styles.userName}>
+            {user ? `${user.firstName} ${user.lastName}` : 'John Doe'}
+          </Text>
+        </div>
+        
+        <Popconfirm
+          title="Logout"
+          description="Are you sure you want to log out?"
+          onConfirm={handleLogout}
+          okText="Yes"
+          cancelText="No"
+          placement="bottomRight"
+        >
+          <Button 
+            type="text" 
+            danger 
+            icon={<LogoutOutlined />} 
+            className={styles.logoutDesktop}
+          >
+            Logout
+          </Button>
+          <Button 
+            type="text" 
+            danger 
+            icon={<LogoutOutlined />} 
+            className={styles.logoutMobile}
+          />
+        </Popconfirm>
       </Space>
     </Header>
   );

@@ -1,31 +1,53 @@
-import React, { useState } from 'react';
-import { Modal, Form, Input, Select, message } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Modal, Form, Input, Select, App, Switch } from 'antd';
 import { useClientActions } from '@/providers/clientProvider';
+import { Client } from '@/types';
 
 interface ClientModalProps {
     readonly open: boolean;
     readonly onClose: () => void;
     readonly onSuccess?: () => void;
+    readonly client?: Client | null;
 }
 
-export default function ClientModal({ open, onClose, onSuccess }: ClientModalProps) {
+export default function ClientModal({ open, onClose, onSuccess, client }: ClientModalProps) {
+    const { message } = App.useApp();
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
-    const { createClient } = useClientActions();
+    const { createClient, updateClient } = useClientActions();
+
+    const isEditing = !!client;
+
+    useEffect(() => {
+        if (open) {
+            if (client) {
+                form.setFieldsValue(client);
+            } else {
+                form.resetFields();
+            }
+        }
+    }, [open, client, form]);
 
     const handleOk = async () => {
         try {
             const values = await form.validateFields();
             setSubmitting(true);
-            await createClient(values);
-            message.success('Client created successfully');
+            
+            if (isEditing && client) {
+                await updateClient(client.id, values);
+                message.success('Client updated successfully');
+            } else {
+                await createClient(values);
+                message.success('Client created successfully');
+            }
+            
             form.resetFields();
             if (onSuccess) onSuccess();
             onClose();
         } catch (error: any) {
             // Validation errors don't need a message, they show inline
             if (!error.errorFields) {
-                message.error(error.message || 'Failed to create client');
+                message.error(error.message || `Failed to ${isEditing ? 'update' : 'create'} client`);
             }
         } finally {
             setSubmitting(false);
@@ -39,14 +61,23 @@ export default function ClientModal({ open, onClose, onSuccess }: ClientModalPro
 
     return (
         <Modal
-            title="Create New Client"
+            title={isEditing ? 'Edit Client' : 'Create New Client'}
             open={open}
             onOk={handleOk}
             onCancel={handleCancel}
             confirmLoading={submitting}
-            okText="Create Client"
+            okText={isEditing ? 'Save Changes' : 'Create Client'}
         >
             <Form form={form} layout="vertical" name="client_form">
+                {isEditing && (
+                    <Form.Item
+                        name="isActive"
+                        label="Status"
+                        valuePropName="checked"
+                    >
+                        <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
+                    </Form.Item>
+                )}
                 <Form.Item
                     name="name"
                     label="Client Name"

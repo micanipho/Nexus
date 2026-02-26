@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, InputNumber, Select, DatePicker, Switch, message } from 'antd';
+import { Modal, Form, Input, InputNumber, Select, DatePicker, Switch, App } from 'antd';
 import contractService, { CreateContractPayload } from '@/services/contractService';
 import proposalService from '@/services/proposalService';
 import dashboardService from '@/services/dashboardService';
@@ -14,6 +14,7 @@ interface CreateContractModalProps {
 }
 
 export default function CreateContractModal({ open, onClose, onSuccess }: CreateContractModalProps) {
+    const { message } = App.useApp();
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
     const [approvedProposals, setApprovedProposals] = useState<Proposal[]>([]);

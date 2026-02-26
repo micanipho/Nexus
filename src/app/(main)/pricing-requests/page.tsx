@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { Button, Input, Select, Space, Tag, message, Tooltip } from 'antd';
+import dynamic from 'next/dynamic';
+import { Button, Input, Select, Space, Tag, App, Tooltip } from 'antd';
 import { CheckCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { PricingRequest } from '@/types';
@@ -10,8 +11,12 @@ import pricingRequestService, { PricingRequestFilters } from '@/services/pricing
 import dashboardService from '@/services/dashboardService';
 import PageHeader from '@/components/shared/PageHeader';
 import DataTable from '@/components/shared/DataTable';
-import PricingRequestModal from '@/components/pricing/PricingRequestModal';
 import { useHasRole } from '@/hooks/useHasRole';
+
+const PricingRequestModal = dynamic(() => import('@/components/pricing/PricingRequestModal'), { 
+    ssr: false,
+    loading: () => null
+});
 
 const priorityLabels: Record<number, { label: string; color: string }> = {
     1: { label: 'Low', color: 'green' },
@@ -27,6 +32,7 @@ const statusLabels: Record<number, { label: string; color: string }> = {
 };
 
 export default function PricingRequestsPage() {
+    const { message } = App.useApp();
     const [requests, setRequests] = useState<PricingRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [totalCount, setTotalCount] = useState(0);
@@ -38,6 +44,8 @@ export default function PricingRequestsPage() {
     });
 
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER, UserRole.SALES_REP]);
+    const { hasRole: canAssign } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
+    const { hasRole: canComplete } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
 
     const fetchRequests = useCallback(async () => {
         setLoading(true);
@@ -152,7 +160,7 @@ export default function PricingRequestsPage() {
                     showSearch
                     optionFilterProp="label"
                     options={salesReps.map(rep => ({ value: rep.userId, label: rep.userName }))}
-                    disabled={record.status === 3}
+                    disabled={record.status === 3 || !canAssign}
                 />
             ),
         },
@@ -168,7 +176,7 @@ export default function PricingRequestsPage() {
             key: 'actions',
             width: 90,
             render: (_, record) => (
-                record.status === 2 ? (
+                record.status === 2 && canComplete ? (
                     <Tooltip title="Mark as Completed">
                         <Button
                             type="primary"
