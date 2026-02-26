@@ -110,3 +110,20 @@ export interface Contact {
   position?: string;
   isPrimaryContact: boolean;
 }
+
+export interface PricingRequest {
+  id: string;
+  requestNumber: string;
+  opportunityId: string;
+  opportunityTitle?: string;
+  title: string;
+  description?: string;
+  priority: number;
+  status: PricingRequestStatus;
+  statusName: string;
+  assignedToId?: string;
+  assignedToName?: string;
+  requiredByDate: string;
+  completedDate?: string;
+  createdAt: string;
+}
