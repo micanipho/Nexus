@@ -25,8 +25,8 @@ export default function LoginPage() {
       await login(values.email, values.password);
       message.success('Login successful!');
       router.push('/dashboard');
-    } catch (err) {
-      message.error('Login failed. Please check your credentials.');
+    } catch (err: any) {
+      message.error(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -49,7 +49,7 @@ export default function LoginPage() {
           <Text type="secondary" className={styles.subtitle}>Enterprise Sales Automation</Text>
         </div>
 
-        {error && <Alert message={error} type="error" showIcon className={styles.errorAlert} />}
+        {error && <Alert description={error} type="error" showIcon className={styles.errorAlert} />}
 
         <Form
           name="login"

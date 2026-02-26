@@ -21,6 +21,20 @@ api.interceptors.request.use(
   }
 );
 
+// Keywords that indicate a cross-tenant access violation in API error messages
+const CROSS_TENANT_KEYWORDS = ['tenant', 'organization', 'cross-tenant', 'not found'];
+
+function isCrossTenantResponse(error: AxiosError): boolean {
+  const status = error.response?.status;
+  if (status !== 403 && status !== 404) return false;
+
+  const data = error.response?.data as Record<string, unknown> | undefined;
+  const message = (data?.message ?? data?.error ?? '') as string;
+  return CROSS_TENANT_KEYWORDS.some((kw) =>
+    message.toLowerCase().includes(kw),
+  );
+}
+
 // Response Interceptor: Handle common errors
 api.interceptors.response.use(
   (response) => response,
@@ -32,6 +46,12 @@ api.interceptors.response.use(
         // window.location.href = '/login';
       }
     }
+
+    // Flag cross-tenant access errors so the UI can handle them gracefully
+    if (isCrossTenantResponse(error)) {
+      (error as AxiosError & { isCrossTenantError: boolean }).isCrossTenantError = true;
+    }
+
     return Promise.reject(error);
   }
 );

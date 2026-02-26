@@ -19,6 +19,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           const result = await authService.login(email, password);
           sessionStorage.setItem("nexus_token", result.token);
           dispatch(actions.authLoginSuccess(result));
+          // Fetch the full user profile to ensure user data is populated
+          const user = await authService.getCurrentUser();
+          dispatch(actions.authSetUser(user));
         } catch (error: any) {
           dispatch(actions.authLoginFailure(error.message || "Login failed"));
           throw error;
