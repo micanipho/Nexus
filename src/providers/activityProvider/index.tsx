@@ -65,6 +65,7 @@ export const ActivityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                     dispatch(actions.createActivitySuccess(response));
                 } catch (error: any) {
                     dispatch(actions.createActivityError(error.response?.data?.message || 'Failed to create activity'));
+                    throw error;
                 }
             },
             updateActivity: async (id: string, data: any) => {

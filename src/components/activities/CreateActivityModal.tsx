@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, Select, DatePicker, InputNumber, App } from 'antd';
 import { useActivityActions } from '@/providers/activityProvider';
-import { ActivityType } from '@/types';
+import { useClients, useClientActions } from '@/providers/clientProvider';
+import { useOpportunities, useOpportunityActions } from '@/providers/opportunityProvider';
+import { useAuth } from '@/providers/authProvider';
+import { ActivityType, Activity } from '@/types';
+import dayjs from 'dayjs';
 
 interface CreateActivityModalProps {
     readonly open: boolean;
@@ -10,6 +14,7 @@ interface CreateActivityModalProps {
     // Optional pre-filled relations if opened from a specific context (like a Client page)
     readonly initialRelatedToType?: number; // 1 for Client, 2 for Opportunity
     readonly initialRelatedToId?: string;
+    readonly activityToEdit?: Activity | null;
 }
 
 export default function CreateActivityModal({ 
@@ -17,12 +22,44 @@ export default function CreateActivityModal({
     onClose, 
     onSuccess,
     initialRelatedToType,
-    initialRelatedToId 
+    initialRelatedToId,
+    activityToEdit
 }: CreateActivityModalProps) {
     const { message } = App.useApp();
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
-    const { createActivity } = useActivityActions();
+    const { createActivity, updateActivity } = useActivityActions();
+    const { clients } = useClients();
+    const { fetchClients } = useClientActions();
+    const { opportunities } = useOpportunities();
+    const { fetchOpportunities } = useOpportunityActions();
+    const { user } = useAuth();
+
+    // Watch for changes to relatedToType to clear relatedToId if type changes
+    const relatedToType = Form.useWatch('relatedToType', form);
+
+    React.useEffect(() => {
+        if (open) {
+            if (relatedToType === 1 && clients.length === 0) {
+                fetchClients({ pageSize: 100 });
+            } else if (relatedToType === 2 && opportunities.length === 0) {
+                fetchOpportunities({ pageSize: 100 });
+            }
+        }
+    }, [open, relatedToType, clients.length, opportunities.length, fetchClients, fetchOpportunities]);
+
+    React.useEffect(() => {
+        if (open) {
+            if (activityToEdit) {
+                form.setFieldsValue({
+                    ...activityToEdit,
+                    dueDate: activityToEdit.dueDate ? dayjs(activityToEdit.dueDate) : undefined,
+                });
+            } else {
+                form.resetFields();
+            }
+        }
+    }, [open, activityToEdit, form]);
 
     const handleOk = async () => {
         try {
@@ -32,14 +69,19 @@ export default function CreateActivityModal({
             const payload = {
                 ...values,
                 dueDate: values.dueDate ? values.dueDate.toISOString() : undefined,
-                assignedToId: sessionStorage.getItem('userId') || '4446e829-4761-4da5-8f38-8c20a778500c',
+                assignedToId: user?.id,
                 relatedToType: initialRelatedToType || values.relatedToType,
                 relatedToId: initialRelatedToId || values.relatedToId,
             };
 
-            await createActivity(payload);
+            if (activityToEdit) {
+                await updateActivity(activityToEdit.id, payload);
+                message.success('Activity updated successfully');
+            } else {
+                await createActivity(payload);
+                message.success('Activity created successfully');
+            }
             
-            message.success('Activity created successfully');
             form.resetFields();
             if (onSuccess) onSuccess();
             onClose();
@@ -59,12 +101,12 @@ export default function CreateActivityModal({
 
     return (
         <Modal
-            title="Log New Activity"
+            title={activityToEdit ? "Edit Activity" : "Log New Activity"}
             open={open}
             onOk={handleOk}
             onCancel={handleCancel}
             confirmLoading={submitting}
-            okText="Create Activity"
+            okText={activityToEdit ? "Save Changes" : "Create Activity"}
             width={500}
         >
             <Form 
@@ -77,6 +119,47 @@ export default function CreateActivityModal({
                     duration: 30 
                 }}
             >
+                {!initialRelatedToType && !initialRelatedToId && !activityToEdit && (
+                    <div style={{ display: 'flex', gap: '16px' }}>
+                        <Form.Item
+                            name="relatedToType"
+                            label="Related To"
+                            style={{ flex: 1 }}
+                        >
+                            <Select 
+                                allowClear
+                                placeholder="Select entity type"
+                                onChange={() => form.setFieldValue('relatedToId', undefined)}
+                                options={[
+                                    { value: 1, label: 'Client' },
+                                    { value: 2, label: 'Opportunity' }
+                                ]}
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="relatedToId"
+                            label="Specific Record"
+                            style={{ flex: 2 }}
+                        >
+                            <Select
+                                allowClear
+                                showSearch
+                                placeholder={relatedToType ? "Select the record..." : "Select type first..."}
+                                disabled={!relatedToType}
+                                optionFilterProp="label"
+                                options={
+                                    relatedToType === 1 
+                                        ? clients.map(c => ({ value: c.id, label: c.name }))
+                                        : relatedToType === 2
+                                            ? opportunities.map(o => ({ value: o.id, label: o.title }))
+                                            : []
+                                }
+                            />
+                        </Form.Item>
+                    </div>
+                )}
+
                 <div style={{ display: 'flex', gap: '16px' }}>
                     <Form.Item
                         name="type"

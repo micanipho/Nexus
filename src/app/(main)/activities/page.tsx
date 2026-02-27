@@ -18,6 +18,11 @@ const CompleteActivityModal = dynamic(() => import('@/components/activities/Comp
     ssr: false,
     loading: () => null
 });
+
+const ViewActivityModal = dynamic(() => import('@/components/activities/ViewActivityModal'), { 
+    ssr: false,
+    loading: () => null
+});
 import { 
     ClockCircleOutlined, 
     CheckCircleOutlined, 
@@ -28,7 +33,8 @@ import {
     VideoCameraOutlined,
     DownOutlined,
     ProjectOutlined,
-    PlusOutlined
+    PlusOutlined,
+    EditOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
@@ -42,6 +48,12 @@ export default function ActivitiesPage() {
     // Complete Modal State
     const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
     const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+
+    // Edit Modal State (reusing Create Modal)
+    const [activityToEdit, setActivityToEdit] = useState<Activity | null>(null);
+
+    // View Modal State
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER, UserRole.SALES_REP]);
 
@@ -72,6 +84,16 @@ export default function ActivitiesPage() {
         setIsCompleteModalOpen(true);
     };
 
+    const openViewModal = (activity: Activity) => {
+        setSelectedActivity(activity);
+        setIsViewModalOpen(true);
+    };
+
+    const openEditModal = (activity: Activity) => {
+        setActivityToEdit(activity);
+        setIsCreateModalOpen(true);
+    };
+
     const handleCancelActivity = async (id: string) => {
         await cancelActivity(id);
         loadData();
@@ -96,7 +118,7 @@ export default function ActivitiesPage() {
             render: (text: string, record: Activity) => (
                 <Space>
                     {renderTypeIcon(record.type)}
-                    <span style={{ fontWeight: 500 }}>{text}</span>
+                    <a onClick={() => openViewModal(record)} style={{ fontWeight: 500 }}>{text}</a>
                 </Space>
             )
         },
@@ -139,24 +161,41 @@ export default function ActivitiesPage() {
             title: 'Actions',
             key: 'actions',
             render: (_: any, record: Activity) => {
-                if (record.statusName !== 'Scheduled') return <span style={{ color: '#aaa' }}>Closed</span>;
+                const isClosed = record.statusName !== 'Scheduled';
                 
                 return (
                     <Dropdown
                         menu={{
                             items: [
                                 {
-                                    key: 'complete',
-                                    icon: <CheckCircleOutlined style={{ color: 'green' }} />,
-                                    label: 'Mark Complete',
-                                    onClick: () => openCompleteModal(record),
+                                    key: 'view',
+                                    label: 'View Details',
+                                    onClick: () => openViewModal(record),
                                 },
                                 {
-                                    key: 'cancel',
-                                    icon: <CloseCircleOutlined style={{ color: 'red' }} />,
-                                    label: 'Cancel Activity',
-                                    onClick: () => handleCancelActivity(record.id),
-                                }
+                                    key: 'divider',
+                                    type: 'divider',
+                                },
+                                ...(isClosed ? [] : [
+                                    {
+                                        key: 'edit',
+                                        icon: <EditOutlined style={{ color: 'blue' }} />,
+                                        label: 'Edit Activity',
+                                        onClick: () => openEditModal(record),
+                                    },
+                                    {
+                                        key: 'complete',
+                                        icon: <CheckCircleOutlined style={{ color: 'green' }} />,
+                                        label: 'Mark Complete',
+                                        onClick: () => openCompleteModal(record),
+                                    },
+                                    {
+                                        key: 'cancel',
+                                        icon: <CloseCircleOutlined style={{ color: 'red' }} />,
+                                        label: 'Cancel Activity',
+                                        onClick: () => handleCancelActivity(record.id),
+                                    }
+                                ])
                             ]
                         }}
                     >
@@ -190,7 +229,10 @@ export default function ActivitiesPage() {
                         type="primary" 
                         shape="circle" 
                         icon={<PlusOutlined />} 
-                        onClick={() => setIsCreateModalOpen(true)} 
+                        onClick={() => {
+                            setActivityToEdit(null);
+                            setIsCreateModalOpen(true);
+                        }} 
                         disabled={!canCreate} 
                     />
                 }
@@ -198,7 +240,10 @@ export default function ActivitiesPage() {
                     <Button 
                         className="desktop-action-btn"
                         type="primary" 
-                        onClick={() => setIsCreateModalOpen(true)}
+                        onClick={() => {
+                            setActivityToEdit(null);
+                            setIsCreateModalOpen(true);
+                        }}
                         disabled={!canCreate}
                     >
                         Log Activity
@@ -243,7 +288,11 @@ export default function ActivitiesPage() {
 
             <CreateActivityModal 
                 open={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
+                activityToEdit={activityToEdit}
+                onClose={() => {
+                    setIsCreateModalOpen(false);
+                    setTimeout(() => setActivityToEdit(null), 300); // clear after animation
+                }}
                 onSuccess={handleCreateSuccess}
             />
 
@@ -252,6 +301,12 @@ export default function ActivitiesPage() {
                 onClose={() => setIsCompleteModalOpen(false)}
                 activity={selectedActivity}
                 onSuccess={handleCompleteSuccess}
+            />
+
+            <ViewActivityModal
+                open={isViewModalOpen}
+                onClose={() => setIsViewModalOpen(false)}
+                activity={selectedActivity}
             />
         </div>
     );
