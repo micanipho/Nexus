@@ -3,20 +3,20 @@ import { createStyles } from 'antd-style';
 const useStyles = createStyles(({ token, css }) => ({
   layout: css`
     min-height: 100vh;
+    background: #f0f2f5;
   `,
   mainSection: css`
-    margin-left: 200px;
-    transition: margin-left 0.2s;
-    
-    @media (max-width: 768px) {
-      margin-left: 0;
-    }
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding-top: 100px; /* Room for floating Navbar */
   `,
   content: css`
-    margin: 24px 16px;
-    padding: 24px;
-    min-height: 280px;
-    background: ${token.colorBgContainer};
+    margin: 0 auto;
+    width: 100%;
+    max-width: 1400px;
+    padding: 0 24px 24px 24px;
+    min-height: calc(100vh - 100px);
     border-radius: ${token.borderRadiusLG}px;
   `,
 }));

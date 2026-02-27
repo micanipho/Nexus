@@ -22,7 +22,7 @@ import dashboardService, {
 import { useHasRole } from '@/hooks/useHasRole';
 import { UserRole } from '@/types';
 import CreateRenewalModal from '@/components/contracts/CreateRenewalModal';
-import { Button, Tabs, List, Tag } from 'antd';
+import { Button, Tabs, Tag } from 'antd';
 import { useActivities, useActivityActions } from '@/providers/activityProvider';
 import dayjs from 'dayjs';
 
@@ -101,7 +101,7 @@ export default function DashboardPage() {
   }, [canViewSalesPerf, isRoleLoading]);
 
   const breadcrumbs = [
-    { title: 'Nexus', href: '/' },
+    { title: 'Nexus', href: '/dashboard' },
     { title: 'Dashboard' }
   ];
 
@@ -304,39 +304,39 @@ export default function DashboardPage() {
                   key: 'upcoming',
                   label: 'Upcoming',
                   children: (
-                    <List
-                      dataSource={upcomingActivities.slice(0, 5)}
-                      size="small"
-                      renderItem={item => (
-                        <List.Item>
-                          <List.Item.Meta
-                            title={item.subject}
-                            description={dayjs(item.dueDate).format('MMM D, HH:mm')}
-                          />
-                        </List.Item>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '8px' }}>
+                      {upcomingActivities.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '16px 0', color: '#ccc' }}>No upcoming activities</div>
+                      ) : (
+                        upcomingActivities.slice(0, 5).map(item => (
+                          <div key={item.id} style={{ display: 'flex', flexDirection: 'column', borderBottom: '1px solid #f0f0f0', paddingBottom: '8px' }}>
+                            <Text strong>{item.subject}</Text>
+                            <Text type="secondary" style={{ fontSize: '13px' }}>{dayjs(item.dueDate).format('MMM D, HH:mm')}</Text>
+                          </div>
+                        ))
                       )}
-                      locale={{ emptyText: 'No upcoming activities' }}
-                    />
+                    </div>
                   )
                 },
                 {
                   key: 'overdue',
                   label: <span style={{ color: 'red' }}>Overdue</span>,
                   children: (
-                    <List
-                      dataSource={overdueActivities.slice(0, 5)}
-                      size="small"
-                      renderItem={item => (
-                        <List.Item>
-                          <List.Item.Meta
-                            title={<span style={{ color: 'red' }}>{item.subject}</span>}
-                            description={dayjs(item.dueDate).format('MMM D, HH:mm')}
-                          />
-                          <Tag color="red">Overdue</Tag>
-                        </List.Item>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '8px' }}>
+                      {overdueActivities.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '16px 0', color: '#ccc' }}>No overdue activities!</div>
+                      ) : (
+                        overdueActivities.slice(0, 5).map(item => (
+                          <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #f0f0f0', paddingBottom: '8px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <Text strong style={{ color: 'red' }}>{item.subject}</Text>
+                              <Text type="secondary" style={{ fontSize: '13px' }}>{dayjs(item.dueDate).format('MMM D, HH:mm')}</Text>
+                            </div>
+                            <Tag color="red">Overdue</Tag>
+                          </div>
+                        ))
                       )}
-                      locale={{ emptyText: 'No overdue activities!' }}
-                    />
+                    </div>
                   )
                 }
               ]}

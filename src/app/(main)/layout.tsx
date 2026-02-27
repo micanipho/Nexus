@@ -3,8 +3,7 @@
 import React, { useEffect } from 'react';
 import { Layout, Spin } from 'antd';
 import { useRouter } from 'next/navigation';
-import Sidebar from '@/components/layout/Sidebar';
-import Topbar from '@/components/layout/Topbar';
+import Navbar from '@/components/layout/Navbar';
 import { useAuth } from '../../providers/authProvider';
 import useStyles from './style/layout.style';
 
@@ -18,7 +17,6 @@ export default function MainLayout({
   const { styles } = useStyles();
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -40,12 +38,8 @@ export default function MainLayout({
 
   return (
     <Layout className={styles.layout}>
-      <Sidebar 
-          mobileOpen={mobileMenuOpen} 
-          onMobileClose={() => setMobileMenuOpen(false)} 
-      />
+      <Navbar />
       <Layout className={styles.mainSection}>
-        <Topbar onMenuClick={() => setMobileMenuOpen(true)} />
         <Content className={styles.content}>
           {children}
         </Content>

@@ -222,7 +222,7 @@ export default function ContractsPage() {
     );
 
     const breadcrumbs = [
-        { title: 'Nexus', href: '/' },
+        { title: 'Nexus', href: '/dashboard' },
         { title: 'Contracts' }
     ];
 
