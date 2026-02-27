@@ -41,9 +41,9 @@ export default function CreateActivityModal({
     React.useEffect(() => {
         if (open) {
             if (relatedToType === 1 && clients.length === 0) {
-                fetchClients({ pageSize: 100 });
+                fetchClients({ pageNumber: 1, pageSize: 100 });
             } else if (relatedToType === 2 && opportunities.length === 0) {
-                fetchOpportunities({ pageSize: 100 });
+                fetchOpportunities({ pageNumber: 1, pageSize: 100 });
             }
         }
     }, [open, relatedToType, clients.length, opportunities.length, fetchClients, fetchOpportunities]);
