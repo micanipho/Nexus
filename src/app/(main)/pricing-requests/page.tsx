@@ -234,7 +234,7 @@ export default function PricingRequestsPage() {
     );
 
     const breadcrumbs = [
-        { title: 'Nexus', href: '/' },
+        { title: 'Nexus', href: '/dashboard' },
         { title: 'Pricing Requests' },
     ];
 

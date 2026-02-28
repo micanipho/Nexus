@@ -220,7 +220,7 @@ export default function ActivitiesPage() {
             <PageHeader 
                 title="Activities" 
                 breadcrumbs={[
-                    { title: 'Nexus', href: '/' },
+                    { title: 'Nexus', href: '/dashboard' },
                     { title: 'Activities' }
                 ]}
                 action={

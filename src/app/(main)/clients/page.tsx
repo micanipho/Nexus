@@ -174,7 +174,7 @@ export default function ClientsPage() {
     );
 
     const breadcrumbs = [
-        { title: 'Nexus', href: '/' },
+        { title: 'Nexus', href: '/dashboard' },
         { title: 'Clients' }
     ];
 

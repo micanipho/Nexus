@@ -211,7 +211,7 @@ export default function OpportunitiesPage() {
     );
 
     const breadcrumbs = [
-        { title: 'Nexus', href: '/' },
+        { title: 'Nexus', href: '/dashboard' },
         { title: 'Opportunities' }
     ];
 

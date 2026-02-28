@@ -43,7 +43,7 @@ api.interceptors.response.use(
       // Logic for handling unauthorized access (e.g., redirect to login)
       if (typeof window !== 'undefined') {
         sessionStorage.removeItem('nexus_token');
-        // window.location.href = '/login';
+        window.location.href = '/login';
       }
     }
 

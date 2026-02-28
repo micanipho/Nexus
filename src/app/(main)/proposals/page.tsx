@@ -196,7 +196,7 @@ export default function ProposalsPage() {
     );
 
     const breadcrumbs = [
-        { title: 'Nexus', href: '/' },
+        { title: 'Nexus', href: '/dashboard' },
         { title: 'Proposals' }
     ];
 
