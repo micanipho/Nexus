@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Menu, Dropdown, Button, Space, Avatar, Tooltip, App, Drawer, Switch } from 'antd';
+import { Menu, Dropdown, Button, Avatar, App, Drawer, Switch } from 'antd';
 import {
   DashboardOutlined,
   TeamOutlined,
   SolutionOutlined,
   FileProtectOutlined,
   FileTextOutlined,
-  AccountBookOutlined,
   HistoryOutlined,
   LogoutOutlined,
   CopyOutlined,
@@ -24,14 +23,15 @@ import useStyles from './style/Navbar.style';
 import { useAuth, useAuthActions } from '../../providers/authProvider';
 import { UserRole } from '../../types';
 import { useThemeMode } from '../../providers/themeProvider';
+import InviteModal from '../shared/InviteModal';
 
 type MenuItem = Required<MenuProps>['items'][number] & {
   roles?: UserRole[];
 };
 
 const Navbar: React.FC = () => {
-  const pathname = usePathname();
   const router = useRouter();
+  const pathname = usePathname();
   const { styles } = useStyles();
   const { user } = useAuth();
   const authActions = useAuthActions();
@@ -39,12 +39,13 @@ const Navbar: React.FC = () => {
   const { isDarkMode, toggleDarkMode } = useThemeMode();
   
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = React.useState(false);
 
   const allMenuItems: MenuItem[] = [
     { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
     { key: '/clients', icon: <TeamOutlined />, label: 'Clients' },
-    { key: '/opportunities', icon: <SolutionOutlined />, label: 'Pipeline' },
-    { key: '/pricing-requests', icon: <AccountBookOutlined />, label: 'Pricing' },
+    { key: '/opportunities', icon: <SolutionOutlined />, label: 'Opportunities' },
+    { key: '/pricing-requests', icon: <SolutionOutlined />, label: 'Pricing Requests' },
     { key: '/proposals', icon: <FileTextOutlined />, label: 'Proposals' },
     { key: '/contracts', icon: <FileProtectOutlined />, label: 'Contracts' },
     { key: '/activities', icon: <HistoryOutlined />, label: 'Activities' },
@@ -77,6 +78,14 @@ const Navbar: React.FC = () => {
       label: 'Copy Workspace ID',
       onClick: copyTenantId,
     },
+    ...(user?.roles?.some(role => role === UserRole.ADMIN || role === UserRole.SALES_MANAGER) ? [
+      {
+        key: 'invite',
+        icon: <TeamOutlined />,
+        label: 'Invite Team Member',
+        onClick: () => setInviteModalOpen(true),
+      }
+    ] : []),
     { type: 'divider' },
     {
       key: 'logout',
@@ -163,6 +172,11 @@ const Navbar: React.FC = () => {
             style={{ borderRight: 'none', paddingTop: '16px' }}
          />
       </Drawer>
+
+      <InviteModal 
+        open={inviteModalOpen} 
+        onClose={() => setInviteModalOpen(false)} 
+      />
     </>
   );
 };
