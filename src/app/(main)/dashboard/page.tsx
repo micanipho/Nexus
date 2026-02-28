@@ -22,7 +22,12 @@ import dashboardService, {
 import { useHasRole } from '@/hooks/useHasRole';
 import { UserRole } from '@/types';
 import CreateRenewalModal from '@/components/contracts/CreateRenewalModal';
-import { Button, Tabs, Tag } from 'antd';
+import { Button, Tabs, Tag, Segmented, InputNumber, Space } from 'antd';
+import dynamic from 'next/dynamic';
+
+const Line = dynamic(() => import('@ant-design/plots').then((mod) => mod.Line), { ssr: false });
+const Column = dynamic(() => import('@ant-design/plots').then((mod) => mod.Column), { ssr: false });
+const Pie = dynamic(() => import('@ant-design/plots').then((mod) => mod.Pie), { ssr: false });
 import { useActivities, useActivityActions } from '@/providers/activityProvider';
 import dayjs from 'dayjs';
 
@@ -54,6 +59,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [timeRange, setTimeRange] = useState<string>('This Year');
+  const [yAxisMax, setYAxisMax] = useState<number | null>(null);
   const [renewalModalOpen, setRenewalModalOpen] = useState(false);
   const [selectedContract, setSelectedContract] = useState<{ id: string; clientName: string; clientId: string } | null>(null);
 
@@ -118,6 +125,8 @@ export default function DashboardPage() {
 
   const formatCurrency = (value: number) => {
     if (!value) return 'R0';
+    if (value >= 1000000000000) return `R${(value / 1000000000000).toFixed(1)}T`;
+    if (value >= 1000000000) return `R${(value / 1000000000).toFixed(1)}B`;
     if (value >= 1000000) return `R${(value / 1000000).toFixed(1)}M`;
     if (value >= 1000) return `R${(value / 1000).toFixed(1)}K`;
     return `R${value.toLocaleString()}`;
@@ -162,6 +171,31 @@ export default function DashboardPage() {
     { title: 'Value', dataIndex: 'totalValue', key: 'totalValue', render: (val: number) => formatCurrency(val) }
   ];
 
+  // Chart Data Mapping
+  const allTrendData = overview?.revenue?.monthlyTrend?.flatMap(d => [
+    { month: d.monthName, type: 'Actual', value: d.actual },
+    { month: d.monthName, type: 'Projected', value: d.projected },
+  ]) || [];
+
+  // Filter based on Segmented control (assuming backend returned more than a year; otherwise this demonstrates the modern interactive capability)
+  const currentYear = new Date().getFullYear();
+  const currentMonthName = dayjs().format('MMMM');
+
+  let areaData = allTrendData;
+  if (timeRange === 'This Year') {
+      areaData = allTrendData.filter(d => d.month.includes(currentYear.toString()));
+  } else if (timeRange === 'This Month') {
+      areaData = allTrendData.filter(d => d.month.includes(currentYear.toString()) && d.month.includes(currentMonthName));
+  }
+
+  // Fallback if filtering removes all data (e.g., mock data doesn't have the current year appended yet)
+  const finalAreaData = areaData.length > 0 ? areaData : allTrendData;
+
+  const funnelData = pipeline?.stages.map(s => ({ stage: s.stageName, value: s.count })) || [];
+  const pieData = Object.entries(activities?.byType || {})
+    .filter(([_, value]) => (value as number) > 0)
+    .map(([type, value]) => ({ type, value }));
+
   return (
     <div style={{ paddingBottom: '24px' }}>
       <PageHeader title="Executive Overview" breadcrumbs={breadcrumbs} />
@@ -199,6 +233,54 @@ export default function DashboardPage() {
             prefix={<FileDoneOutlined />} 
             trend={-2} 
           />
+        </Col>
+      </Row>
+
+      {/* Revenue Trend Chart */}
+      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+        <Col span={24}>
+          <Card 
+            title="Revenue Trend" 
+            className="shadow-sm"
+            extra={
+              <Space>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                   <Text type="secondary" style={{ fontSize: '13px' }}>Y-Max:</Text>
+                   <InputNumber 
+                      size="small" 
+                      placeholder="Auto" 
+                      value={yAxisMax} 
+                      onChange={val => setYAxisMax(val)} 
+                      style={{ width: 100 }}
+                      formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                   />
+                </div>
+                <Segmented 
+                  options={['This Month', 'This Year', 'All Time']} 
+                  value={timeRange} 
+                  onChange={(value) => setTimeRange(value as string)}
+                />
+              </Space>
+            }
+          >
+            {finalAreaData.length > 0 ? (
+              <Line
+                data={finalAreaData}
+                xField="month"
+                yField="value"
+                colorField="type"
+                shapeField="smooth"
+                point={{ shapeField: 'circle', sizeField: 4 }}
+                height={300}
+                legend={{ color: { position: 'top' }, itemMarker: 'circle' }}
+                scale={{ y: { nice: true, zero: false, ...(yAxisMax ? { max: yAxisMax } : {}) } }}
+                axis={{ y: { labelFormatter: (v: any) => formatCurrency(Number(v)) } }}
+                interaction={{ tooltip: { crosshairs: true, marker: true } }}
+              />
+            ) : (
+               <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>No revenue data available</div>
+            )}
+          </Card>
         </Col>
       </Row>
 
@@ -244,14 +326,23 @@ export default function DashboardPage() {
                 <Statistic title="Weighted Pipeline" value={formatCurrency(pipeline?.weightedPipelineValue || 0)} />
               </Col>
             </Row>
-            <Table 
-              dataSource={pipeline?.stages || []} 
-              columns={stageColumns} 
-              rowKey="stage" 
-              pagination={false} 
-              size="small"
-              scroll={{ x: 'max-content' }}
-            />
+            {funnelData.length > 0 ? (
+               <Column 
+                  data={funnelData}
+                  xField="stage"
+                  yField="value"
+                  colorField="stage"
+                  height={250}
+                  label={{ 
+                    position: 'top',
+                    text: (d: any) => d.value === 0 ? '' : String(d.value)
+                  }}
+                  legend={false}
+                  interaction={{ tooltip: { marker: true }, elementHighlight: true }}
+               />
+            ) : (
+               <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>No pipeline data available</div>
+            )}
           </Card>
         </Col>
 
@@ -298,6 +389,26 @@ export default function DashboardPage() {
                         </div>
                       </Col>
                     </Row>
+                  )
+                },
+                {
+                  key: 'distribution',
+                  label: 'Distribution',
+                  children: (
+                    pieData.length > 0 ? (
+                      <Pie 
+                        data={pieData}
+                        angleField="value"
+                        colorField="type"
+                        radius={0.8}
+                        innerRadius={0.5}
+                        height={250}
+                        label={{ text: 'value', style: { fontWeight: 'bold' } }}
+                        legend={{ color: { position: 'bottom' } }}
+                      />
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>No activities data</div>
+                    )
                   )
                 },
                 {

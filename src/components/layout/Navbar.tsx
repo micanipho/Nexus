@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Menu, Dropdown, Button, Space, Avatar, Tooltip, App, Drawer } from 'antd';
+import { Menu, Dropdown, Button, Space, Avatar, Tooltip, App, Drawer, Switch } from 'antd';
 import {
   DashboardOutlined,
   TeamOutlined,
@@ -13,7 +13,9 @@ import {
   LogoutOutlined,
   CopyOutlined,
   UserOutlined,
-  MenuOutlined
+  MenuOutlined,
+  SunOutlined,
+  MoonOutlined
 } from '@ant-design/icons';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -21,6 +23,7 @@ import type { MenuProps } from 'antd';
 import useStyles from './style/Navbar.style';
 import { useAuth, useAuthActions } from '../../providers/authProvider';
 import { UserRole } from '../../types';
+import { useThemeMode } from '../../providers/themeProvider';
 
 type MenuItem = Required<MenuProps>['items'][number] & {
   roles?: UserRole[];
@@ -33,6 +36,7 @@ const Navbar: React.FC = () => {
   const { user } = useAuth();
   const authActions = useAuthActions();
   const { message } = App.useApp();
+  const { isDarkMode, toggleDarkMode } = useThemeMode();
   
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
@@ -113,6 +117,15 @@ const Navbar: React.FC = () => {
             </div>
           </div>
           
+          <Button 
+            type="text" 
+            shape="circle" 
+            size="large"
+            onClick={toggleDarkMode}
+            icon={isDarkMode ? <SunOutlined style={{ fontSize: '18px', color: '#FAAD14' }} /> : <MoonOutlined style={{ fontSize: '18px', color: '#8c8c8c' }} />}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          />
+
           <Dropdown menu={{ items: userDropdownItems }} trigger={['click']} placement="bottomRight">
             <Avatar 
                 size="large" 
