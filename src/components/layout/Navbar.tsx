@@ -14,7 +14,9 @@ import {
   UserOutlined,
   MenuOutlined,
   SunOutlined,
-  MoonOutlined
+  MoonOutlined,
+  SearchOutlined,
+  BarChartOutlined
 } from '@ant-design/icons';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -29,7 +31,11 @@ type MenuItem = Required<MenuProps>['items'][number] & {
   roles?: UserRole[];
 };
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+  onOpenSearch?: () => void;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { styles } = useStyles();
@@ -50,6 +56,7 @@ const Navbar: React.FC = () => {
     { key: '/proposals', icon: <FileTextOutlined />, label: 'Proposals' },
     { key: '/contracts', icon: <FileProtectOutlined />, label: 'Contracts' },
     { key: '/activities', icon: <HistoryOutlined />, label: 'Activities' },
+    { key: '/reports', icon: <BarChartOutlined />, label: 'Reports' },
   ];
 
   const menuItems = useMemo(() => {
@@ -120,13 +127,15 @@ const Navbar: React.FC = () => {
         </div>
 
         <div className={styles.rightSection}>
-          <div className={styles.desktopOnly}>
-            <div className={styles.userInfo}>
-              <span className="tenant-name">{user?.tenantName || 'Workspace'}</span>
-              <span className="user-name">{user ? `${user.firstName} ${user.lastName}` : 'Guest User'}</span>
-            </div>
-          </div>
-          
+          <Button 
+            type="text" 
+            shape="circle" 
+            size="large"
+            onClick={onOpenSearch}
+            icon={<SearchOutlined style={{ fontSize: '18px' }} />}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          />
+
           <Button 
             type="text" 
             shape="circle" 
