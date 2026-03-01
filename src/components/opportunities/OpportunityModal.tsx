@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Select, InputNumber, DatePicker, App } from 'antd';
+import dayjs from 'dayjs';
 import { useOpportunityActions } from '@/providers/opportunityProvider';
 import clientService from '@/services/clientService';
-import { Client, OpportunityStage } from '@/types';
+import { Client, OpportunityStage, Opportunity } from '@/types';
 
 interface OpportunityModalProps {
     readonly open: boolean;
     readonly onClose: () => void;
     readonly onSuccess?: () => void;
+    readonly opportunity?: Opportunity;
 }
 
-export default function OpportunityModal({ open, onClose, onSuccess }: OpportunityModalProps) {
+export default function OpportunityModal({ open, onClose, onSuccess, opportunity }: OpportunityModalProps) {
     const { message } = App.useApp();
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
@@ -18,13 +20,21 @@ export default function OpportunityModal({ open, onClose, onSuccess }: Opportuni
     const [loadingClients, setLoadingClients] = useState(false);
     
     // We are getting this from our Provider instead of service directly so it updates the global state correctly
-    const { createOpportunity, fetchOpportunities } = useOpportunityActions();
+    const { createOpportunity, updateOpportunity, fetchOpportunities } = useOpportunityActions();
 
     useEffect(() => {
         if (open) {
             loadClients();
+            if (opportunity) {
+                form.setFieldsValue({
+                    ...opportunity,
+                    expectedCloseDate: opportunity.expectedCloseDate ? dayjs(opportunity.expectedCloseDate) : undefined
+                });
+            } else {
+                form.resetFields();
+            }
         }
-    }, [open]);
+    }, [open, opportunity, form]);
 
     const loadClients = async () => {
         setLoadingClients(true);
@@ -48,10 +58,14 @@ export default function OpportunityModal({ open, onClose, onSuccess }: Opportuni
             const payload = {
                 ...values,
                 expectedCloseDate: values.expectedCloseDate ? values.expectedCloseDate.toISOString() : undefined,
-                ownerId: sessionStorage.getItem('userId') || '4446e829-4761-4da5-8f38-8c20a778500c' // Fallback to Admin from ROLES.md if local storage is missing
+                ownerId: opportunity?.ownerId || sessionStorage.getItem('userId') || '4446e829-4761-4da5-8f38-8c20a778500c' // Fallback to Admin from ROLES.md if local storage is missing
             };
 
-            await createOpportunity(payload);
+            if (opportunity) {
+                await updateOpportunity(opportunity.id, payload);
+            } else {
+                await createOpportunity(payload);
+            }
             
             message.success('Opportunity created successfully');
             form.resetFields();
@@ -78,12 +92,12 @@ export default function OpportunityModal({ open, onClose, onSuccess }: Opportuni
 
     return (
         <Modal
-            title="Create New Opportunity"
+            title={opportunity ? "Edit Opportunity" : "Create New Opportunity"}
             open={open}
             onOk={handleOk}
             onCancel={handleCancel}
             confirmLoading={submitting}
-            okText="Create Opportunity"
+            okText={opportunity ? "Save Changes" : "Create Opportunity"}
             width={600}
         >
             <Form form={form} layout="vertical" name="opportunity_form" initialValues={{ probability: 50, currency: 'ZAR', source: 1 }}>

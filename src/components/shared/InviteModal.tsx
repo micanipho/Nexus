@@ -25,7 +25,12 @@ const InviteModal: React.FC<InviteModalProps> = ({ open, onClose }) => {
     if (!user?.tenantId) return '';
     // Use the live URL rather than window.location.origin for emails
     const baseUrl = 'https://nexus-alpha-gules.vercel.app'; 
-    return `${baseUrl}/register?tenantId=${user.tenantId}&role=${role}`;
+    
+    // Create a JSON string with the sensitive data and encode it to Base64
+    const payload = JSON.stringify({ tenantId: user.tenantId, role });
+    const encodedPayload = btoa(payload);
+    
+    return `${baseUrl}/register?invite=${encodedPayload}`;
   };
 
   const handleCopyLink = async () => {
@@ -91,7 +96,7 @@ const InviteModal: React.FC<InviteModalProps> = ({ open, onClose }) => {
       open={open}
       onCancel={onClose}
       footer={null}
-      destroyOnClose
+      destroyOnHidden
     >
       <div style={{ marginBottom: '24px', marginTop: '16px' }}>
         <Text type="secondary">
