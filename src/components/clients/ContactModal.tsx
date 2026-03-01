@@ -1,36 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Checkbox, App } from 'antd';
 import contactService from '@/services/contactService';
+import { Contact } from '@/types';
 
 interface ContactModalProps {
     readonly open: boolean;
     readonly onClose: () => void;
     readonly clientId: string;
     readonly onSuccess?: () => void;
+    readonly isFirstContact?: boolean;
+    readonly contact?: Contact | null;
 }
 
-export default function ContactModal({ open, onClose, clientId, onSuccess }: ContactModalProps) {
+export default function ContactModal({ open, onClose, clientId, onSuccess, isFirstContact, contact }: ContactModalProps) {
     const { message } = App.useApp();
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
+    const isEdit = !!contact;
+
+    useEffect(() => {
+        if (open) {
+            if (contact) {
+                form.setFieldsValue({
+                    firstName: contact.firstName,
+                    lastName: contact.lastName,
+                    email: contact.email,
+                    phoneNumber: contact.phoneNumber,
+                    position: contact.position,
+                    isPrimaryContact: contact.isPrimaryContact,
+                });
+            } else {
+                form.resetFields();
+            }
+        }
+    }, [open, contact, form]);
 
     const handleOk = async () => {
         try {
             const values = await form.validateFields();
             setSubmitting(true);
-            
-            await contactService.createContact({
-                ...values,
-                clientId: clientId
-            });
-            
-            message.success('Contact added successfully');
+
+            if (isEdit) {
+                await contactService.updateContact(contact.id, {
+                    ...values,
+                    clientId,
+                });
+                message.success('Contact updated successfully');
+            } else {
+                await contactService.createContact({
+                    ...values,
+                    clientId,
+                });
+                message.success('Contact added successfully');
+            }
+
             form.resetFields();
             if (onSuccess) onSuccess();
             onClose();
         } catch (error: any) {
             if (!error.errorFields) {
-                message.error(error.message || 'Failed to add contact');
+                message.error(error.message || (isEdit ? 'Failed to update contact' : 'Failed to add contact'));
             }
         } finally {
             setSubmitting(false);
@@ -44,14 +73,14 @@ export default function ContactModal({ open, onClose, clientId, onSuccess }: Con
 
     return (
         <Modal
-            title="Add New Contact"
+            title={isEdit ? 'Edit Contact' : 'Add New Contact'}
             open={open}
             onOk={handleOk}
             onCancel={handleCancel}
             confirmLoading={submitting}
-            okText="Add Contact"
+            okText={isEdit ? 'Save Changes' : 'Add Contact'}
         >
-            <Form form={form} layout="vertical" name="contact_form" initialValues={{ isPrimaryContact: false }}>
+            <Form form={form} layout="vertical" name="contact_form" initialValues={{ isPrimaryContact: isFirstContact || false }}>
                 <Form.Item
                     name="firstName"
                     label="First Name"

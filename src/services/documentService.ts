@@ -10,6 +10,7 @@ export interface DocumentInfo {
     relatedToId: string;
     tenantId: string;
     uploadedBy: string;
+    uploadedByName?: string;
     uploadedAt: string;
     fileSize: number;
 }

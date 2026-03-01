@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
     Card, Typography, Tag, Button, Space, Tabs, Select, message,
     Descriptions, Statistic, Table, Row, Col, Skeleton, App, Popconfirm
@@ -14,6 +15,7 @@ import {
     CheckCircleOutlined
 } from '@ant-design/icons';
 import { Client, Contact, Opportunity, UserRole, Activity, ActivityType } from '@/types';
+import { theme as antdTheme } from 'antd';
 import { OpportunityStage } from '@/types/enums';
 import opportunityService from '@/services/opportunityService';
 import clientService from '@/services/clientService';
@@ -25,9 +27,11 @@ import ContactModal from '@/components/clients/ContactModal';
 import OpportunityModal from '@/components/opportunities/OpportunityModal';
 import CreateActivityModal from '@/components/activities/CreateActivityModal';
 import CompleteActivityModal from '@/components/activities/CompleteActivityModal';
+import ViewActivityModal from '@/components/activities/ViewActivityModal';
 import { useHasRole } from '@/hooks/useHasRole';
 import { useActivityActions } from '@/providers/activityProvider';
 import { useClientActions } from '@/providers/clientProvider';
+import { formatCurrency } from '@/utils/currencyUtils';
 import dayjs from 'dayjs';
 
 const { Text } = Typography;
@@ -36,21 +40,24 @@ export default function ClientDetailPage() {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
     const { message } = App.useApp();
+    const { token } = antdTheme.useToken();
     const [client, setClient] = useState<Client | null>(null);
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
     const [activities, setActivities] = useState<Activity[]>([]);
     const [loading, setLoading] = useState(true);
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+    const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [isOpportunityModalOpen, setIsOpportunityModalOpen] = useState(false);
     const [isClientModalOpen, setIsClientModalOpen] = useState(false);
     
     // Activities Modals State
     const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
     const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
     const { completeActivity, cancelActivity } = useActivityActions();
-    const { deleteClient } = useClientActions();
+    const { deactivateClient } = useClientActions();
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
     const { hasRole: canDelete } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
     const { hasRole: canCreateActivity } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER, UserRole.SALES_REP]);
@@ -88,11 +95,40 @@ export default function ClientDetailPage() {
     const handleDelete = async () => {
         if (!id) return;
         try {
-            await deleteClient(id);
-            message.success('Client deleted successfully');
+            await deactivateClient(id);
+            message.success('Client deactivated successfully');
             router.push('/clients');
         } catch {
-            message.error('Failed to delete client');
+            message.error('Failed to deactivate client');
+        }
+    };
+
+    const handleDeleteContact = async (contactId: string, wasPrimary: boolean) => {
+        try {
+            await contactService.deleteContact(contactId);
+            message.success('Contact deleted');
+
+            // If deleted contact was primary, promote the first remaining contact
+            if (wasPrimary) {
+                const remaining = contacts.filter(c => c.id !== contactId);
+                if (remaining.length > 0) {
+                    await contactService.setPrimaryContact(remaining[0].id);
+                }
+            }
+
+            fetchClientAndContacts();
+        } catch {
+            message.error('Failed to delete contact');
+        }
+    };
+
+    const handleSetPrimary = async (contactId: string) => {
+        try {
+            await contactService.setPrimaryContact(contactId);
+            message.success('Primary contact updated');
+            fetchClientAndContacts();
+        } catch {
+            message.error('Failed to set primary contact');
         }
     };
 
@@ -138,14 +174,14 @@ export default function ClientDetailPage() {
         <Space size="middle">
             {canDelete && client.isActive && (
                 <Popconfirm
-                    title="Delete Client"
-                    description="Are you sure you want to delete this client? This action cannot be undone."
+                    title="Deactivate Client"
+                    description="Are you sure you want to deactivate this client?"
                     onConfirm={handleDelete}
-                    okText="Yes, Delete"
+                    okText="Yes, Deactivate"
                     cancelText="No"
                     okButtonProps={{ danger: true }}
                 >
-                    <Button danger icon={<DeleteOutlined />}>Delete</Button>
+                    <Button danger icon={<DeleteOutlined />}>Deactivate</Button>
                 </Popconfirm>
             )}
             {canDelete && !client.isActive && (
@@ -153,7 +189,7 @@ export default function ClientDetailPage() {
                     type="primary" 
                     icon={<CheckCircleOutlined />} 
                     onClick={handleReactivate}
-                    style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                    style={{ backgroundColor: token.colorSuccess, borderColor: token.colorSuccess }}
                 >
                     Reactivate
                 </Button>
@@ -208,7 +244,6 @@ export default function ClientDetailPage() {
                                             {client.isActive ? 'Active' : 'Inactive'}
                                         </Tag>
                                     </Descriptions.Item>
-                                    <Descriptions.Item label="Client Since">Jan 2024</Descriptions.Item>
                                 </Descriptions>
                             ),
                         },
@@ -223,15 +258,34 @@ export default function ClientDetailPage() {
                                         rowKey="id"
                                         dataSource={contacts}
                                         columns={[
-                                            { title: 'Name', key: 'name', render: (_, r) => <Text strong>{r.firstName} {r.lastName} {r.isPrimaryContact && <Tag color="blue" style={{marginLeft: 8}}>Primary</Tag>}</Text> },
+                                            { title: 'Name', key: 'name', render: (_: any, r: Contact) => <Text strong>{r.firstName} {r.lastName} {r.isPrimaryContact && <Tag color="blue" style={{marginLeft: 8}}>Primary</Tag>}</Text> },
                                             { title: 'Role', dataIndex: 'position', key: 'position' },
                                             { title: 'Email', dataIndex: 'email', key: 'email' },
-                                            { title: 'Actions', key: 'actions', render: () => <Button size="small" type="link">Contact</Button> }
+                                            { title: 'Actions', key: 'actions', render: (_: any, record: Contact) => (
+                                                <Space size="small">
+                                                    <Button size="small" type="text" icon={<EditOutlined />} onClick={() => { setSelectedContact(record); setIsContactModalOpen(true); }} />
+                                                    {!record.isPrimaryContact && (
+                                                        <Button size="small" type="link" onClick={() => handleSetPrimary(record.id)}>
+                                                            Set Primary
+                                                        </Button>
+                                                    )}
+                                                    <Popconfirm
+                                                        title="Delete this contact?"
+                                                        description={record.isPrimaryContact ? 'This is the primary contact. Another contact will be set as primary automatically.' : undefined}
+                                                        onConfirm={() => handleDeleteContact(record.id, record.isPrimaryContact)}
+                                                        okText="Yes"
+                                                        cancelText="No"
+                                                        okButtonProps={{ danger: true }}
+                                                    >
+                                                        <Button size="small" type="text" danger icon={<DeleteOutlined />} />
+                                                    </Popconfirm>
+                                                </Space>
+                                            )}
                                         ]}
                                         scroll={{ x: 'max-content' }}
                                     />
                                     <div style={{ marginTop: 16 }}>
-                                        <Button type="dashed" block icon={<PlusOutlined />} onClick={() => setIsContactModalOpen(true)}>
+                                        <Button type="dashed" block icon={<PlusOutlined />} onClick={() => { setSelectedContact(null); setIsContactModalOpen(true); }}>
                                             Add New Contact
                                         </Button>
                                     </div>
@@ -247,7 +301,12 @@ export default function ClientDetailPage() {
                                     rowKey="id"
                                     dataSource={opportunities}
                                     columns={[
-                                        { title: 'Opportunity', dataIndex: 'title', key: 'title' },
+                                        { 
+                                            title: 'Opportunity', 
+                                            dataIndex: 'title', 
+                                            key: 'title',
+                                            render: (text: string, record: Opportunity) => <Link href={`/opportunities/${record.id}`}>{text}</Link>
+                                        },
                                         { title: 'Stage', dataIndex: 'stage', key: 'stage',
                                             render: (stage: OpportunityStage, record: Opportunity) => (
                                                 canCreate ? (
@@ -270,7 +329,7 @@ export default function ClientDetailPage() {
                                                 )
                                             ),
                                         },
-                                        { title: 'Value', dataIndex: 'estimatedValue', key: 'estimatedValue', render: (v: number) => `R${v?.toLocaleString()}` },
+                                        { title: 'Value', dataIndex: 'estimatedValue', key: 'estimatedValue', render: (v: number) => formatCurrency(v) },
                                         { title: 'Probability', dataIndex: 'probability', key: 'probability', render: (p: number) => `${p}%` },
                                     ]}
                                     locale={{ emptyText: 'No opportunities yet. Click "New Opportunity" to create one.' }}
@@ -288,7 +347,14 @@ export default function ClientDetailPage() {
                                         rowKey="id"
                                         dataSource={activities}
                                         columns={[
-                                            { title: 'Subject', dataIndex: 'subject', key: 'subject', render: (text) => <Text strong>{text}</Text> },
+                                            { 
+                                                title: 'Subject', 
+                                                dataIndex: 'subject', 
+                                                key: 'subject', 
+                                                render: (text: string, record: Activity) => (
+                                                    <a onClick={() => { setSelectedActivity(record); setIsViewModalOpen(true); }} style={{ fontWeight: 500 }}>{text}</a>
+                                                ) 
+                                            },
                                             { 
                                                 title: 'Due Date', 
                                                 dataIndex: 'dueDate', 
@@ -313,7 +379,7 @@ export default function ClientDetailPage() {
                                                 title: 'Actions',
                                                 key: 'actions',
                                                 render: (_: any, record: Activity) => {
-                                                    if (record.statusName !== 'Scheduled') return <span style={{ color: '#aaa' }}>Closed</span>;
+                                                    if (record.statusName !== 'Scheduled') return <span style={{ color: token.colorTextDisabled }}>Closed</span>;
                                                     return (
                                                         <Space>
                                                             <Button type="link" size="small" onClick={() => { setSelectedActivity(record); setIsCompleteModalOpen(true); }}>Complete</Button>
@@ -345,11 +411,13 @@ export default function ClientDetailPage() {
                 onSuccess={fetchClientAndContacts}
             />
 
-            <ContactModal 
-                open={isContactModalOpen} 
-                onClose={() => setIsContactModalOpen(false)} 
-                clientId={id} 
-                onSuccess={fetchClientAndContacts} 
+            <ContactModal
+                open={isContactModalOpen}
+                onClose={() => { setIsContactModalOpen(false); setSelectedContact(null); }}
+                clientId={id}
+                onSuccess={fetchClientAndContacts}
+                isFirstContact={contacts.length === 0}
+                contact={selectedContact}
             />
 
             <OpportunityModal
@@ -371,6 +439,12 @@ export default function ClientDetailPage() {
                 onClose={() => setIsCompleteModalOpen(false)}
                 activity={selectedActivity}
                 onSuccess={fetchClientAndContacts}
+            />
+
+            <ViewActivityModal
+                open={isViewModalOpen}
+                onClose={() => setIsViewModalOpen(false)}
+                activity={selectedActivity}
             />
         </Space>
     );

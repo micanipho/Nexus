@@ -57,13 +57,13 @@ export const OpportunityProvider: React.FC<{ children: React.ReactNode }> = ({ c
                     dispatch(actions.updateOpportunityError(error.response?.data?.message || 'Failed to update opportunity'));
                 }
             },
-            deleteOpportunity: async (id: string) => {
-                dispatch(actions.deleteOpportunityPending());
+            deactivateOpportunity: async (id: string) => {
+                dispatch(actions.deactivateOpportunityPending());
                 try {
-                    await opportunityService.deleteOpportunity(id);
-                    dispatch(actions.deleteOpportunitySuccess(id));
+                    await opportunityService.deactivateOpportunity(id);
+                    dispatch(actions.deactivateOpportunitySuccess(id));
                 } catch (error: any) {
-                    dispatch(actions.deleteOpportunityError(error.response?.data?.message || 'Failed to delete opportunity'));
+                    dispatch(actions.deactivateOpportunityError(error.response?.data?.message || 'Failed to deactivate opportunity'));
                 }
             },
             fetchPipelineMetrics: async (ownerId?: string) => {

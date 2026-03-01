@@ -13,6 +13,7 @@ import {
     DownloadOutlined, EyeOutlined, SaveOutlined, UndoOutlined
 } from '@ant-design/icons';
 import { Proposal, ProposalLineItem, ProposalStatus, UserRole } from '@/types';
+import { theme as antdTheme } from 'antd';
 import { useHasRole } from '@/hooks/useHasRole';
 import { useCrossTenantError } from '@/hooks/useCrossTenantError';
 import proposalService from '@/services/proposalService';
@@ -23,6 +24,7 @@ import StatusBadge from '@/components/shared/StatusBadge';
 import NoteModal from '@/components/notes/NoteModal';
 import DocumentUploadModal from '@/components/documents/DocumentUploadModal';
 import CrossTenantError from '@/components/errors/CrossTenantError';
+import { formatCurrency, formatCurrencyDetailed } from '@/utils/currencyUtils';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import Link from 'next/link';
@@ -57,6 +59,7 @@ function calcLineTotal(qty: number, unitPrice: number, discount: number, taxRate
 export default function ProposalDetailPage() {
     const { id } = useParams<{ id: string }>();
     const { message } = App.useApp();
+    const { token } = antdTheme.useToken();
     const { isCrossTenantError, execute, reset: resetError } = useCrossTenantError();
 
     const [proposal, setProposal] = useState<Proposal | null>(null);
@@ -311,7 +314,7 @@ export default function ProposalDetailPage() {
                     <input
                         value={editingValues[field] as string}
                         onChange={(e) => setEditingValues({ ...editingValues, [field]: e.target.value })}
-                        style={{ width: '100%', padding: '4px 8px', border: '1px solid #d9d9d9', borderRadius: 4 }}
+                        style={{ width: '100%', padding: '4px 8px', border: `1px solid ${token.colorBorder}`, borderRadius: 4 }}
                     />
                 );
             }
@@ -339,7 +342,7 @@ export default function ProposalDetailPage() {
                     value={newItemValues[field] as string}
                     onChange={(e) => setNewItemValues({ ...newItemValues, [field]: e.target.value })}
                     placeholder={field === 'productServiceName' ? 'Product/Service name' : 'Description'}
-                    style={{ width: '100%', padding: '4px 8px', border: '1px solid #d9d9d9', borderRadius: 4 }}
+                    style={{ width: '100%', padding: '4px 8px', border: `1px solid ${token.colorBorder}`, borderRadius: 4 }}
                 />
             );
         }
@@ -531,7 +534,6 @@ export default function ProposalDetailPage() {
                     <Descriptions.Item label="Opportunity">
                         <Link href={`/opportunities/${proposal.opportunityId}`}>{proposal.opportunityTitle}</Link>
                     </Descriptions.Item>
-                    <Descriptions.Item label="Currency">{proposal.currency || 'ZAR'}</Descriptions.Item>
                     <Descriptions.Item label="Valid Until">
                         {proposal.validUntil ? dayjs(proposal.validUntil).format('MMM D, YYYY') : 'Not set'}
                     </Descriptions.Item>
@@ -540,7 +542,7 @@ export default function ProposalDetailPage() {
                     </Descriptions.Item>
                     <Descriptions.Item label="Total Amount" span={3}>
                         <Text strong style={{ fontSize: 16 }}>
-                            {`${proposal.currency || 'ZAR'} ${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                            {formatCurrencyDetailed(grandTotal)}
                         </Text>
                     </Descriptions.Item>
                     {proposal.description && (
@@ -577,7 +579,7 @@ export default function ProposalDetailPage() {
                                                     </Table.Summary.Cell>
                                                     <Table.Summary.Cell index={1}>
                                                         <Text strong style={{ fontSize: 15 }}>
-                                                            {`${proposal.currency || 'ZAR'} ${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                            {formatCurrencyDetailed(grandTotal)}
                                                         </Text>
                                                     </Table.Summary.Cell>
                                                     {isDraft && canEdit && <Table.Summary.Cell index={2} />}
@@ -627,9 +629,9 @@ export default function ProposalDetailPage() {
                                         </Button>
                                     </div>
                                     {notes.length > 0 ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column', background: '#fafafa', borderRadius: 8, padding: '0 16px' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', background: token.colorBgLayout, borderRadius: 8, padding: '0 16px' }}>
                                             {notes.map((note: any, index: number) => (
-                                                <div key={note.id || index} style={{ padding: '12px 0', borderBottom: index === notes.length - 1 ? 'none' : '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div key={note.id || index} style={{ padding: '12px 0', borderBottom: index === notes.length - 1 ? 'none' : `1px solid ${token.colorBorderSecondary}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <div style={{ flex: 1, overflow: 'hidden', marginRight: 16 }}>
                                                         <Text strong style={{ display: 'block' }}>
                                                             {note.content || note.text}
@@ -688,9 +690,9 @@ export default function ProposalDetailPage() {
                                         </Button>
                                     </div>
                                     {documents.length > 0 ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column', background: '#fafafa', borderRadius: 8, padding: '0 16px' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', background: token.colorBgLayout, borderRadius: 8, padding: '0 16px' }}>
                                             {documents.map((doc: any, index: number) => (
-                                                <div key={doc.id || index} style={{ padding: '12px 0', borderBottom: index === documents.length - 1 ? 'none' : '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div key={doc.id || index} style={{ padding: '12px 0', borderBottom: index === documents.length - 1 ? 'none' : `1px solid ${token.colorBorderSecondary}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <Text>{doc.fileName || doc.name || 'Unnamed Document'}</Text>
                                                     <Space>
                                                         <Button

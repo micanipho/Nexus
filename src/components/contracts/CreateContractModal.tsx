@@ -66,7 +66,7 @@ export default function CreateContractModal({ open, onClose, onSuccess }: Create
                 proposalId: values.proposalId,
                 title: values.title,
                 contractValue: values.contractValue,
-                currency: values.currency || 'ZAR',
+                currency: 'ZAR',
                 startDate: values.startDate.toISOString(),
                 endDate: values.endDate.toISOString(),
                 ownerId: values.ownerId,
@@ -105,7 +105,7 @@ export default function CreateContractModal({ open, onClose, onSuccess }: Create
             okText="Create Contract"
             width={640}
         >
-            <Form form={form} layout="vertical" name="create_contract_form" initialValues={{ currency: 'ZAR', renewalNoticePeriod: 60, autoRenew: false }}>
+            <Form form={form} layout="vertical" name="create_contract_form" initialValues={{ renewalNoticePeriod: 60, autoRenew: false }}>
                 <Form.Item
                     name="proposalId"
                     label="Approved Proposal"
@@ -141,25 +141,13 @@ export default function CreateContractModal({ open, onClose, onSuccess }: Create
                         name="contractValue"
                         label="Contract Value"
                         rules={[{ required: true, message: 'Please enter the contract value' }]}
-                        style={{ flex: 2 }}
+                        style={{ flex: 1 }}
                     >
                         <InputNumber
                             style={{ width: '100%' }}
                             min={0}
                             addonBefore="R"
                         />
-                    </Form.Item>
-                    <Form.Item
-                        name="currency"
-                        label="Currency"
-                        style={{ flex: 1 }}
-                    >
-                        <Select options={[
-                            { value: 'ZAR', label: 'ZAR' },
-                            { value: 'USD', label: 'USD' },
-                            { value: 'EUR', label: 'EUR' },
-                            { value: 'GBP', label: 'GBP' },
-                        ]} />
                     </Form.Item>
                 </div>
 

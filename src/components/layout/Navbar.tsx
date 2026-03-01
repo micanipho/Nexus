@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Menu, Dropdown, Button, Avatar, App, Drawer, Switch } from 'antd';
+import { Menu, Dropdown, Button, Avatar, App, Drawer, Switch, theme } from 'antd';
 import {
   DashboardOutlined,
   TeamOutlined,
@@ -33,6 +33,7 @@ const Navbar: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { styles } = useStyles();
+  const { token } = theme.useToken();
   const { user } = useAuth();
   const authActions = useAuthActions();
   const { message } = App.useApp();
@@ -139,7 +140,7 @@ const Navbar: React.FC = () => {
             <Avatar 
                 size="large" 
                 icon={<UserOutlined />} 
-                style={{ cursor: 'pointer', backgroundColor: '#1890ff' }} 
+                style={{ cursor: 'pointer', backgroundColor: token.colorPrimary }}
             />
           </Dropdown>
 

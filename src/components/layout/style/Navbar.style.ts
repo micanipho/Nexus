@@ -80,7 +80,7 @@ const useStyles = createStyles(({ token, css }) => ({
       transition: all 0.2s;
 
       &:hover, &.ant-menu-item-active {
-        background: rgba(0, 0, 0, 0.04) !important;
+        background: ${token.colorFillTertiary} !important;
         color: ${token.colorPrimary} !important;
       }
 

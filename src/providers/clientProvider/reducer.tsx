@@ -66,18 +66,18 @@ export const clientReducer = handleActions<ClientState, any>(
             isPending: false,
             error: payload.error,
         }),
-        [ClientActionEnums.DeleteClientPending]: (state) => ({
+        [ClientActionEnums.DeactivateClientPending]: (state) => ({
             ...state,
             isPending: true,
             error: null,
         }),
-        [ClientActionEnums.DeleteClientSuccess]: (state, { payload }) => ({
+        [ClientActionEnums.DeactivateClientSuccess]: (state, { payload }) => ({
             ...state,
             isPending: false,
             clients: state.clients.filter((c) => c.id !== payload.id),
             selectedClient: state.selectedClient?.id === payload.id ? null : state.selectedClient,
         }),
-        [ClientActionEnums.DeleteClientError]: (state, { payload }) => ({
+        [ClientActionEnums.DeactivateClientError]: (state, { payload }) => ({
             ...state,
             isPending: false,
             error: payload.error,

@@ -15,9 +15,9 @@ export enum OpportunityActionEnums {
     UpdateOpportunityPending = 'UPDATE_OPPORTUNITY_PENDING',
     UpdateOpportunitySuccess = 'UPDATE_OPPORTUNITY_SUCCESS',
     UpdateOpportunityError = 'UPDATE_OPPORTUNITY_ERROR',
-    DeleteOpportunityPending = 'DELETE_OPPORTUNITY_PENDING',
-    DeleteOpportunitySuccess = 'DELETE_OPPORTUNITY_SUCCESS',
-    DeleteOpportunityError = 'DELETE_OPPORTUNITY_ERROR',
+    DeactivateOpportunityPending = 'DEACTIVATE_OPPORTUNITY_PENDING',
+    DeactivateOpportunitySuccess = 'DEACTIVATE_OPPORTUNITY_SUCCESS',
+    DeactivateOpportunityError = 'DEACTIVATE_OPPORTUNITY_ERROR',
     FetchPipelineMetricsPending = 'FETCH_PIPELINE_METRICS_PENDING',
     FetchPipelineMetricsSuccess = 'FETCH_PIPELINE_METRICS_SUCCESS',
     FetchPipelineMetricsError = 'FETCH_PIPELINE_METRICS_ERROR',
@@ -44,9 +44,9 @@ export const updateOpportunityPending = createAction(OpportunityActionEnums.Upda
 export const updateOpportunitySuccess = createAction(OpportunityActionEnums.UpdateOpportunitySuccess, (opportunity: Opportunity) => ({ opportunity }));
 export const updateOpportunityError = createAction(OpportunityActionEnums.UpdateOpportunityError, (error: string) => ({ error }));
 
-export const deleteOpportunityPending = createAction(OpportunityActionEnums.DeleteOpportunityPending);
-export const deleteOpportunitySuccess = createAction(OpportunityActionEnums.DeleteOpportunitySuccess, (id: string) => ({ id }));
-export const deleteOpportunityError = createAction(OpportunityActionEnums.DeleteOpportunityError, (error: string) => ({ error }));
+export const deactivateOpportunityPending = createAction(OpportunityActionEnums.DeactivateOpportunityPending);
+export const deactivateOpportunitySuccess = createAction(OpportunityActionEnums.DeactivateOpportunitySuccess, (id: string) => ({ id }));
+export const deactivateOpportunityError = createAction(OpportunityActionEnums.DeactivateOpportunityError, (error: string) => ({ error }));
 
 export const fetchPipelineMetricsPending = createAction(OpportunityActionEnums.FetchPipelineMetricsPending);
 export const fetchPipelineMetricsSuccess = createAction(OpportunityActionEnums.FetchPipelineMetricsSuccess, (metrics: PipelineMetrics) => ({ metrics }));

@@ -7,6 +7,7 @@ import { Button, Input, Select, Space, App, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { Contract, ContractStatus, UserRole } from '@/types';
+import { theme as antdTheme } from 'antd';
 import { useContracts, useContractActions } from '@/providers/contractProvider';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
@@ -14,6 +15,7 @@ import StatusBadge from '@/components/shared/StatusBadge';
 import { useHasRole } from '@/hooks/useHasRole';
 import contractService from '@/services/contractService';
 import { ContractRenewal } from '@/types';
+import { formatCurrency } from '@/utils/currencyUtils';
 
 const CreateContractModal = dynamic(() => import('@/components/contracts/CreateContractModal'), { 
     ssr: false,
@@ -27,6 +29,7 @@ const CreateRenewalModal = dynamic(() => import('@/components/contracts/CreateRe
 
 export default function ContractsPage() {
     const { message } = App.useApp();
+    const { token } = antdTheme.useToken();
     const { contracts, isPending, filters, totalCount } = useContracts();
     const { fetchContracts, setFilters, activateContract, cancelContract } = useContractActions();
     const { hasRole: canManage } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
@@ -128,7 +131,7 @@ export default function ContractsPage() {
             title: 'Value',
             dataIndex: 'contractValue',
             key: 'contractValue',
-            render: (v, record) => `${record.currency || 'R'}${(v ?? record.totalValue)?.toLocaleString()}`,
+            render: (v, record) => formatCurrency(v ?? record.totalValue),
             sorter: (a, b) => (a.contractValue ?? a.totalValue) - (b.contractValue ?? b.totalValue),
         },
         {
@@ -254,7 +257,7 @@ export default function ContractsPage() {
                         const items = renewalsByContract[record.id];
 
                         if (loading) return <div>Loading renewals...</div>;
-                        if (!items || items.length === 0) return <div style={{ color: '#888' }}>No renewals found.</div>;
+                        if (!items || items.length === 0) return <div style={{ color: token.colorTextTertiary }}>No renewals found.</div>;
 
                         return (
                             <DataTable<ContractRenewal>

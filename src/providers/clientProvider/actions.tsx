@@ -15,9 +15,9 @@ export enum ClientActionEnums {
     UpdateClientPending = 'UPDATE_CLIENT_PENDING',
     UpdateClientSuccess = 'UPDATE_CLIENT_SUCCESS',
     UpdateClientError = 'UPDATE_CLIENT_ERROR',
-    DeleteClientPending = 'DELETE_CLIENT_PENDING',
-    DeleteClientSuccess = 'DELETE_CLIENT_SUCCESS',
-    DeleteClientError = 'DELETE_CLIENT_ERROR',
+    DeactivateClientPending = 'DEACTIVATE_CLIENT_PENDING',
+    DeactivateClientSuccess = 'DEACTIVATE_CLIENT_SUCCESS',
+    DeactivateClientError = 'DEACTIVATE_CLIENT_ERROR',
     FetchClientStatsPending = 'FETCH_CLIENT_STATS_PENDING',
     FetchClientStatsSuccess = 'FETCH_CLIENT_STATS_SUCCESS',
     FetchClientStatsError = 'FETCH_CLIENT_STATS_ERROR',
@@ -41,9 +41,9 @@ export const updateClientPending = createAction(ClientActionEnums.UpdateClientPe
 export const updateClientSuccess = createAction(ClientActionEnums.UpdateClientSuccess, (client: Client) => ({ client }));
 export const updateClientError = createAction(ClientActionEnums.UpdateClientError, (error: string) => ({ error }));
 
-export const deleteClientPending = createAction(ClientActionEnums.DeleteClientPending);
-export const deleteClientSuccess = createAction(ClientActionEnums.DeleteClientSuccess, (id: string) => ({ id }));
-export const deleteClientError = createAction(ClientActionEnums.DeleteClientError, (error: string) => ({ error }));
+export const deactivateClientPending = createAction(ClientActionEnums.DeactivateClientPending);
+export const deactivateClientSuccess = createAction(ClientActionEnums.DeactivateClientSuccess, (id: string) => ({ id }));
+export const deactivateClientError = createAction(ClientActionEnums.DeactivateClientError, (error: string) => ({ error }));
 
 export const fetchClientStatsPending = createAction(ClientActionEnums.FetchClientStatsPending);
 export const fetchClientStatsSuccess = createAction(ClientActionEnums.FetchClientStatsSuccess, (stats: any) => ({ stats }));

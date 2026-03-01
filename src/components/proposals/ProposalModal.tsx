@@ -1,11 +1,10 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Select, DatePicker, InputNumber, Button, Space, Divider, App } from 'antd';
+import { Modal, Form, Input, Select, DatePicker, InputNumber, Button, Space, Divider, App, theme } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import proposalService, { CreateProposalPayload, CreateLineItemPayload } from '@/services/proposalService';
 import opportunityService from '@/services/opportunityService';
 import { Opportunity } from '@/types';
+import { formatCurrency } from '@/utils/currencyUtils';
 
 interface ProposalModalProps {
     readonly open: boolean;
@@ -25,6 +24,7 @@ const EMPTY_LINE_ITEM: CreateLineItemPayload = {
 
 export default function ProposalModal({ open, onClose, onSuccess, preselectedOpportunityId }: ProposalModalProps) {
     const { message } = App.useApp();
+    const { token } = theme.useToken();
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
@@ -95,7 +95,7 @@ export default function ProposalModal({ open, onClose, onSuccess, preselectedOpp
                 opportunityId: values.opportunityId,
                 title: values.title,
                 description: values.description,
-                currency: values.currency || 'ZAR',
+                currency: 'ZAR',
                 validUntil: values.validUntil.toISOString(),
                 lineItems: validLineItems,
             };
@@ -161,21 +161,6 @@ export default function ProposalModal({ open, onClose, onSuccess, preselectedOpp
 
                 <div style={{ display: 'flex', gap: '16px' }}>
                     <Form.Item
-                        name="currency"
-                        label="Currency"
-                        style={{ width: 120 }}
-                    >
-                        <Select
-                            options={[
-                                { value: 'ZAR', label: 'ZAR' },
-                                { value: 'USD', label: 'USD' },
-                                { value: 'EUR', label: 'EUR' },
-                                { value: 'GBP', label: 'GBP' },
-                            ]}
-                        />
-                    </Form.Item>
-
-                    <Form.Item
                         name="validUntil"
                         label="Valid Until"
                         rules={[{ required: true, message: 'Please select a date' }]}
@@ -188,7 +173,7 @@ export default function ProposalModal({ open, onClose, onSuccess, preselectedOpp
                 <Divider>Line Items</Divider>
 
                 {lineItems.map((item, index) => (
-                    <div key={index} style={{ background: '#fafafa', padding: '12px', borderRadius: 8, marginBottom: 12, border: '1px solid #f0f0f0' }}>
+                    <div key={index} style={{ background: token.colorBgLayout, padding: '12px', borderRadius: 8, marginBottom: 12, border: `1px solid ${token.colorBorderSecondary}` }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                             <strong style={{ fontSize: 13 }}>Item {index + 1}</strong>
                             {lineItems.length > 1 && (
@@ -254,7 +239,7 @@ export default function ProposalModal({ open, onClose, onSuccess, preselectedOpp
                                 addonBefore="Tax"
                             />
                             <div style={{ minWidth: 100, textAlign: 'right', fontWeight: 600, fontSize: 13 }}>
-                                R{calculateLineTotal(item).toLocaleString()}
+                                {formatCurrency(calculateLineTotal(item))}
                             </div>
                         </div>
                     </div>
@@ -270,7 +255,7 @@ export default function ProposalModal({ open, onClose, onSuccess, preselectedOpp
                 </Button>
 
                 <div style={{ textAlign: 'right', fontSize: 16, fontWeight: 700, padding: '8px 0' }}>
-                    Grand Total: R{calculateGrandTotal().toLocaleString()}
+                    Grand Total: {formatCurrency(calculateGrandTotal())}
                 </div>
             </Form>
         </Modal>

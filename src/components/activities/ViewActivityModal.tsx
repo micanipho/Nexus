@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Descriptions, Tag, Space, Typography, Badge } from 'antd';
+import { Modal, Descriptions, Tag, Space, Typography, Badge, theme } from 'antd';
 import { Activity, ActivityType } from '@/types';
 import { useClients } from '@/providers/clientProvider';
 import { useOpportunities } from '@/providers/opportunityProvider';
@@ -26,6 +26,7 @@ interface ViewActivityModalProps {
 }
 
 export default function ViewActivityModal({ open, onClose, activity }: ViewActivityModalProps) {
+    const { token } = theme.useToken();
     const { clients } = useClients();
     const { opportunities } = useOpportunities();
     const { user } = useAuth();
@@ -158,7 +159,7 @@ export default function ViewActivityModal({ open, onClose, activity }: ViewActiv
                         {activity.description && (
                             <div style={{ marginBottom: '16px' }}>
                                 <Text strong>Description & Notes</Text>
-                                <Paragraph style={{ marginTop: '8px', padding: '12px', background: '#f5f5f5', borderRadius: '4px' }}>
+                                <Paragraph style={{ marginTop: '8px', padding: '12px', background: token.colorBgLayout, borderRadius: '4px' }}>
                                     {activity.description}
                                 </Paragraph>
                             </div>
@@ -167,7 +168,7 @@ export default function ViewActivityModal({ open, onClose, activity }: ViewActiv
                         {activity.outcome && (
                             <div>
                                 <Text strong>Outcome / Resolution</Text>
-                                <Paragraph style={{ marginTop: '8px', padding: '12px', background: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: '4px' }}>
+                                <Paragraph style={{ marginTop: '8px', padding: '12px', background: token.colorSuccessBg, border: `1px solid ${token.colorSuccessBorder}`, borderRadius: '4px' }}>
                                     {activity.outcome}
                                 </Paragraph>
                             </div>

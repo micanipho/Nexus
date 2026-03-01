@@ -32,6 +32,18 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode, fontFamily?: s
     setMounted(true);
   }, []);
 
+  // Toggle dark-mode class on documentElement and sync body background
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark-mode');
+      document.body.style.background = '#141414';
+    } else {
+      root.classList.remove('dark-mode');
+      document.body.style.background = '#F7F8FA';
+    }
+  }, [isDarkMode]);
+
   const toggleDarkMode = () => {
     setIsDarkMode((prev) => {
       const newMode = !prev;
@@ -67,11 +79,38 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode, fontFamily?: s
         itemHoverBg: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
       },
       Card: { headerHeight: 52 },
-      Table: { 
+      Table: {
         headerSplitColor: isDarkMode ? '#303030' : '#E5E7EB',
         headerBg: isDarkMode ? '#1f1f1f' : '#fafafa',
       },
       Statistic: { titleFontSize: 12 },
+      Descriptions: {
+        labelBg: isDarkMode ? '#1f1f1f' : '#fafafa',
+      },
+      Modal: {
+        contentBg: isDarkMode ? '#1f1f1f' : '#ffffff',
+        headerBg: isDarkMode ? '#1f1f1f' : '#ffffff',
+      },
+      Input: {
+        activeBg: isDarkMode ? '#141414' : '#ffffff',
+      },
+      Tabs: {
+        inkBarColor: isDarkMode ? '#3399ff' : '#0B3B73',
+        itemSelectedColor: isDarkMode ? '#3399ff' : '#0B3B73',
+        itemHoverColor: isDarkMode ? '#66b3ff' : '#0B3B73',
+      },
+      Alert: {
+        colorInfoBg: isDarkMode ? '#111d2c' : '#e6f4ff',
+        colorSuccessBg: isDarkMode ? '#162312' : '#f6ffed',
+        colorWarningBg: isDarkMode ? '#2b2111' : '#fffbe6',
+        colorErrorBg: isDarkMode ? '#2c1519' : '#fff2f0',
+      },
+      Popover: {
+        colorBgElevated: isDarkMode ? '#1f1f1f' : '#ffffff',
+      },
+      Drawer: {
+        colorBgElevated: isDarkMode ? '#1f1f1f' : '#ffffff',
+      },
     },
     algorithm: isDarkMode ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
   };

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Button, Space, App, Input, Switch, Typography, Popconfirm, Empty, Avatar } from 'antd';
+import { Card, Button, Space, App, Input, Switch, Typography, Popconfirm, Empty, Avatar, theme } from 'antd';
 import { UserOutlined, LockOutlined, EditOutlined, DeleteOutlined, SendOutlined } from '@ant-design/icons';
 import { useAuth } from '@/providers/authProvider';
 import noteService, { Note, CreateNotePayload, UpdateNotePayload } from '@/services/noteService';
@@ -19,6 +19,7 @@ interface NotesPanelProps {
 
 const NotesPanel: React.FC<NotesPanelProps> = ({ relatedToType, relatedToId }) => {
     const { message } = App.useApp();
+    const { token } = theme.useToken();
     const { user } = useAuth();
     const [notes, setNotes] = useState<Note[]>([]);
     const [loading, setLoading] = useState(false);
@@ -122,6 +123,13 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ relatedToType, relatedToId }) =
         return note.createdById === user.id || note.createdById === user.userId;
     };
 
+    const getNoteName = (note: Note) => {
+        if (note.createdByName) return note.createdByName;
+        if (note.createdBy && note.createdBy.length < 50) return note.createdBy;
+        if (isOwner(note) && user) return `${user.firstName} ${user.lastName}`;
+        return 'Unknown User';
+    };
+
     return (
         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             {/* Add Note Form */}
@@ -176,13 +184,13 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ relatedToType, relatedToId }) =
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                                     <Space size={8}>
                                         <Text strong style={{ fontSize: 13 }}>
-                                            {note.createdBy || 'Unknown User'}
+                                            {getNoteName(note)}
                                         </Text>
                                         <Text type="secondary" style={{ fontSize: 11 }}>
                                             {dayjs(note.createdAt).fromNow()}
                                         </Text>
                                         {note.isPrivate && (
-                                            <LockOutlined style={{ fontSize: 11, color: '#1677ff' }} />
+                                            <LockOutlined style={{ fontSize: 11, color: token.colorPrimary }} />
                                         )}
                                     </Space>
                                     <Space size={0}>

@@ -1,15 +1,3 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 html,
 body {
   max-width: 100vw;
@@ -18,8 +6,6 @@ body {
 
 body {
   margin: 0;
-  background: #F7F8FA;
-  color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -35,7 +21,7 @@ a {
   text-decoration: none;
 }
 
-/* Override autofill for Ant Design Inputs */
+/* Override autofill for Ant Design Inputs — light mode (default) */
 .ant-input:-webkit-autofill,
 .ant-input:-webkit-autofill:hover,
 .ant-input:-webkit-autofill:focus,
@@ -45,10 +31,14 @@ a {
   transition: background-color 5000s ease-in-out 0s;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+/* Override autofill for Ant Design Inputs — dark mode */
+.dark-mode .ant-input:-webkit-autofill,
+.dark-mode .ant-input:-webkit-autofill:hover,
+.dark-mode .ant-input:-webkit-autofill:focus,
+.dark-mode .ant-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #141414 inset;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.85);
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 /* Prevent table headers and cells from wrapping text into individual vertical letters on tiny screens */

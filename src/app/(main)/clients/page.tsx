@@ -7,6 +7,7 @@ import { Button, Input, Select, Space, Tag } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { Client, UserRole } from '@/types';
+import { theme as antdTheme } from 'antd';
 import { useClients, useClientActions } from '@/providers/clientProvider';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
@@ -22,8 +23,9 @@ const ClientModal = dynamic(() => import('@/components/clients/ClientModal'), {
 
 export default function ClientsPage() {
     const { message } = App.useApp();
+    const { token } = antdTheme.useToken();
     const { clients, isPending, filters, totalCount } = useClients();
-    const { fetchClients, setFilters, deleteClient } = useClientActions();
+    const { fetchClients, setFilters, deactivateClient } = useClientActions();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
     const { hasRole: canDelete } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
@@ -46,11 +48,11 @@ export default function ClientsPage() {
 
     const handleDelete = async (id: string) => {
         try {
-            await deleteClient(id);
-            message.success('Client deleted successfully');
+            await deactivateClient(id);
+            message.success('Client deactivated successfully');
             fetchClients();
         } catch {
-            message.error('Failed to delete client');
+            message.error('Failed to deactivate client');
         }
     };
 
@@ -109,8 +111,8 @@ export default function ClientsPage() {
                     </Link>
                     {canDelete && record.isActive && (
                         <Popconfirm
-                            title="Delete Client?"
-                            description="Are you sure?"
+                            title="Deactivate Client?"
+                            description="Are you sure you want to deactivate this client?"
                             onConfirm={() => handleDelete(record.id)}
                             okText="Yes"
                             cancelText="No"
@@ -125,7 +127,7 @@ export default function ClientsPage() {
                             type="primary" 
                             icon={<CheckCircleOutlined />} 
                             onClick={() => handleReactivate(record.id, record)}
-                            style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                            style={{ backgroundColor: token.colorSuccess, borderColor: token.colorSuccess }}
                         />
                     )}
                 </Space>
@@ -196,7 +198,8 @@ export default function ClientsPage() {
                     pageSize: filters.pageSize,
                     total: totalCount,
                     onChange: (page) => setFilters({ ...filters, pageNumber: page }),
-                    showTotal: t => `${t} clients`
+                    showTotal: t => `${t} clients`,
+                    showSizeChanger: false
                 }}
             />
             <ClientModal 
