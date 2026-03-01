@@ -30,6 +30,8 @@ export default function ClientsPage() {
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
     const { hasRole: canDelete } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
 
+    useEffect(() => { document.title = 'Clients | Nexus'; }, []);
+
     useEffect(() => {
         fetchClients();
     }, [filters, fetchClients]);

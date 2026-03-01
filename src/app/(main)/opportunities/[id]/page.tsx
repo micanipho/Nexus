@@ -112,6 +112,10 @@ export default function OpportunityDetailPage() {
         fetchAllData();
     }, [fetchAllData]);
 
+    useEffect(() => {
+        document.title = opportunity ? `${opportunity.title} | Nexus` : 'Opportunity | Nexus';
+    }, [opportunity]);
+
     const handleDelete = async () => {
         try {
             await opportunityService.deactivateOpportunity(id);
@@ -214,7 +218,7 @@ export default function OpportunityDetailPage() {
     ];
 
     const extra = (
-        <Space size="middle">
+        <Space size="middle" wrap>
             {canDelete && (
                 <Popconfirm
                     title="Deactivate Opportunity"

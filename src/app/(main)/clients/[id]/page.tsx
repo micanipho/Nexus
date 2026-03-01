@@ -148,6 +148,10 @@ export default function ClientDetailPage() {
         fetchClientAndContacts();
     }, [id, message]);
 
+    useEffect(() => {
+        document.title = client ? `${client.name} | Nexus` : 'Client | Nexus';
+    }, [client]);
+
     if (loading) {
         return (
             <div style={{ padding: '24px' }}>
@@ -171,7 +175,7 @@ export default function ClientDetailPage() {
     ];
 
     const extra = (
-        <Space size="middle">
+        <Space size="middle" wrap>
             {canDelete && client.isActive && (
                 <Popconfirm
                     title="Deactivate Client"

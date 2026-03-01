@@ -27,6 +27,8 @@ export default function ProposalsPage() {
     const { hasRole: canApprove } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
     const [modalOpen, setModalOpen] = useState(false);
 
+    useEffect(() => { document.title = 'Proposals | Nexus'; }, []);
+
     useEffect(() => {
         fetchProposals();
     }, [filters, fetchProposals]);

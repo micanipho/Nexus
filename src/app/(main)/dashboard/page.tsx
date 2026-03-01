@@ -70,6 +70,8 @@ export default function DashboardPage() {
       setRenewalModalOpen(true);
   };
 
+  useEffect(() => { document.title = 'Dashboard | Nexus'; }, []);
+
   useEffect(() => {
     // Wait until roles are fully loaded before fetching
     if (isRoleLoading) return;

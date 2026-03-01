@@ -73,6 +73,10 @@ export default function PricingRequestDetailPage() {
     }, [fetchData]);
 
     useEffect(() => {
+        document.title = request ? `Pricing Request | Nexus` : 'Pricing Request | Nexus';
+    }, [request]);
+
+    useEffect(() => {
         const loadReps = async () => {
             try {
                 const data = await dashboardService.getSalesPerformance(50);

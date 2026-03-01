@@ -40,6 +40,8 @@ export default function ContractsPage() {
     const [renewalsByContract, setRenewalsByContract] = useState<Record<string, ContractRenewal[]>>({});
     const [loadingRenewals, setLoadingRenewals] = useState<Record<string, boolean>>({});
 
+    useEffect(() => { document.title = 'Contracts | Nexus'; }, []);
+
     useEffect(() => {
         fetchContracts();
     }, [filters, fetchContracts]);

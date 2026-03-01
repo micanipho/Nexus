@@ -59,6 +59,8 @@ export default function ActivitiesPage() {
 
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER, UserRole.SALES_REP]);
 
+    useEffect(() => { document.title = 'Activities | Nexus'; }, []);
+
     const loadData = () => {
         if (activeTab === 'my_activities') {
             fetchMyActivities(filters.pageNumber, filters.pageSize);

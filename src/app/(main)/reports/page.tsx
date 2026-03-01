@@ -63,6 +63,8 @@ export default function ReportsPage() {
   const { token } = theme.useToken();
   const { isDarkMode } = useThemeMode();
   
+  useEffect(() => { document.title = 'Reports | Nexus'; }, []);
+
   // Data States
   const [oppMetrics, setOppMetrics] = useState<any>(null);
   const [pipelineData, setPipelineData] = useState<any[]>([]);
@@ -374,13 +376,14 @@ export default function ReportsPage() {
           </Col>
           <Col xs={24} lg={12}>
             <Card title="Top 10 High-Value Deals" className="shadow-sm" style={{ height: '100%' }}>
-              <Table 
-                dataSource={topOpps} 
-                columns={topOppsColumns} 
-                rowKey="id" 
-                pagination={false} 
+              <Table
+                dataSource={topOpps}
+                columns={topOppsColumns}
+                rowKey="id"
+                pagination={false}
                 size="small"
                 loading={loading}
+                scroll={{ x: 'max-content' }}
               />
             </Card>
           </Col>

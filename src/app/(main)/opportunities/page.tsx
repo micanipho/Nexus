@@ -35,6 +35,8 @@ export default function OpportunitiesPage() {
     const { hasRole: isSalesRep } = useHasRole([UserRole.SALES_REP]);
     const { hasRole: canDelete } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
 
+    useEffect(() => { document.title = 'Opportunities | Nexus'; }, []);
+
     useEffect(() => {
         const loadSalesReps = async () => {
             try {

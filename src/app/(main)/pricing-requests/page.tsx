@@ -44,6 +44,8 @@ export default function PricingRequestsPage() {
         pageSize: 10,
     });
 
+    useEffect(() => { document.title = 'Pricing Requests | Nexus'; }, []);
+
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER, UserRole.SALES_REP]);
     const { hasRole: canAssign } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
     const { hasRole: canComplete } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
