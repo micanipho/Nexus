@@ -555,7 +555,6 @@ export default function ContractDetailPage() {
                     contractId={contract.id}
                     clientName={contract.clientName}
                     clientId={contract.clientId}
-                    contract={contract}
                 />
             )}
 
