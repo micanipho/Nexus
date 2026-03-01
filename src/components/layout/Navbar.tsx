@@ -15,7 +15,8 @@ import {
   MenuOutlined,
   SunOutlined,
   MoonOutlined,
-  SearchOutlined
+  SearchOutlined,
+  BarChartOutlined
 } from '@ant-design/icons';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -55,6 +56,7 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
     { key: '/proposals', icon: <FileTextOutlined />, label: 'Proposals' },
     { key: '/contracts', icon: <FileProtectOutlined />, label: 'Contracts' },
     { key: '/activities', icon: <HistoryOutlined />, label: 'Activities' },
+    { key: '/reports', icon: <BarChartOutlined />, label: 'Reports' },
   ];
 
   const menuItems = useMemo(() => {

@@ -323,7 +323,7 @@ export default function SalesAssistant() {
                     </span>
                 }
                 placement="right"
-                width={420}
+                size="default"
                 open={open}
                 onClose={() => setOpen(false)}
                 styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column', height: '100%' } }}

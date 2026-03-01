@@ -234,8 +234,8 @@ export default function DashboardPage() {
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <MetricCard
-            title="Pipeline Value"
-            value={formatCurrency(overview?.opportunities?.pipelineValue || 0)}
+            title="Weighted Pipeline"
+            value={formatCurrency(pipeline?.weightedPipelineValue || 0)}
             prefix={<LineChartOutlined />}
             trend={pipelineTrend}
           />
