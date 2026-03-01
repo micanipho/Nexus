@@ -3,9 +3,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-    Card, Typography, Tag, Button, Space, Tabs, Select,
-    Descriptions, Statistic, Table, Row, Col, Skeleton, App, Popconfirm,
-    Avatar, Tooltip, Empty
+    Card, Typography, Tag, Button, Space, Tabs,
+    Descriptions, Statistic, Table, Row, Col, Skeleton, App, Popconfirm
 } from 'antd';
 import {
     EditOutlined,
@@ -15,10 +14,7 @@ import {
     SendOutlined,
     CloseOutlined,
     FileOutlined,
-    MessageOutlined,
-    DownloadOutlined,
-    UserOutlined,
-    EyeOutlined
+    MessageOutlined
 } from '@ant-design/icons';
 import { Opportunity, UserRole, Activity, Proposal, ProposalStatus } from '@/types';
 import { OpportunityStage } from '@/types/enums';
@@ -27,14 +23,11 @@ import { useCrossTenantError } from '@/hooks/useCrossTenantError';
 import opportunityService, { OpportunityStageHistory } from '@/services/opportunityService';
 import proposalService from '@/services/proposalService';
 import activityService from '@/services/activityService';
-import documentService from '@/services/documentService';
-import noteService, { Note } from '@/services/noteService';
-import api from '@/services/api';
 import PageHeader from '@/components/shared/PageHeader';
 import OpportunityModal from '@/components/opportunities/OpportunityModal';
 import ProposalModal from '@/components/proposals/ProposalModal';
-import NoteModal from '@/components/notes/NoteModal';
-import DocumentUploadModal from '@/components/documents/DocumentUploadModal';
+import DocumentsPanel from '@/components/shared/DocumentsPanel';
+import NotesPanel from '@/components/shared/NotesPanel';
 import CreateActivityModal from '@/components/activities/CreateActivityModal';
 import CompleteActivityModal from '@/components/activities/CompleteActivityModal';
 import CrossTenantError from '@/components/errors/CrossTenantError';
@@ -57,19 +50,13 @@ export default function OpportunityDetailPage() {
     const [stageHistory, setStageHistory] = useState<OpportunityStageHistory[]>([]);
     const [proposals, setProposals] = useState<Proposal[]>([]);
     const [activities, setActivities] = useState<Activity[]>([]);
-    const [documents, setDocuments] = useState<any[]>([]);
-    const [notes, setNotes] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [isOpportunityModalOpen, setIsOpportunityModalOpen] = useState(false);
     const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
     const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
     const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
-    const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
-    const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
     const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-    const [selectedNote, setSelectedNote] = useState<Note | null>(null);
-    const [isNoteReadOnly, setIsNoteReadOnly] = useState(false);
 
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
     const { hasRole: canDelete } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
@@ -85,30 +72,15 @@ export default function OpportunityDetailPage() {
             
             // Only fetch related data if the opportunity exists and wasn't a cross-tenant err
             if (oppData) {
-                const [historyData, propsData, actsData, docsRes, notesRes] = await Promise.all([
+                const [historyData, propsData, actsData] = await Promise.all([
                     opportunityService.getStageHistory(id).catch(() => []),
                     proposalService.getProposals({ opportunityId: id, pageNumber: 1, pageSize: 50 }).catch(() => ({ items: [] })),
                     activityService.getActivities({ relatedToId: id, relatedToType: 2, pageNumber: 1, pageSize: 50 }).catch(() => ({ items: [] })),
-                    documentService.getDocuments({ relatedToId: id, relatedToType: 2 }).catch(() => ({ items: [] })),
-                    noteService.getNotes({ relatedToId: id, relatedToType: 2 }).catch(() => ({ items: [] }))
                 ]);
-                
+
                 setStageHistory(Array.isArray(historyData) ? historyData : []);
                 setProposals(propsData?.items && Array.isArray(propsData.items) ? propsData.items : []);
                 setActivities(actsData?.items && Array.isArray(actsData.items) ? actsData.items : []);
-                
-                // Endpoints might return a paginated wrapper line { items: [...] } or direct arrays or .data wrapped
-                const extractArray = (res: any) => {
-                    if (!res) return [];
-                    if (Array.isArray(res)) return res;
-                    if (res.items && Array.isArray(res.items)) return res.items;
-                    if (res.data && Array.isArray(res.data)) return res.data;
-                    if (res.$values && Array.isArray(res.$values)) return res.$values;
-                    return [];
-                };
-
-                setDocuments(extractArray(docsRes));
-                setNotes(extractArray(notesRes));
             }
             return true;
         });
@@ -438,112 +410,14 @@ export default function OpportunityDetailPage() {
                             key: 'documents',
                             label: (<span><FileOutlined /> Documents</span>),
                             children: (
-                                <>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                                        <Typography.Title level={5} style={{ margin: 0 }}>Attached Documents</Typography.Title>
-                                        {canCreate && (
-                                            <Button size="small" type="primary" onClick={() => setIsDocumentModalOpen(true)}>
-                                                Upload Document
-                                            </Button>
-                                        )}
-                                    </div>
-                                    {documents.length > 0 ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column', background: '#fafafa', borderRadius: 8, padding: '0 16px' }}>
-                                            {documents.map((doc, index) => (
-                                                <div key={index} style={{ padding: '12px 0', borderBottom: index === documents.length - 1 ? 'none' : '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <Text>{doc.fileName || doc.name || 'Unnamed Document'}</Text>
-                                                    <Space>
-                                                        <Button 
-                                                            type="text" 
-                                                            icon={<DownloadOutlined />} 
-                                                            size="small" 
-                                                            onClick={() => documentService.downloadDocument(doc)}
-                                                        />
-                                                        {canDelete && (
-                                                            <Popconfirm
-                                                                title="Delete this document?"
-                                                                onConfirm={async () => {
-                                                                    await documentService.deleteDocument(doc.id);
-                                                                    message.success('Document deleted');
-                                                                    fetchAllData();
-                                                                }}
-                                                                okText="Yes"
-                                                                cancelText="No"
-                                                            >
-                                                                <Button type="text" danger icon={<DeleteOutlined />} size="small" />
-                                                            </Popconfirm>
-                                                        )}
-                                                    </Space>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <Empty description="No documents attached" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                                    )}
-                                </>
+                                <DocumentsPanel relatedToType={2} relatedToId={id} />
                             ),
                         },
                         {
                             key: 'notes',
                             label: (<span><MessageOutlined /> Notes</span>),
                             children: (
-                                <>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                                        <Typography.Title level={5} style={{ margin: 0 }}>Opportunity Notes</Typography.Title>
-                                        {canCreate && (
-                                            <Button size="small" type="primary" onClick={() => setIsNoteModalOpen(true)}>
-                                                Add Note
-                                            </Button>
-                                        )}
-                                    </div>
-                                    {notes.length > 0 ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column', background: '#fafafa', borderRadius: 8, padding: '0 16px' }}>
-                                            {notes.map((note, index) => (
-                                                <div key={index} style={{ padding: '12px 0', borderBottom: index === notes.length - 1 ? 'none' : '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <div style={{ flex: 1, overflow: 'hidden', marginRight: 16 }}>
-                                                        <Text strong ellipsis style={{ display: 'block' }}>
-                                                            {note.content || note.text}
-                                                        </Text>
-                                                        <Space size={4}>
-                                                            <Text type="secondary" style={{ fontSize: 11 }}>
-                                                                {dayjs(note.createdAt).fromNow()}
-                                                            </Text>
-                                                            {note.isPrivate && <Tag color="blue" style={{ fontSize: 10, lineHeight: '14px', height: 16, padding: '0 4px' }}>Private</Tag>}
-                                                        </Space>
-                                                    </div>
-                                                    <Space size={0}>
-                                                        <Button 
-                                                            type="text" 
-                                                            size="small" 
-                                                            icon={<EyeOutlined style={{ fontSize: 14 }} />} 
-                                                            onClick={() => { setSelectedNote(note); setIsNoteReadOnly(true); setIsNoteModalOpen(true); }}
-                                                        />
-                                                        <Button 
-                                                            type="text" 
-                                                            size="small" 
-                                                            icon={<EditOutlined style={{ fontSize: 14 }} />} 
-                                                            onClick={() => { setSelectedNote(note); setIsNoteReadOnly(false); setIsNoteModalOpen(true); }}
-                                                        />
-                                                        {canDelete && (
-                                                            <Popconfirm
-                                                                title="Delete this note?"
-                                                                onConfirm={async () => {
-                                                                    await noteService.deleteNote(note.id);
-                                                                    message.success('Note deleted');
-                                                                    fetchAllData();
-                                                                }}
-                                                            >
-                                                                <Button type="text" size="small" danger icon={<DeleteOutlined style={{ fontSize: 14 }} />} />
-                                                            </Popconfirm>
-                                                        )}
-                                                    </Space>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <Empty description="No notes yet" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                                    )}
-                                </>
+                                <NotesPanel relatedToType={2} relatedToId={id} />
                             ),
                         }
                     ]}
@@ -579,23 +453,6 @@ export default function OpportunityDetailPage() {
                 onSuccess={fetchAllData}
             />
 
-            <NoteModal
-                open={isNoteModalOpen}
-                onClose={() => { setIsNoteModalOpen(false); setSelectedNote(null); setIsNoteReadOnly(false); }}
-                onSuccess={fetchAllData}
-                relatedToType={2} // Opportunity
-                relatedToId={id}
-                note={selectedNote}
-                readOnly={isNoteReadOnly}
-            />
-
-            <DocumentUploadModal
-                open={isDocumentModalOpen}
-                onClose={() => setIsDocumentModalOpen(false)}
-                onSuccess={fetchAllData}
-                relatedToType={2} // Opportunity
-                relatedToId={id}
-            />
         </Space>
     );
 }

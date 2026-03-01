@@ -36,7 +36,7 @@ class DocumentService {
     async uploadDocument(payload: UploadDocumentPayload) {
         const formData = new FormData();
         formData.append('file', payload.file as Blob);
-        formData.append('category', payload.category.toString());
+        formData.append('documentCategory', payload.category.toString());
         formData.append('relatedToType', payload.relatedToType.toString());
         formData.append('relatedToId', payload.relatedToId);
 
