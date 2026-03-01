@@ -180,7 +180,7 @@ export default function ReportsPage() {
       dataIndex: 'title', 
       key: 'title',
       render: (text: string, record: Opportunity) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Text strong>{text}</Text>
           <Text type="secondary" style={{ fontSize: '12px' }}>{record.clientName}</Text>
         </Space>
