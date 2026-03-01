@@ -275,17 +275,20 @@ export default function DashboardPage() {
                 legend={{ 
                   color: { 
                     position: 'top', 
-                    itemLabelFill: '#ffffff' 
+                    itemLabelFill: isDarkMode ? '#ffffff' : '#000000' 
                   }, 
                   itemMarker: 'circle' 
                 }}
                 scale={{ y: { nice: true, zero: false } }}
                 axis={{
-                  x: { labelFill: '#ffffff', tickStroke: token.colorBorder },
+                  x: { 
+                    label: { style: { fill: isDarkMode ? '#ffffff' : '#000000' } },
+                    tickStroke: isDarkMode ? '#ffffff' : '#000000' 
+                  },
                   y: { 
                     labelFormatter: (v: any) => formatCurrency(Number(v)), 
-                    labelFill: '#ffffff', 
-                    tickStroke: token.colorBorder, 
+                    label: { style: { fill: isDarkMode ? '#ffffff' : '#000000' } },
+                    tickStroke: isDarkMode ? '#ffffff' : '#000000', 
                     gridStroke: token.colorBorderSecondary 
                   },
                 }}
@@ -351,11 +354,18 @@ export default function DashboardPage() {
                   label={{
                     position: 'top',
                     text: (d: any) => d.value === 0 ? '' : String(d.value),
-                    fill: '#ffffff',
+                    fill: isDarkMode ? '#ffffff' : '#000000',
                   }}
                   axis={{
-                    x: { labelFill: '#ffffff', tickStroke: token.colorBorder },
-                    y: { labelFill: '#ffffff', tickStroke: token.colorBorder, gridStroke: token.colorBorderSecondary },
+                    x: { 
+                      label: { style: { fill: isDarkMode ? '#ffffff' : '#000000' } }, 
+                      tickStroke: isDarkMode ? '#ffffff' : '#000000' 
+                    },
+                    y: { 
+                      label: { style: { fill: isDarkMode ? '#ffffff' : '#000000' } }, 
+                      tickStroke: isDarkMode ? '#ffffff' : '#000000', 
+                      gridStroke: token.colorBorderSecondary 
+                    },
                   }}
                   legend={false}
                   interaction={{ tooltip: { marker: true }, elementHighlight: true }}
