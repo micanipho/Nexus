@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Menu, Dropdown, Button, Avatar, App, Drawer, Switch, theme } from 'antd';
+import { Menu, Dropdown, Button, Avatar, App, Drawer, Switch, theme, Typography } from 'antd';
 import {
   DashboardOutlined,
   TeamOutlined,
@@ -34,6 +34,8 @@ type MenuItem = Required<MenuProps>['items'][number] & {
 interface NavbarProps {
   onOpenSearch?: () => void;
 }
+
+const { Text } = Typography;
 
 const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
   const router = useRouter();
@@ -72,20 +74,18 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
     }
   };
 
-  const copyTenantId = () => {
-    if (user?.tenantId) {
-      navigator.clipboard.writeText(user.tenantId);
-      message.success('Workspace ID copied to clipboard');
-    }
-  };
-
   const userDropdownItems: MenuProps['items'] = [
     {
-      key: 'tenant',
-      icon: <CopyOutlined />,
-      label: 'Copy Workspace ID',
-      onClick: copyTenantId,
+      key: 'user-header',
+      label: (
+        <div style={{ padding: '4px 8px' }}>
+          <Text strong style={{ display: 'block' }}>{user ? `${user.firstName} ${user.lastName}` : 'Guest User'}</Text>
+          <Text type="secondary" style={{ fontSize: 12 }}>{user?.roles?.[0] || 'User'}</Text>
+        </div>
+      ),
+      disabled: true,
     },
+    { type: 'divider' },
     ...(user?.roles?.some(role => role === UserRole.ADMIN || role === UserRole.SALES_MANAGER) ? [
       {
         key: 'invite',

@@ -81,7 +81,7 @@ export default function LoginPage() {
           </Form.Item>
           
           <div className={styles.footer}>
-            <Space direction="vertical" size={4}>
+            <Space orientation="vertical" size={4}>
               <p className={styles.subtitle}>
                 Don't have an account? <Link href="/register">Create an account</Link>
               </p>

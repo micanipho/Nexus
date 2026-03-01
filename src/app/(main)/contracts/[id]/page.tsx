@@ -250,7 +250,7 @@ export default function ContractDetailPage() {
     );
 
     return (
-        <Space direction="vertical" size={24} style={{ width: '100%' }}>
+        <Space orientation="vertical" size={24} style={{ width: '100%' }}>
             <PageHeader
                 title={contract.title || contract.contractNumber}
                 breadcrumbs={breadcrumbs}

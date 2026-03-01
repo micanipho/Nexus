@@ -204,7 +204,7 @@ export default function ClientDetailPage() {
     );
 
     return (
-        <Space direction="vertical" size={24} style={{ width: '100%' }}>
+        <Space orientation="vertical" size={24} style={{ width: '100%' }}>
             <PageHeader 
                 title={client.name} 
                 breadcrumbs={breadcrumbs}

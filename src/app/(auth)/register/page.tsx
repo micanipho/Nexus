@@ -2,7 +2,7 @@
 
 import React, { useState, Suspense, useEffect } from 'react';
 import { Form, Input, Button, Card, Typography, Alert, App, Space, Row, Col, Segmented, Select } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined, TeamOutlined, BankOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, MailOutlined, TeamOutlined, BankOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useAuthActions, useAuth } from '@/providers/authProvider';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -10,26 +10,12 @@ import Image from 'next/image';
 import useStyles from './style/register.style';
 import { RegisterRequest } from '@/types/auth';
 
-const { Text } = Typography;
-
-type RegistrationMode = 'new-org' | 'join-org' | 'quick-start';
-
-const modeLabels: Record<RegistrationMode, string> = {
-  'new-org': 'New Organisation',
-  'join-org': 'Join Organisation',
-  'quick-start': 'Quick Start',
-};
-
-const roleOptions = [
-  { label: 'Sales Manager', value: 'SalesManager' },
-  { label: 'Business Development Manager', value: 'BusinessDevelopmentManager' },
-  { label: 'Sales Rep', value: 'SalesRep' },
-];
+const { Text, Title } = Typography;
 
 function InnerRegisterPage() {
   const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<RegistrationMode>('new-org');
+  const [mode, setMode] = useState<'new-org' | 'quick-start'>('new-org');
   const { register } = useAuthActions();
   const { error } = useAuth();
   const router = useRouter();
@@ -37,31 +23,44 @@ function InnerRegisterPage() {
   const { styles } = useStyles();
   const [form] = Form.useForm();
   
-  // Track if a magic link is actively overriding the inputs
-  const isMagicLink = !!searchParams.get('tenantId');
+  // Magic link data
+  const [inviteData, setInviteData] = useState<{ tenantId: string, role: string } | null>(null);
 
   useEffect(() => {
+    const invite = searchParams.get('invite');
     const queryTenantId = searchParams.get('tenantId');
     const queryRole = searchParams.get('role');
 
-    if (queryTenantId) {
-      setMode('join-org');
-      form.setFieldsValue({
-        tenantId: queryTenantId,
-        ...(queryRole && { role: queryRole })
-      });
+    if (invite && typeof invite === 'string') {
+      try {
+        const decoded = JSON.parse(atob(invite));
+        setInviteData(decoded);
+        form.setFieldsValue({ tenantId: decoded.tenantId, role: decoded.role });
+      } catch (e) {
+        // Silent error
+      }
+    } else if (queryTenantId) {
+      setInviteData({ tenantId: queryTenantId, role: queryRole || 'SalesRep' });
+      form.setFieldsValue({ tenantId: queryTenantId, role: queryRole || 'SalesRep' });
     }
   }, [searchParams, form]);
 
-  const onFinish = async (values: RegisterRequest & { confirm: string }) => {
+  const isMagicLink = !!inviteData;
+
+  const onFinish = async (values: any) => {
     setLoading(true);
     try {
-      const tenantName = mode === 'new-org' ? values.tenantName : undefined;
-      const tenantId = mode === 'join-org' ? values.tenantId : undefined;
-      let role: string | undefined;
-      if (mode === 'join-org') {
-        role = values.role;
-      } else if (mode === 'quick-start') {
+      let tenantName = undefined;
+      let tenantId = undefined;
+      let role = 'Admin';
+
+      if (isMagicLink) {
+        tenantId = inviteData.tenantId;
+        role = inviteData.role;
+      } else if (mode === 'new-org') {
+        tenantName = values.organisationName;
+        role = 'Admin';
+      } else {
         role = 'SalesRep';
       }
 
@@ -74,29 +73,19 @@ function InnerRegisterPage() {
         tenantId,
         role,
       );
-      message.success('Registration successful!');
+      message.success('Account created successfully!');
       router.push('/dashboard');
     } catch (err: any) {
-      // Registration error is already handled by provider state
+      // Error handled by state
     } finally {
       setLoading(false);
     }
   };
 
-  const handleModeChange = (value: string | number) => {
-    if (isMagicLink) {
-        message.info('You are using an invitation link. Please complete registration to join the organisation.');
-        return; // Prevent changing tabs if they used an invite link
-    }
-    setMode(value as RegistrationMode);
-    form.resetFields(['tenantName', 'tenantId', ...(value !== 'join-org' ? ['role'] : [])]);
-  };
-
-  const subtitleMap: Record<RegistrationMode, string> = {
-    'new-org': 'Create a new organisation',
-    'join-org': 'Join an existing organisation with a Tenant ID',
-    'quick-start': 'Get started quickly as a Sales Rep',
-  };
+  const title = isMagicLink ? 'Join Workspace' : (mode === 'new-org' ? 'Create Organisation' : 'Quick Start');
+  const subtitle = isMagicLink 
+    ? 'Complete your profile to join the team.' 
+    : (mode === 'new-org' ? 'Set up a private workspace for your team.' : 'Get started instantly in the Nexus community.');
 
   return (
     <div className={styles.container}>
@@ -112,29 +101,30 @@ function InnerRegisterPage() {
             />
             <h1 className={styles.title}>NEXUS</h1>
           </div>
-          <Text type="secondary" className={styles.subtitle}>{subtitleMap[mode]}</Text>
+          <Title level={4} style={{ margin: '8px 0 4px 0' }}>{title}</Title>
+          <Text type="secondary" className={styles.subtitle}>{subtitle}</Text>
         </div>
 
-        <div className={styles.segmentedWrapper}>
-          <Segmented
-            block
-            value={mode}
-            onChange={handleModeChange}
-            disabled={isMagicLink}
-            options={[
-              { label: modeLabels['new-org'], value: 'new-org', disabled: isMagicLink },
-              { label: modeLabels['join-org'], value: 'join-org' },
-              { label: modeLabels['quick-start'], value: 'quick-start', disabled: isMagicLink },
-            ]}
-            className={styles.segmented}
-          />
-        </div>
+        {!isMagicLink && (
+          <div className={styles.segmentedWrapper}>
+            <Segmented
+              block
+              value={mode}
+              onChange={(v) => setMode(v as any)}
+              options={[
+                { label: 'New Organisation', value: 'new-org', icon: <BankOutlined /> },
+                { label: 'Quick Start', value: 'quick-start', icon: <ThunderboltOutlined /> },
+              ]}
+              className={styles.segmented}
+            />
+          </div>
+        )}
 
         {isMagicLink && (
           <Alert 
-            message="Invitation Link Active" 
-            description="You are registering via a secure team invitation. Your workspace details have been pre-filled."
-            type="info" 
+            message="Invitation Accepted" 
+            description="You are joining an existing organisation. Your account will be configured automatically."
+            type="success" 
             showIcon 
             style={{ marginBottom: '24px' }}
           />
@@ -148,133 +138,96 @@ function InnerRegisterPage() {
           onFinish={onFinish}
           size="large"
           layout="vertical"
+          requiredMark={false}
         >
-          {/* Scenario A: New Organisation — tenant name */}
-          {mode === 'new-org' && (
-            <Form.Item
-              name="tenantName"
-              rules={[{ required: true, message: 'Please enter your organisation name' }]}
-              className={styles.formItem}
-            >
-              <Input prefix={<BankOutlined />} placeholder="Organisation Name" className={styles.input} />
-            </Form.Item>
-          )}
-
-          {/* Scenario B: Join Organisation — tenant ID + role */}
-          {mode === 'join-org' && (
-            <>
-              {isMagicLink ? (
-                <>
-                  <Form.Item name="tenantId" hidden>
-                    <Input />
-                  </Form.Item>
-                  <Form.Item name="role" hidden>
-                    <Input />
-                  </Form.Item>
-                </>
-              ) : (
-                <>
-                  <Form.Item
-                    name="tenantId"
-                    rules={[{ required: true, message: 'Please enter the organisation Tenant ID' }]}
-                    className={styles.formItem}
-                  >
-                    <Input 
-                       prefix={<TeamOutlined />} 
-                       placeholder="Tenant ID" 
-                       className={styles.input} 
-                    />
-                  </Form.Item>
-                  <Form.Item
-                    name="role"
-                    rules={[{ required: true, message: 'Please select your role' }]}
-                    className={styles.formItem}
-                  >
-                    <Select 
-                       placeholder="Select your role" 
-                       options={roleOptions} 
-                       className={styles.input} 
-                    />
-                  </Form.Item>
-                </>
-              )}
-            </>
-          )}
-
-          {/* Scenario C: Quick Start — auto-assigned as SalesRep, no extra fields */}
-
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 name="firstName"
-                rules={[{ required: true, message: 'First name is required' }]}
+                label="First Name"
+                rules={[{ required: true, message: 'Required' }]}
                 className={styles.formItem}
               >
-                <Input prefix={<UserOutlined />} placeholder="First Name" className={styles.input} />
+                <Input placeholder="John" className={styles.input} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
                 name="lastName"
-                rules={[{ required: true, message: 'Last name is required' }]}
+                label="Last Name"
+                rules={[{ required: true, message: 'Required' }]}
                 className={styles.formItem}
               >
-                <Input prefix={<UserOutlined />} placeholder="Last Name" className={styles.input} />
+                <Input placeholder="Doe" className={styles.input} />
               </Form.Item>
             </Col>
           </Row>
 
+          {mode === 'new-org' && !isMagicLink && (
+            <Form.Item
+              name="organisationName"
+              label="Organisation Name"
+              rules={[{ required: true, message: 'Please enter your organisation name' }]}
+              className={styles.formItem}
+            >
+              <Input prefix={<BankOutlined />} placeholder="e.g. Acme Corp" className={styles.input} />
+            </Form.Item>
+          )}
+
           <Form.Item
             name="email"
+            label="Work Email"
             rules={[
-              { required: true, message: 'Please input your Email!' },
-              { type: 'email', message: 'Please enter a valid email!' }
+              { required: true, message: 'Required' },
+              { type: 'email', message: 'Invalid email' }
             ]}
             className={styles.formItem}
           >
-            <Input prefix={<MailOutlined />} placeholder="Email" className={styles.input} />
+            <Input prefix={<MailOutlined />} placeholder="john@company.com" className={styles.input} />
           </Form.Item>
 
           <Form.Item
             name="password"
+            label="Password"
             rules={[
-              { required: true, message: 'Please input your Password!' },
-              { min: 6, message: 'Password must be at least 6 characters!' }
+              { required: true, message: 'Required' },
+              { min: 6, message: 'Min 6 characters' }
             ]}
             className={styles.formItem}
           >
-            <Input.Password prefix={<LockOutlined />} placeholder="Password" className={styles.input} />
+            <Input.Password prefix={<LockOutlined />} placeholder="••••••••" className={styles.input} />
           </Form.Item>
 
           <Form.Item
             name="confirm"
+            label="Confirm Password"
             dependencies={['password']}
             rules={[
-              { required: true, message: 'Please confirm your password!' },
+              { required: true, message: 'Please confirm password' },
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   if (!value || getFieldValue('password') === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error('Passwords do not match!'));
+                  return Promise.reject(new Error('Passwords do not match'));
                 },
               }),
             ]}
             className={styles.lastFormItem}
           >
-            <Input.Password prefix={<LockOutlined />} placeholder="Confirm Password" className={styles.input} />
+            <Input.Password prefix={<LockOutlined />} placeholder="••••••••" className={styles.input} />
           </Form.Item>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit" className={styles.submitButton} loading={loading}>
-              {mode === 'new-org' ? 'Create Organisation' : 'Join Organisation'}
+          <Form.Item style={{ marginTop: 24 }}>
+            <Button type="primary" htmlType="submit" className={styles.submitButton} loading={loading} block>
+              {isMagicLink ? 'Join Workspace' : (mode === 'new-org' ? 'Create Workspace' : 'Get Started')}
             </Button>
           </Form.Item>
           
           <div className={styles.footer}>
             <Space>
-              <p className={styles.subtitle}>Already have an account?</p>
-              <Link className={styles.subtitle} href="/login">Login</Link>
+              <Text type="secondary">Already have an account?</Text>
+              <Link href="/login">Sign In</Link>
             </Space>
           </div>
         </Form>

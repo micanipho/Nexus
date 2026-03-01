@@ -123,7 +123,7 @@ hasApprovedProposal=${hasApprovedProposal}`;
   const renderContent = () => {
     if (loading) {
       return (
-        <Space direction="vertical" style={{ width: '100%' }} size="large">
+        <Space orientation="vertical" style={{ width: '100%' }} size="large">
           <div style={{ textAlign: 'center' }}>
             <Skeleton.Avatar active size={120} shape="circle" />
           </div>
