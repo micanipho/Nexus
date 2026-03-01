@@ -253,6 +253,7 @@ export default function PricingRequestsPage() {
                     total: totalCount,
                     onChange: (page) => setFilters(prev => ({ ...prev, pageNumber: page })),
                     showTotal: t => `${t} requests`,
+                    showSizeChanger: false
                 }}
                 locale={{ emptyText: 'No pricing requests yet. Click "New Request" to create one.' }}
             />

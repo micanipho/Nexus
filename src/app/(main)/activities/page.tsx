@@ -285,6 +285,8 @@ export default function ActivitiesPage() {
                     pageSize: filters.pageSize,
                     total: activeTab === 'overdue' ? overdueActivities.length : totalCount,
                     onChange: (page) => setFilters({ pageNumber: page }),
+                    showTotal: t => `${t} activities`,
+                    showSizeChanger: false
                 }}
             />
 

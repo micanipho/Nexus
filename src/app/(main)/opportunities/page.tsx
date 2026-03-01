@@ -234,7 +234,8 @@ export default function OpportunitiesPage() {
                     pageSize: filters.pageSize,
                     total: totalCount,
                     onChange: (page) => setFilters({ ...filters, pageNumber: page }),
-                    showTotal: t => `${t} opportunities`
+                    showTotal: t => `${t} opportunities`,
+                    showSizeChanger: false
                 }}
             />
             

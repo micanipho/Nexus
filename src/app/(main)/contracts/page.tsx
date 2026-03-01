@@ -247,7 +247,8 @@ export default function ContractsPage() {
                     pageSize: filters.pageSize,
                     total: totalCount,
                     onChange: (page) => setFilters({ ...filters, pageNumber: page }),
-                    showTotal: t => `${t} contracts`
+                    showTotal: t => `${t} contracts`,
+                    showSizeChanger: false
                 }}
                 expandable={{
                     expandedRowKeys,

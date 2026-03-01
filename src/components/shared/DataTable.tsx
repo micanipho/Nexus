@@ -12,10 +12,10 @@ function DataTable<T extends object>({ tableTitle, ...props }: DataTableProps<T>
     <Card title={tableTitle} styles={{ body: { padding: 0 } }} variant="borderless">
       <Table<T> 
         {...props} 
-        pagination={{ 
-          pageSize: 10, 
-          showSizeChanger: true,
-          ...props.pagination 
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: false,
+          ...props.pagination
         }} 
         scroll={{ x: 'max-content', ...props.scroll }}
       />

@@ -9,6 +9,7 @@ import { useAuth } from '../../providers/authProvider';
 import useStyles from './style/layout.style';
 
 const SalesAssistant = dynamic(() => import('@/components/ai/SalesAssistant'), { ssr: false });
+const QuickNoteButton = dynamic(() => import('@/components/notes/QuickNoteButton'), { ssr: false });
 const GlobalSearch = dynamic(() => import('@/components/shared/GlobalSearch'), { ssr: false });
 
 const { Content } = Layout;
@@ -61,6 +62,7 @@ export default function MainLayout({
           {children}
         </Content>
       </Layout>
+      <QuickNoteButton />
       <SalesAssistant />
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </Layout>

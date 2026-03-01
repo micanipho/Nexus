@@ -214,7 +214,8 @@ export default function ProposalsPage() {
                     pageSize: filters.pageSize,
                     total: totalCount,
                     onChange: (page) => setFilters({ ...filters, pageNumber: page }),
-                    showTotal: t => `${t} proposals`
+                    showTotal: t => `${t} proposals`,
+                    showSizeChanger: false
                 }}
             />
             <ProposalModal
