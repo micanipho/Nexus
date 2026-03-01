@@ -46,7 +46,7 @@ const clientService = {
     return response.data;
   },
 
-  async deleteClient(id: string): Promise<void> {
+  async deactivateClient(id: string): Promise<void> {
     await api.delete(`/clients/${id}`);
   },
 

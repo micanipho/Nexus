@@ -42,6 +42,7 @@ export default function ClientDetailPage() {
     const [activities, setActivities] = useState<Activity[]>([]);
     const [loading, setLoading] = useState(true);
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+    const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [isOpportunityModalOpen, setIsOpportunityModalOpen] = useState(false);
     const [isClientModalOpen, setIsClientModalOpen] = useState(false);
     
@@ -50,7 +51,7 @@ export default function ClientDetailPage() {
     const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
     const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
     const { completeActivity, cancelActivity } = useActivityActions();
-    const { deleteClient } = useClientActions();
+    const { deactivateClient } = useClientActions();
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
     const { hasRole: canDelete } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
     const { hasRole: canCreateActivity } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER, UserRole.SALES_REP]);
@@ -88,11 +89,40 @@ export default function ClientDetailPage() {
     const handleDelete = async () => {
         if (!id) return;
         try {
-            await deleteClient(id);
-            message.success('Client deleted successfully');
+            await deactivateClient(id);
+            message.success('Client deactivated successfully');
             router.push('/clients');
         } catch {
-            message.error('Failed to delete client');
+            message.error('Failed to deactivate client');
+        }
+    };
+
+    const handleDeleteContact = async (contactId: string, wasPrimary: boolean) => {
+        try {
+            await contactService.deleteContact(contactId);
+            message.success('Contact deleted');
+
+            // If deleted contact was primary, promote the first remaining contact
+            if (wasPrimary) {
+                const remaining = contacts.filter(c => c.id !== contactId);
+                if (remaining.length > 0) {
+                    await contactService.setPrimaryContact(remaining[0].id);
+                }
+            }
+
+            fetchClientAndContacts();
+        } catch {
+            message.error('Failed to delete contact');
+        }
+    };
+
+    const handleSetPrimary = async (contactId: string) => {
+        try {
+            await contactService.setPrimaryContact(contactId);
+            message.success('Primary contact updated');
+            fetchClientAndContacts();
+        } catch {
+            message.error('Failed to set primary contact');
         }
     };
 
@@ -138,14 +168,14 @@ export default function ClientDetailPage() {
         <Space size="middle">
             {canDelete && client.isActive && (
                 <Popconfirm
-                    title="Delete Client"
-                    description="Are you sure you want to delete this client? This action cannot be undone."
+                    title="Deactivate Client"
+                    description="Are you sure you want to deactivate this client?"
                     onConfirm={handleDelete}
-                    okText="Yes, Delete"
+                    okText="Yes, Deactivate"
                     cancelText="No"
                     okButtonProps={{ danger: true }}
                 >
-                    <Button danger icon={<DeleteOutlined />}>Delete</Button>
+                    <Button danger icon={<DeleteOutlined />}>Deactivate</Button>
                 </Popconfirm>
             )}
             {canDelete && !client.isActive && (
@@ -208,7 +238,6 @@ export default function ClientDetailPage() {
                                             {client.isActive ? 'Active' : 'Inactive'}
                                         </Tag>
                                     </Descriptions.Item>
-                                    <Descriptions.Item label="Client Since">Jan 2024</Descriptions.Item>
                                 </Descriptions>
                             ),
                         },
@@ -223,15 +252,34 @@ export default function ClientDetailPage() {
                                         rowKey="id"
                                         dataSource={contacts}
                                         columns={[
-                                            { title: 'Name', key: 'name', render: (_, r) => <Text strong>{r.firstName} {r.lastName} {r.isPrimaryContact && <Tag color="blue" style={{marginLeft: 8}}>Primary</Tag>}</Text> },
+                                            { title: 'Name', key: 'name', render: (_: any, r: Contact) => <Text strong>{r.firstName} {r.lastName} {r.isPrimaryContact && <Tag color="blue" style={{marginLeft: 8}}>Primary</Tag>}</Text> },
                                             { title: 'Role', dataIndex: 'position', key: 'position' },
                                             { title: 'Email', dataIndex: 'email', key: 'email' },
-                                            { title: 'Actions', key: 'actions', render: () => <Button size="small" type="link">Contact</Button> }
+                                            { title: 'Actions', key: 'actions', render: (_: any, record: Contact) => (
+                                                <Space size="small">
+                                                    <Button size="small" type="text" icon={<EditOutlined />} onClick={() => { setSelectedContact(record); setIsContactModalOpen(true); }} />
+                                                    {!record.isPrimaryContact && (
+                                                        <Button size="small" type="link" onClick={() => handleSetPrimary(record.id)}>
+                                                            Set Primary
+                                                        </Button>
+                                                    )}
+                                                    <Popconfirm
+                                                        title="Delete this contact?"
+                                                        description={record.isPrimaryContact ? 'This is the primary contact. Another contact will be set as primary automatically.' : undefined}
+                                                        onConfirm={() => handleDeleteContact(record.id, record.isPrimaryContact)}
+                                                        okText="Yes"
+                                                        cancelText="No"
+                                                        okButtonProps={{ danger: true }}
+                                                    >
+                                                        <Button size="small" type="text" danger icon={<DeleteOutlined />} />
+                                                    </Popconfirm>
+                                                </Space>
+                                            )}
                                         ]}
                                         scroll={{ x: 'max-content' }}
                                     />
                                     <div style={{ marginTop: 16 }}>
-                                        <Button type="dashed" block icon={<PlusOutlined />} onClick={() => setIsContactModalOpen(true)}>
+                                        <Button type="dashed" block icon={<PlusOutlined />} onClick={() => { setSelectedContact(null); setIsContactModalOpen(true); }}>
                                             Add New Contact
                                         </Button>
                                     </div>
@@ -345,11 +393,13 @@ export default function ClientDetailPage() {
                 onSuccess={fetchClientAndContacts}
             />
 
-            <ContactModal 
-                open={isContactModalOpen} 
-                onClose={() => setIsContactModalOpen(false)} 
-                clientId={id} 
-                onSuccess={fetchClientAndContacts} 
+            <ContactModal
+                open={isContactModalOpen}
+                onClose={() => { setIsContactModalOpen(false); setSelectedContact(null); }}
+                clientId={id}
+                onSuccess={fetchClientAndContacts}
+                isFirstContact={contacts.length === 0}
+                contact={selectedContact}
             />
 
             <OpportunityModal

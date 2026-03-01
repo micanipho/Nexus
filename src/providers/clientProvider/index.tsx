@@ -47,13 +47,13 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                     dispatch(actions.updateClientError(error.response?.data?.message || 'Failed to update client'));
                 }
             },
-            deleteClient: async (id: string) => {
-                dispatch(actions.deleteClientPending());
+            deactivateClient: async (id: string) => {
+                dispatch(actions.deactivateClientPending());
                 try {
-                    await clientService.deleteClient(id);
-                    dispatch(actions.deleteClientSuccess(id));
+                    await clientService.deactivateClient(id);
+                    dispatch(actions.deactivateClientSuccess(id));
                 } catch (error: any) {
-                    dispatch(actions.deleteClientError(error.response?.data?.message || 'Failed to delete client'));
+                    dispatch(actions.deactivateClientError(error.response?.data?.message || 'Failed to deactivate client'));
                 }
             },
             fetchClientStats: async (id: string) => {

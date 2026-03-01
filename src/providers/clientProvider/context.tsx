@@ -17,7 +17,7 @@ export interface ClientActions {
     fetchClientById: (id: string) => Promise<void>;
     createClient: (data: any) => Promise<void>;
     updateClient: (id: string, data: any) => Promise<void>;
-    deleteClient: (id: string) => Promise<void>;
+    deactivateClient: (id: string) => Promise<void>;
     fetchClientStats: (id: string) => Promise<void>;
     setFilters: (filters: ClientFilters) => void;
     clearError: () => void;

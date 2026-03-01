@@ -23,7 +23,7 @@ const ClientModal = dynamic(() => import('@/components/clients/ClientModal'), {
 export default function ClientsPage() {
     const { message } = App.useApp();
     const { clients, isPending, filters, totalCount } = useClients();
-    const { fetchClients, setFilters, deleteClient } = useClientActions();
+    const { fetchClients, setFilters, deactivateClient } = useClientActions();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
     const { hasRole: canDelete } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
@@ -46,11 +46,11 @@ export default function ClientsPage() {
 
     const handleDelete = async (id: string) => {
         try {
-            await deleteClient(id);
-            message.success('Client deleted successfully');
+            await deactivateClient(id);
+            message.success('Client deactivated successfully');
             fetchClients();
         } catch {
-            message.error('Failed to delete client');
+            message.error('Failed to deactivate client');
         }
     };
 
@@ -109,8 +109,8 @@ export default function ClientsPage() {
                     </Link>
                     {canDelete && record.isActive && (
                         <Popconfirm
-                            title="Delete Client?"
-                            description="Are you sure?"
+                            title="Deactivate Client?"
+                            description="Are you sure you want to deactivate this client?"
                             onConfirm={() => handleDelete(record.id)}
                             okText="Yes"
                             cancelText="No"
@@ -196,7 +196,8 @@ export default function ClientsPage() {
                     pageSize: filters.pageSize,
                     total: totalCount,
                     onChange: (page) => setFilters({ ...filters, pageNumber: page }),
-                    showTotal: t => `${t} clients`
+                    showTotal: t => `${t} clients`,
+                    showSizeChanger: false
                 }}
             />
             <ClientModal 
