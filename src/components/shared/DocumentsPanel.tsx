@@ -131,8 +131,9 @@ const DocumentsPanel: React.FC<DocumentsPanelProps> = ({ relatedToType, relatedT
         },
         {
             title: 'Uploaded By',
-            dataIndex: 'uploadedBy',
+            dataIndex: 'uploadedByName',
             key: 'uploadedBy',
+            render: (_: string, record: DocumentInfo) => record.uploadedByName || record.uploadedBy || 'Unknown',
         },
         {
             title: 'Date',

@@ -60,7 +60,7 @@ const opportunityService = {
     return response.data;
   },
 
-  async deleteOpportunity(id: string): Promise<void> {
+  async deactivateOpportunity(id: string): Promise<void> {
     await api.delete(`/opportunities/${id}`);
   },
 

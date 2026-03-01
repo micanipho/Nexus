@@ -66,18 +66,18 @@ export const opportunityReducer = handleActions<OpportunityState, any>(
             isPending: false,
             error: payload.error,
         }),
-        [OpportunityActionEnums.DeleteOpportunityPending]: (state) => ({
+        [OpportunityActionEnums.DeactivateOpportunityPending]: (state) => ({
             ...state,
             isPending: true,
             error: null,
         }),
-        [OpportunityActionEnums.DeleteOpportunitySuccess]: (state, { payload }) => ({
+        [OpportunityActionEnums.DeactivateOpportunitySuccess]: (state, { payload }) => ({
             ...state,
             isPending: false,
             opportunities: state.opportunities.filter((o) => o.id !== payload.id),
             selectedOpportunity: state.selectedOpportunity?.id === payload.id ? null : state.selectedOpportunity,
         }),
-        [OpportunityActionEnums.DeleteOpportunityError]: (state, { payload }) => ({
+        [OpportunityActionEnums.DeactivateOpportunityError]: (state, { payload }) => ({
             ...state,
             isPending: false,
             error: payload.error,

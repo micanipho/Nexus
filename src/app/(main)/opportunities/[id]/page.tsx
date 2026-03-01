@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-    Card, Typography, Tag, Button, Space, Tabs,
+    Card, Typography, Tag, Button, Space, Tabs, Select,
     Descriptions, Statistic, Table, Row, Col, Skeleton, App, Popconfirm
 } from 'antd';
 import {
@@ -30,6 +30,7 @@ import DocumentsPanel from '@/components/shared/DocumentsPanel';
 import NotesPanel from '@/components/shared/NotesPanel';
 import CreateActivityModal from '@/components/activities/CreateActivityModal';
 import CompleteActivityModal from '@/components/activities/CompleteActivityModal';
+import ViewActivityModal from '@/components/activities/ViewActivityModal';
 import CrossTenantError from '@/components/errors/CrossTenantError';
 import StatusBadge from '@/components/shared/StatusBadge';
 import DealHealthScore from '@/components/ai/DealHealthScore';
@@ -56,6 +57,7 @@ export default function OpportunityDetailPage() {
     const [isOpportunityModalOpen, setIsOpportunityModalOpen] = useState(false);
     const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
     const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
     const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
@@ -97,11 +99,11 @@ export default function OpportunityDetailPage() {
 
     const handleDelete = async () => {
         try {
-            await opportunityService.deleteOpportunity(id);
-            message.success('Opportunity deleted successfully');
+            await opportunityService.deactivateOpportunity(id);
+            message.success('Opportunity deactivated successfully');
             router.push('/opportunities');
         } catch {
-            message.error('Failed to delete opportunity');
+            message.error('Failed to deactivate opportunity');
         }
     };
 
@@ -132,6 +134,21 @@ export default function OpportunityDetailPage() {
             fetchAllData();
         } catch {
             message.error('Failed to reject proposal');
+        }
+    };
+
+    const [updatingStage, setUpdatingStage] = useState(false);
+
+    const handleStageUpdate = async (newStage: OpportunityStage) => {
+        try {
+            setUpdatingStage(true);
+            await opportunityService.updateStage(id, newStage);
+            message.success('Stage updated successfully');
+            fetchAllData();
+        } catch {
+            message.error('Failed to update stage');
+        } finally {
+            setUpdatingStage(false);
         }
     };
 
@@ -175,14 +192,14 @@ export default function OpportunityDetailPage() {
         <Space size="middle">
             {canDelete && (
                 <Popconfirm
-                    title="Delete Opportunity"
-                    description="Are you sure you want to delete this opportunity?"
+                    title="Deactivate Opportunity"
+                    description="Are you sure you want to deactivate this opportunity?"
                     onConfirm={handleDelete}
-                    okText="Yes, Delete"
+                    okText="Yes, Deactivate"
                     cancelText="No"
                     okButtonProps={{ danger: true }}
                 >
-                    <Button danger icon={<DeleteOutlined />}>Delete</Button>
+                    <Button danger icon={<DeleteOutlined />}>Deactivate</Button>
                 </Popconfirm>
             )}
             <Button icon={<EditOutlined />} onClick={() => setIsOpportunityModalOpen(true)} disabled={!canCreate}>Edit</Button>
@@ -251,9 +268,26 @@ export default function OpportunityDetailPage() {
                     <Card variant="borderless">
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <Text type="secondary" style={{ marginBottom: 4 }}>Current Stage</Text>
-                            <Tag color={getStageColor(opportunity.stage)} style={{ alignSelf: 'flex-start', fontSize: 14, padding: '4px 8px' }}>
-                                {getStageName(opportunity.stage)}
-                            </Tag>
+                            {canCreate ? (
+                                <Select
+                                    value={opportunity.stage}
+                                    onChange={handleStageUpdate}
+                                    loading={updatingStage}
+                                    style={{ width: '100%' }}
+                                    options={[
+                                        { value: 1, label: 'Lead' },
+                                        { value: 2, label: 'Qualified' },
+                                        { value: 3, label: 'Proposal' },
+                                        { value: 4, label: 'Negotiation' },
+                                        { value: 5, label: 'Closed Won' },
+                                        { value: 6, label: 'Closed Lost' },
+                                    ]}
+                                />
+                            ) : (
+                                <Tag color={getStageColor(opportunity.stage)} style={{ alignSelf: 'flex-start', fontSize: 14, padding: '4px 8px' }}>
+                                    {getStageName(opportunity.stage)}
+                                </Tag>
+                            )}
                         </div>
                     </Card>
                 </Col>
@@ -268,7 +302,13 @@ export default function OpportunityDetailPage() {
                             label: 'Overview',
                             children: (
                                 <Descriptions column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }} bordered>
-                                    <Descriptions.Item label="Client">{opportunity.clientName || 'N/A'}</Descriptions.Item>
+                                    <Descriptions.Item label="Client">
+                                        {opportunity.clientId ? (
+                                            <Link href={`/clients/${opportunity.clientId}`}>{opportunity.clientName}</Link>
+                                        ) : (
+                                            opportunity.clientName || 'N/A'
+                                        )}
+                                    </Descriptions.Item>
                                     <Descriptions.Item label="Owner">{opportunity.ownerName || 'Unassigned'}</Descriptions.Item>
                                     <Descriptions.Item label="Source">
                                         {{
@@ -312,7 +352,6 @@ export default function OpportunityDetailPage() {
                                         rowKey="id"
                                         dataSource={proposals}
                                         columns={[
-                                            { title: 'Proposal #', dataIndex: 'proposalNumber', key: 'proposalNumber' },
                                             { title: 'Title', dataIndex: 'title', key: 'title', render: (t, r) => <Link href={`/proposals/${r.id}`}>{t}</Link> },
                                             { title: 'Amount', dataIndex: 'totalAmount', key: 'totalAmount', render: (v, r) => `${r.currency || 'R'}${v?.toLocaleString()}` },
                                             { title: 'Status', dataIndex: 'status', key: 'status', render: (s) => <StatusBadge status={s} /> },
@@ -361,7 +400,14 @@ export default function OpportunityDetailPage() {
                                         rowKey="id"
                                         dataSource={activities}
                                         columns={[
-                                            { title: 'Subject', dataIndex: 'subject', key: 'subject', render: (text) => <Text strong>{text}</Text> },
+                                            { 
+                                                title: 'Subject', 
+                                                dataIndex: 'subject', 
+                                                key: 'subject', 
+                                                render: (text: string, record: Activity) => (
+                                                    <a onClick={() => { setSelectedActivity(record); setIsViewModalOpen(true); }} style={{ fontWeight: 500 }}>{text}</a>
+                                                ) 
+                                            },
                                             { 
                                                 title: 'Due Date', 
                                                 dataIndex: 'dueDate', 
@@ -452,6 +498,12 @@ export default function OpportunityDetailPage() {
                 onClose={() => setIsCompleteModalOpen(false)}
                 activity={selectedActivity}
                 onSuccess={fetchAllData}
+            />
+
+            <ViewActivityModal
+                open={isViewModalOpen}
+                onClose={() => setIsViewModalOpen(false)}
+                activity={selectedActivity}
             />
 
         </Space>

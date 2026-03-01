@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
     Card, Typography, Tag, Button, Space, Tabs, Select, message,
     Descriptions, Statistic, Table, Row, Col, Skeleton, App, Popconfirm
@@ -25,6 +26,7 @@ import ContactModal from '@/components/clients/ContactModal';
 import OpportunityModal from '@/components/opportunities/OpportunityModal';
 import CreateActivityModal from '@/components/activities/CreateActivityModal';
 import CompleteActivityModal from '@/components/activities/CompleteActivityModal';
+import ViewActivityModal from '@/components/activities/ViewActivityModal';
 import { useHasRole } from '@/hooks/useHasRole';
 import { useActivityActions } from '@/providers/activityProvider';
 import { useClientActions } from '@/providers/clientProvider';
@@ -49,6 +51,7 @@ export default function ClientDetailPage() {
     // Activities Modals State
     const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
     const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
     const { completeActivity, cancelActivity } = useActivityActions();
     const { deactivateClient } = useClientActions();
@@ -295,7 +298,12 @@ export default function ClientDetailPage() {
                                     rowKey="id"
                                     dataSource={opportunities}
                                     columns={[
-                                        { title: 'Opportunity', dataIndex: 'title', key: 'title' },
+                                        { 
+                                            title: 'Opportunity', 
+                                            dataIndex: 'title', 
+                                            key: 'title',
+                                            render: (text: string, record: Opportunity) => <Link href={`/opportunities/${record.id}`}>{text}</Link>
+                                        },
                                         { title: 'Stage', dataIndex: 'stage', key: 'stage',
                                             render: (stage: OpportunityStage, record: Opportunity) => (
                                                 canCreate ? (
@@ -336,7 +344,14 @@ export default function ClientDetailPage() {
                                         rowKey="id"
                                         dataSource={activities}
                                         columns={[
-                                            { title: 'Subject', dataIndex: 'subject', key: 'subject', render: (text) => <Text strong>{text}</Text> },
+                                            { 
+                                                title: 'Subject', 
+                                                dataIndex: 'subject', 
+                                                key: 'subject', 
+                                                render: (text: string, record: Activity) => (
+                                                    <a onClick={() => { setSelectedActivity(record); setIsViewModalOpen(true); }} style={{ fontWeight: 500 }}>{text}</a>
+                                                ) 
+                                            },
                                             { 
                                                 title: 'Due Date', 
                                                 dataIndex: 'dueDate', 
@@ -421,6 +436,12 @@ export default function ClientDetailPage() {
                 onClose={() => setIsCompleteModalOpen(false)}
                 activity={selectedActivity}
                 onSuccess={fetchClientAndContacts}
+            />
+
+            <ViewActivityModal
+                open={isViewModalOpen}
+                onClose={() => setIsViewModalOpen(false)}
+                activity={selectedActivity}
             />
         </Space>
     );

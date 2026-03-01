@@ -122,6 +122,13 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ relatedToType, relatedToId }) =
         return note.createdById === user.id || note.createdById === user.userId;
     };
 
+    const getNoteName = (note: Note) => {
+        if (note.createdByName) return note.createdByName;
+        if (note.createdBy && note.createdBy.length < 50) return note.createdBy;
+        if (isOwner(note) && user) return `${user.firstName} ${user.lastName}`;
+        return 'Unknown User';
+    };
+
     return (
         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             {/* Add Note Form */}
@@ -176,7 +183,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ relatedToType, relatedToId }) =
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                                     <Space size={8}>
                                         <Text strong style={{ fontSize: 13 }}>
-                                            {note.createdBy || 'Unknown User'}
+                                            {getNoteName(note)}
                                         </Text>
                                         <Text type="secondary" style={{ fontSize: 11 }}>
                                             {dayjs(note.createdAt).fromNow()}

@@ -70,13 +70,6 @@ export default function ProposalsPage() {
 
     const columns: ColumnsType<Proposal> = [
         {
-            title: 'Proposal #',
-            dataIndex: 'proposalNumber',
-            key: 'proposalNumber',
-            width: 160,
-            render: (text, record) => <Link href={`/proposals/${record.id}`}>{text}</Link>,
-        },
-        {
             title: 'Title',
             dataIndex: 'title',
             key: 'title',

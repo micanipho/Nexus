@@ -27,7 +27,7 @@ export default function OpportunitiesPage() {
     const { message } = App.useApp();
     const { user } = useAuth();
     const { opportunities, isPending, filters, totalCount } = useOpportunities();
-    const { fetchOpportunities, fetchMyOpportunities, setFilters, updateStage, assignOpportunity, deleteOpportunity } = useOpportunityActions();
+    const { fetchOpportunities, fetchMyOpportunities, setFilters, updateStage, assignOpportunity, deactivateOpportunity } = useOpportunityActions();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [salesReps, setSalesReps] = useState<Array<{ userId: string; userName: string }>>([]);
     const { hasRole: canAssign } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
@@ -69,15 +69,15 @@ export default function OpportunitiesPage() {
 
     const handleDelete = async (id: string) => {
         try {
-            await deleteOpportunity(id);
-            message.success('Opportunity deleted successfully');
+            await deactivateOpportunity(id);
+            message.success('Opportunity deactivated successfully');
             if (isSalesRep) {
                 fetchMyOpportunities(filters);
             } else {
                 fetchOpportunities();
             }
         } catch {
-            message.error('Failed to delete opportunity');
+            message.error('Failed to deactivate opportunity');
         }
     };
 
@@ -159,8 +159,8 @@ export default function OpportunitiesPage() {
                     </Link>
                     {canDelete && (
                         <Popconfirm
-                            title="Delete Opportunity?"
-                            description="Are you sure?"
+                            title="Deactivate Opportunity?"
+                            description="Are you sure you want to deactivate this opportunity?"
                             onConfirm={() => handleDelete(record.id)}
                             okText="Yes"
                             cancelText="No"

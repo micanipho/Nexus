@@ -19,7 +19,7 @@ export interface OpportunityActions {
     fetchOpportunityById: (id: string) => Promise<void>;
     createOpportunity: (data: any) => Promise<void>;
     updateOpportunity: (id: string, data: any) => Promise<void>;
-    deleteOpportunity: (id: string) => Promise<void>;
+    deactivateOpportunity: (id: string) => Promise<void>;
     fetchPipelineMetrics: (ownerId?: string) => Promise<void>;
     fetchStageHistory: (id: string) => Promise<void>;
     updateStage: (id: string, stage: OpportunityStage) => Promise<void>;
