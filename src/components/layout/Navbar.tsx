@@ -158,7 +158,6 @@ const Navbar: React.FC = () => {
         onClose={() => setMobileMenuOpen(false)}
         open={mobileMenuOpen}
         styles={{ body: { padding: 0 } }}
-        height="100%"
         closable={true}
       >
          <Menu

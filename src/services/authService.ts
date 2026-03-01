@@ -42,24 +42,41 @@ export const authService = {
     // A: New Organisation (tenantName provided) — user becomes Admin
     // B: Join existing org (tenantId + role provided)
     // C: Default shared tenant (role provided, no org info)
-    const response = await api.post<any>('/auth/register', { 
+    const payloadData: Record<string, any> = { 
       firstName, 
       lastName, 
       email, 
       password,
-      tenantName,
-      tenantId,
-      role
-    });
-    
-    const payload = response.data;
-    return {
-      user: {
-        ...payload,
-        roles: payload.roles || []
-      },
-      token: payload.token
     };
+
+    if (tenantName) payloadData.tenantName = tenantName;
+    if (tenantId) payloadData.tenantId = tenantId;
+    if (role) payloadData.role = role;
+
+    console.log("Register API Payload:", payloadData);
+    try {
+      const response = await api.post<any>('/auth/register', payloadData);
+      const payload = response.data;
+      return {
+        user: {
+          ...payload,
+          roles: payload.roles || []
+        },
+        token: payload.token
+      };
+    } catch (error: any) {
+      if (error.response && error.response.data) {
+        console.error("API error data:", error.response.data);
+        throw new Error(
+          error.response.data.message || 
+          error.response.data.title || 
+          error.response.data.error || 
+          JSON.stringify(error.response.data.errors) || 
+          'Registration failed due to invalid data'
+        );
+      }
+      throw new Error('An error occurred during registration. Please try again later.');
+    }
   },
 
   async getCurrentUser(): Promise<User> {
