@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Spin, Alert, Card, Table, Typography, Statistic } from 'antd';
+import { Row, Col, Spin, Alert, Card, Table, Typography, Statistic, theme } from 'antd';
 import PageHeader from '@/components/shared/PageHeader';
 import MetricCard from '@/components/shared/MetricCard';
 import { 
@@ -24,15 +24,19 @@ import { UserRole } from '@/types';
 import CreateRenewalModal from '@/components/contracts/CreateRenewalModal';
 import { Button, Tabs, Tag, Space } from 'antd';
 import dynamic from 'next/dynamic';
+import { formatCurrency } from '@/utils/currencyUtils';
 
 const Line = dynamic(() => import('@ant-design/plots').then((mod) => mod.Line), { ssr: false });
 const Column = dynamic(() => import('@ant-design/plots').then((mod) => mod.Column), { ssr: false });
 import { useActivities, useActivityActions } from '@/providers/activityProvider';
+import { useThemeMode } from '@/providers/themeProvider';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
 export default function DashboardPage() {
+  const { token } = theme.useToken();
+  const { isDarkMode } = useThemeMode();
   const { hasRole: canViewSalesPerf, isLoading: isRoleLoading } = useHasRole([
     UserRole.ADMIN, 
     UserRole.SALES_MANAGER
@@ -153,14 +157,6 @@ export default function DashboardPage() {
     ? Math.round(((wonCount - lostCount) / totalClosed) * 100)
     : 0;
 
-  const formatCurrency = (value: number) => {
-    if (!value) return 'R0';
-    if (value >= 1000000000000) return `R${(value / 1000000000000).toFixed(1)}T`;
-    if (value >= 1000000000) return `R${(value / 1000000000).toFixed(1)}B`;
-    if (value >= 1000000) return `R${(value / 1000000).toFixed(1)}M`;
-    if (value >= 1000) return `R${(value / 1000).toFixed(1)}K`;
-    return `R${value.toLocaleString()}`;
-  };
 
   const performanceColumns = [
     { title: 'Sales Rep', dataIndex: 'userName', key: 'userName' },
@@ -275,13 +271,28 @@ export default function DashboardPage() {
                 shapeField="smooth"
                 point={{ shapeField: 'circle', sizeField: 4 }}
                 height={300}
-                legend={{ color: { position: 'top' }, itemMarker: 'circle' }}
+                theme={isDarkMode ? 'dark' : 'light'}
+                legend={{ 
+                  color: { 
+                    position: 'top', 
+                    itemLabelFill: '#ffffff' 
+                  }, 
+                  itemMarker: 'circle' 
+                }}
                 scale={{ y: { nice: true, zero: false } }}
-                axis={{ y: { labelFormatter: (v: any) => formatCurrency(Number(v)) } }}
+                axis={{
+                  x: { labelFill: '#ffffff', tickStroke: token.colorBorder },
+                  y: { 
+                    labelFormatter: (v: any) => formatCurrency(Number(v)), 
+                    labelFill: '#ffffff', 
+                    tickStroke: token.colorBorder, 
+                    gridStroke: token.colorBorderSecondary 
+                  },
+                }}
                 interaction={{ tooltip: { crosshairs: true, marker: true } }}
               />
             ) : (
-               <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>No revenue data available</div>
+               <div style={{ textAlign: 'center', padding: '50px', color: token.colorTextDisabled }}>No revenue data available</div>
             )}
           </Card>
         </Col>
@@ -330,21 +341,27 @@ export default function DashboardPage() {
               </Col>
             </Row>
             {funnelData.length > 0 ? (
-               <Column 
+               <Column
                   data={funnelData}
                   xField="stage"
                   yField="value"
                   colorField="stage"
                   height={250}
-                  label={{ 
+                  theme={isDarkMode ? 'dark' : 'light'}
+                  label={{
                     position: 'top',
-                    text: (d: any) => d.value === 0 ? '' : String(d.value)
+                    text: (d: any) => d.value === 0 ? '' : String(d.value),
+                    fill: '#ffffff',
+                  }}
+                  axis={{
+                    x: { labelFill: '#ffffff', tickStroke: token.colorBorder },
+                    y: { labelFill: '#ffffff', tickStroke: token.colorBorder, gridStroke: token.colorBorderSecondary },
                   }}
                   legend={false}
                   interaction={{ tooltip: { marker: true }, elementHighlight: true }}
                />
             ) : (
-               <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>No pipeline data available</div>
+               <div style={{ textAlign: 'center', padding: '50px', color: token.colorTextDisabled }}>No pipeline data available</div>
             )}
           </Card>
         </Col>
@@ -364,11 +381,11 @@ export default function DashboardPage() {
                         <Statistic 
                           title="Total" 
                           value={activities?.totalCount || 0} 
-                          prefix={<CalendarOutlined style={{ color: '#1890ff' }} />} 
+                          prefix={<CalendarOutlined style={{ color: token.colorPrimary }} />}
                         />
                       </Col>
                       <Col span={12}>
-                        <div style={{ color: '#52c41a' }}>
+                        <div style={{ color: token.colorSuccess }}>
                           <Statistic 
                             title="Completed Today" 
                             value={activities?.completedTodayCount || 0} 
@@ -383,7 +400,7 @@ export default function DashboardPage() {
                         />
                       </Col>
                       <Col span={12}>
-                        <div style={{ color: '#cf1322' }}>
+                        <div style={{ color: token.colorError }}>
                           <Statistic 
                             title="Overdue" 
                             value={activities?.overdueCount || 0} 
@@ -400,10 +417,10 @@ export default function DashboardPage() {
                   children: (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '8px' }}>
                       {upcomingActivities.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '16px 0', color: '#ccc' }}>No upcoming activities</div>
+                        <div style={{ textAlign: 'center', padding: '16px 0', color: token.colorTextDisabled }}>No upcoming activities</div>
                       ) : (
                         upcomingActivities.slice(0, 5).map(item => (
-                          <div key={item.id} style={{ display: 'flex', flexDirection: 'column', borderBottom: '1px solid #f0f0f0', paddingBottom: '8px' }}>
+                          <div key={item.id} style={{ display: 'flex', flexDirection: 'column', borderBottom: `1px solid ${token.colorBorderSecondary}`, paddingBottom: '8px' }}>
                             <Text strong>{item.subject}</Text>
                             <Text type="secondary" style={{ fontSize: '13px' }}>{dayjs(item.dueDate).format('MMM D, HH:mm')}</Text>
                           </div>
@@ -418,10 +435,10 @@ export default function DashboardPage() {
                   children: (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '8px' }}>
                       {overdueActivities.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '16px 0', color: '#ccc' }}>No overdue activities!</div>
+                        <div style={{ textAlign: 'center', padding: '16px 0', color: token.colorTextDisabled }}>No overdue activities!</div>
                       ) : (
                         overdueActivities.slice(0, 5).map(item => (
-                          <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #f0f0f0', paddingBottom: '8px' }}>
+                          <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: `1px solid ${token.colorBorderSecondary}`, paddingBottom: '8px' }}>
                             <div style={{ display: 'flex', flexDirection: 'column' }}>
                               <Text strong style={{ color: 'red' }}>{item.subject}</Text>
                               <Text type="secondary" style={{ fontSize: '13px' }}>{dayjs(item.dueDate).format('MMM D, HH:mm')}</Text>

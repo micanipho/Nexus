@@ -94,7 +94,7 @@ const useStyles = createStyles(({ token, css }) => ({
     height: 44px;
     font-size: 14px;
     border-radius: 8px;
-    background-color: #ffffff !important;
+    background-color: ${token.colorBgContainer} !important;
   `,
 }));
 

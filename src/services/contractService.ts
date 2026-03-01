@@ -41,7 +41,7 @@ const contractService = {
     return response.data;
   },
 
-  async updateContract(id: string, data: Partial<Contract>): Promise<Contract> {
+  async updateContract(id: string, data: Partial<CreateContractPayload>): Promise<Contract> {
     const response = await api.put(`/contracts/${id}`, data);
     return response.data;
   },

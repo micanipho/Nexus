@@ -139,15 +139,6 @@ export default function OpportunityModal({ open, onClose, onSuccess, opportunity
                             prefix="R"
                         />
                     </Form.Item>
-
-                    <Form.Item
-                        name="currency"
-                        label="Currency"
-                        rules={[{ required: true }]}
-                        style={{ width: '100px' }}
-                    >
-                        <Select options={[{ value: 'ZAR', label: 'ZAR' }, { value: 'USD', label: 'USD' }, { value: 'EUR', label: 'EUR' }]} />
-                    </Form.Item>
                 </div>
 
                 <div style={{ display: 'flex', gap: '16px' }}>

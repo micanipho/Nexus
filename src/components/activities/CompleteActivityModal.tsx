@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Form, Input, App } from 'antd';
+import { Modal, Form, Input, App, theme } from 'antd';
 import { useActivityActions } from '@/providers/activityProvider';
 import { Activity } from '@/types';
 
@@ -12,6 +12,7 @@ interface CompleteActivityModalProps {
 
 export default function CompleteActivityModal({ open, onClose, activity, onSuccess }: CompleteActivityModalProps) {
     const { message } = App.useApp();
+    const { token } = theme.useToken();
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
     const { completeActivity } = useActivityActions();
@@ -54,7 +55,7 @@ export default function CompleteActivityModal({ open, onClose, activity, onSucce
         >
             <div style={{ marginBottom: 24 }}>
                 <p>You are completing: <strong>{activity?.subject}</strong></p>
-                <p style={{ color: '#666' }}>Please log the outcome or final notes from this activity before closing it.</p>
+                <p style={{ color: token.colorTextSecondary }}>Please log the outcome or final notes from this activity before closing it.</p>
             </div>
 
             <Form form={form} layout="vertical" name="complete_activity_form">

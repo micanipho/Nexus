@@ -3,7 +3,7 @@ import { createStyles } from 'antd-style';
 const useStyles = createStyles(({ token, css }) => ({
   layout: css`
     min-height: 100vh;
-    background: #f0f2f5;
+    background: ${token.colorBgLayout};
   `,
   mainSection: css`
     display: flex;

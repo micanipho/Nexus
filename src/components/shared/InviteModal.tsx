@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Modal, Form, Input, Select, Button, Typography, App } from 'antd';
+import { Modal, Form, Input, Select, Button, Typography, App, theme } from 'antd';
 import { MailOutlined, CopyOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { UserRole } from '../../types';
 import { useAuth } from '../../providers/authProvider';
@@ -18,6 +18,7 @@ const InviteModal: React.FC<InviteModalProps> = ({ open, onClose }) => {
   const [form] = Form.useForm();
   const { user } = useAuth();
   const { message } = App.useApp();
+  const { token } = theme.useToken();
   const [loading, setLoading] = useState(false);
 
   // Generate the magic link based on the selected role
@@ -89,7 +90,7 @@ const InviteModal: React.FC<InviteModalProps> = ({ open, onClose }) => {
     <Modal
       title={
         <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <SafetyCertificateOutlined style={{ color: '#0B3B73' }} />
+          <SafetyCertificateOutlined style={{ color: token.colorPrimary }} />
           Invite Team Member
         </span>
       }

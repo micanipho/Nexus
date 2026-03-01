@@ -50,7 +50,7 @@ const useStyles = createStyles(({ token, css }) => ({
   logo: css`
     font-size: 32px;
     font-weight: 900;
-    color: #0b3b73;
+    color: ${token.colorPrimary};
     letter-spacing: -1px;
     line-height: 1;
     display: flex;
@@ -86,7 +86,7 @@ const useStyles = createStyles(({ token, css }) => ({
     line-height: 1.1;
     margin-bottom: 24px;
     letter-spacing: -1.5px;
-    color: #111;
+    color: ${token.colorText};
   `,
   gradientText: css`
     background: linear-gradient(90deg, #1890ff, #0b3b73);
@@ -95,7 +95,7 @@ const useStyles = createStyles(({ token, css }) => ({
   `,
   paragraph: css`
     font-size: clamp(16px, 1.5vw, 18px);
-    color: #666;
+    color: ${token.colorTextSecondary};
     margin-bottom: 40px;
     font-weight: 400;
     max-width: 540px;

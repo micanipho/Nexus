@@ -6,14 +6,14 @@ import Link from 'next/link';
 import { Button, Input, Select, Space } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { Opportunity, OpportunityStage } from '@/types';
+import { Opportunity, OpportunityStage, UserRole } from '@/types';
 import { useOpportunities, useOpportunityActions } from '@/providers/opportunityProvider';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
-import dashboardService from '@/services/dashboardService';
-import RoleGate from '@/components/shared/RoleGate';
+import StatusBadge from '@/components/shared/StatusBadge';
 import { useHasRole } from '@/hooks/useHasRole';
-import { UserRole } from '@/types';
+import dashboardService from '@/services/dashboardService';
+import { formatCurrency } from '@/utils/currencyUtils';
 import { App, Popconfirm } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import { useAuth } from '@/providers/authProvider';
@@ -118,8 +118,9 @@ export default function OpportunitiesPage() {
             title: 'Value',
             dataIndex: 'estimatedValue',
             key: 'estimatedValue',
-            render: v => `R${v?.toLocaleString()}`,
+            render: (v) => formatCurrency(v),
             sorter: (a, b) => a.estimatedValue - b.estimatedValue,
+            align: 'right',
         },
         {
             title: 'Stage',

@@ -10,6 +10,7 @@ export interface Note {
     tenantId: string;
     createdById: string;
     createdBy: string;
+    createdByName?: string;
     createdAt: string;
     updatedAt?: string;
 }

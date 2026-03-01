@@ -7,6 +7,7 @@ import { Button, Input, Select, Space, Tag } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { Client, UserRole } from '@/types';
+import { theme as antdTheme } from 'antd';
 import { useClients, useClientActions } from '@/providers/clientProvider';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
@@ -22,6 +23,7 @@ const ClientModal = dynamic(() => import('@/components/clients/ClientModal'), {
 
 export default function ClientsPage() {
     const { message } = App.useApp();
+    const { token } = antdTheme.useToken();
     const { clients, isPending, filters, totalCount } = useClients();
     const { fetchClients, setFilters, deactivateClient } = useClientActions();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -125,7 +127,7 @@ export default function ClientsPage() {
                             type="primary" 
                             icon={<CheckCircleOutlined />} 
                             onClick={() => handleReactivate(record.id, record)}
-                            style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                            style={{ backgroundColor: token.colorSuccess, borderColor: token.colorSuccess }}
                         />
                     )}
                 </Space>

@@ -15,6 +15,7 @@ import {
     CheckCircleOutlined
 } from '@ant-design/icons';
 import { Client, Contact, Opportunity, UserRole, Activity, ActivityType } from '@/types';
+import { theme as antdTheme } from 'antd';
 import { OpportunityStage } from '@/types/enums';
 import opportunityService from '@/services/opportunityService';
 import clientService from '@/services/clientService';
@@ -30,6 +31,7 @@ import ViewActivityModal from '@/components/activities/ViewActivityModal';
 import { useHasRole } from '@/hooks/useHasRole';
 import { useActivityActions } from '@/providers/activityProvider';
 import { useClientActions } from '@/providers/clientProvider';
+import { formatCurrency } from '@/utils/currencyUtils';
 import dayjs from 'dayjs';
 
 const { Text } = Typography;
@@ -38,6 +40,7 @@ export default function ClientDetailPage() {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
     const { message } = App.useApp();
+    const { token } = antdTheme.useToken();
     const [client, setClient] = useState<Client | null>(null);
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
@@ -186,7 +189,7 @@ export default function ClientDetailPage() {
                     type="primary" 
                     icon={<CheckCircleOutlined />} 
                     onClick={handleReactivate}
-                    style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                    style={{ backgroundColor: token.colorSuccess, borderColor: token.colorSuccess }}
                 >
                     Reactivate
                 </Button>
@@ -326,7 +329,7 @@ export default function ClientDetailPage() {
                                                 )
                                             ),
                                         },
-                                        { title: 'Value', dataIndex: 'estimatedValue', key: 'estimatedValue', render: (v: number) => `R${v?.toLocaleString()}` },
+                                        { title: 'Value', dataIndex: 'estimatedValue', key: 'estimatedValue', render: (v: number) => formatCurrency(v) },
                                         { title: 'Probability', dataIndex: 'probability', key: 'probability', render: (p: number) => `${p}%` },
                                     ]}
                                     locale={{ emptyText: 'No opportunities yet. Click "New Opportunity" to create one.' }}
@@ -376,7 +379,7 @@ export default function ClientDetailPage() {
                                                 title: 'Actions',
                                                 key: 'actions',
                                                 render: (_: any, record: Activity) => {
-                                                    if (record.statusName !== 'Scheduled') return <span style={{ color: '#aaa' }}>Closed</span>;
+                                                    if (record.statusName !== 'Scheduled') return <span style={{ color: token.colorTextDisabled }}>Closed</span>;
                                                     return (
                                                         <Space>
                                                             <Button type="link" size="small" onClick={() => { setSelectedActivity(record); setIsCompleteModalOpen(true); }}>Complete</Button>

@@ -12,6 +12,7 @@ import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { useHasRole } from '@/hooks/useHasRole';
+import { formatCurrency } from '@/utils/currencyUtils';
 
 const ProposalModal = dynamic(() => import('@/components/proposals/ProposalModal'), { 
     ssr: false,
@@ -93,7 +94,7 @@ export default function ProposalsPage() {
             title: 'Total',
             dataIndex: 'totalAmount',
             key: 'totalAmount',
-            render: (v, record) => `${record.currency || 'R'}${v?.toLocaleString()}`,
+            render: (v) => formatCurrency(v),
             sorter: (a, b) => a.totalAmount - b.totalAmount,
             align: 'right',
         },

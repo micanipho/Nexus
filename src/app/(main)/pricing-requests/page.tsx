@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { Button, Input, Select, Space, Tag, App, Tooltip } from 'antd';
 import { CheckCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import Link from 'next/link';
 import type { ColumnsType } from 'antd/es/table';
 import { PricingRequest } from '@/types';
 import { UserRole } from '@/types';
@@ -110,21 +111,16 @@ export default function PricingRequestsPage() {
 
     const columns: ColumnsType<PricingRequest> = [
         {
-            title: 'Request #',
-            dataIndex: 'requestNumber',
-            key: 'requestNumber',
-            width: 160,
-            render: (text: string) => <strong>{text}</strong>,
-        },
-        {
             title: 'Title',
             dataIndex: 'title',
             key: 'title',
+            render: (text: string, record: PricingRequest) => <Link href={`/pricing-requests/${record.id}`}>{text}</Link>,
         },
         {
             title: 'Opportunity',
             dataIndex: 'opportunityTitle',
             key: 'opportunityTitle',
+            render: (text: string, record: PricingRequest) => record.opportunityId ? <Link href={`/opportunities/${record.opportunityId}`}>{text}</Link> : text,
         },
         {
             title: 'Priority',

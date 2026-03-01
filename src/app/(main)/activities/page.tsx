@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Tabs, Button, Tag, Space, Dropdown } from 'antd';
 import { Activity, ActivityType, UserRole } from '@/types';
+import { theme as antdTheme } from 'antd';
 import { useActivities, useActivityActions } from '@/providers/activityProvider';
 import { useHasRole } from '@/hooks/useHasRole';
 import PageHeader from '@/components/shared/PageHeader';
@@ -39,6 +40,7 @@ import {
 import dayjs from 'dayjs';
 
 export default function ActivitiesPage() {
+    const { token } = antdTheme.useToken();
     const { activities, myActivities, overdueActivities, isPending, filters, totalCount } = useActivities();
     const { fetchActivities, fetchMyActivities, fetchOverdueActivities, cancelActivity, setFilters } = useActivityActions();
     
@@ -130,7 +132,7 @@ export default function ActivitiesPage() {
                     <Tag color={record.relatedToType === 1 ? 'blue' : 'purple'}>
                         {record.relatedToName}
                     </Tag>
-                ) : <span style={{ color: '#ccc' }}>-</span>
+                ) : <span style={{ color: token.colorTextDisabled }}>-</span>
             )
         },
         {

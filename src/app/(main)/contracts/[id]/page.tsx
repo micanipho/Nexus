@@ -21,6 +21,7 @@ import {
     PlayCircleOutlined
 } from '@ant-design/icons';
 import { Contract, ContractRenewal, Activity, UserRole, ContractStatus } from '@/types';
+import { theme as antdTheme } from 'antd';
 import { useHasRole } from '@/hooks/useHasRole';
 import { useCrossTenantError } from '@/hooks/useCrossTenantError';
 import contractService from '@/services/contractService';
@@ -33,6 +34,7 @@ import DataTable from '@/components/shared/DataTable';
 import CrossTenantError from '@/components/errors/CrossTenantError';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { formatCurrency } from '@/utils/currencyUtils';
 
 dayjs.extend(relativeTime);
 
@@ -48,6 +50,7 @@ export default function ContractDetailPage() {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
     const { message } = App.useApp();
+    const { token } = antdTheme.useToken();
     const { isCrossTenantError, execute, reset: resetError } = useCrossTenantError();
 
     const [contract, setContract] = useState<Contract | null>(null);
@@ -266,7 +269,7 @@ export default function ContractDetailPage() {
                     <Card variant="borderless">
                         <Statistic
                             title="Contract Value"
-                            value={`${contract.currency || 'ZAR'} ${(contract.contractValue ?? contract.totalValue)?.toLocaleString() || 0}`}
+                            value={formatCurrency(contract.contractValue ?? contract.totalValue)}
                         />
                     </Card>
                 </Col>
@@ -310,8 +313,7 @@ export default function ContractDetailPage() {
                                     <Descriptions.Item label="Client">{contract.clientName || '—'}</Descriptions.Item>
                                     <Descriptions.Item label="Opportunity ID">{contract.opportunityId || '—'}</Descriptions.Item>
                                     <Descriptions.Item label="Proposal ID">{contract.proposalId || '—'}</Descriptions.Item>
-                                    <Descriptions.Item label="Contract Value">{`${contract.currency || 'ZAR'} ${(contract.contractValue ?? contract.totalValue)?.toLocaleString()}`}</Descriptions.Item>
-                                    <Descriptions.Item label="Currency">{contract.currency || 'ZAR'}</Descriptions.Item>
+                                    <Descriptions.Item label="Contract Value">{formatCurrency(contract.contractValue ?? contract.totalValue)}</Descriptions.Item>
                                     <Descriptions.Item label="Start Date">{contract.startDate ? dayjs(contract.startDate).format('MMM D, YYYY') : '—'}</Descriptions.Item>
                                     <Descriptions.Item label="End Date">{contract.endDate ? dayjs(contract.endDate).format('MMM D, YYYY') : '—'}</Descriptions.Item>
                                     <Descriptions.Item label="Owner">{contract.ownerName || 'Unassigned'}</Descriptions.Item>
@@ -408,7 +410,7 @@ export default function ContractDetailPage() {
                                                 title: 'Actions',
                                                 key: 'actions',
                                                 render: (_: any, record: Activity) => {
-                                                    if (record.statusName !== 'Scheduled') return <span style={{ color: '#aaa' }}>Closed</span>;
+                                                    if (record.statusName !== 'Scheduled') return <span style={{ color: token.colorTextDisabled }}>Closed</span>;
                                                     return (
                                                         <Space>
                                                             <Button type="link" size="small" onClick={() => { setSelectedActivity(record); setIsCompleteModalOpen(true); }}>Complete</Button>
@@ -441,9 +443,9 @@ export default function ContractDetailPage() {
                                         </Button>
                                     </div>
                                     {documents.length > 0 ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column', background: '#fafafa', borderRadius: 8, padding: '0 16px' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', background: token.colorBgLayout, borderRadius: 8, padding: '0 16px' }}>
                                             {documents.map((doc, index) => (
-                                                <div key={doc.id || index} style={{ padding: '12px 0', borderBottom: index === documents.length - 1 ? 'none' : '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div key={doc.id || index} style={{ padding: '12px 0', borderBottom: index === documents.length - 1 ? 'none' : `1px solid ${token.colorBorderSecondary}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <Text>{doc.fileName || doc.name || 'Unnamed Document'}</Text>
                                                     <Space>
                                                         <Button
@@ -489,9 +491,9 @@ export default function ContractDetailPage() {
                                         </Button>
                                     </div>
                                     {notes.length > 0 ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column', background: '#fafafa', borderRadius: 8, padding: '0 16px' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', background: token.colorBgLayout, borderRadius: 8, padding: '0 16px' }}>
                                             {notes.map((note, index) => (
-                                                <div key={note.id || index} style={{ padding: '12px 0', borderBottom: index === notes.length - 1 ? 'none' : '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div key={note.id || index} style={{ padding: '12px 0', borderBottom: index === notes.length - 1 ? 'none' : `1px solid ${token.colorBorderSecondary}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <div style={{ flex: 1, overflow: 'hidden', marginRight: 16 }}>
                                                         <Text strong ellipsis style={{ display: 'block' }}>
                                                             {note.content || note.text}
@@ -553,6 +555,7 @@ export default function ContractDetailPage() {
                     contractId={contract.id}
                     clientName={contract.clientName}
                     clientId={contract.clientId}
+                    contract={contract}
                 />
             )}
 

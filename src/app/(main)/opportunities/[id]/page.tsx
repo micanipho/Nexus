@@ -14,15 +14,22 @@ import {
     SendOutlined,
     CloseOutlined,
     FileOutlined,
-    MessageOutlined
+    MessageOutlined,
+    SolutionOutlined,
+    InfoCircleOutlined,
+    HistoryOutlined,
+    FileTextOutlined,
+    ScheduleOutlined
 } from '@ant-design/icons';
-import { Opportunity, UserRole, Activity, Proposal, ProposalStatus } from '@/types';
+import { Opportunity, UserRole, Activity, Proposal, PricingRequest, ProposalStatus, PricingRequestStatus } from '@/types';
+import { theme as antdTheme } from 'antd';
 import { OpportunityStage } from '@/types/enums';
 import { useHasRole } from '@/hooks/useHasRole';
 import { useCrossTenantError } from '@/hooks/useCrossTenantError';
 import opportunityService, { OpportunityStageHistory } from '@/services/opportunityService';
 import proposalService from '@/services/proposalService';
 import activityService from '@/services/activityService';
+import pricingRequestService from '@/services/pricingRequestService';
 import PageHeader from '@/components/shared/PageHeader';
 import OpportunityModal from '@/components/opportunities/OpportunityModal';
 import ProposalModal from '@/components/proposals/ProposalModal';
@@ -31,12 +38,14 @@ import NotesPanel from '@/components/shared/NotesPanel';
 import CreateActivityModal from '@/components/activities/CreateActivityModal';
 import CompleteActivityModal from '@/components/activities/CompleteActivityModal';
 import ViewActivityModal from '@/components/activities/ViewActivityModal';
+import PricingRequestModal from '@/components/pricing/PricingRequestModal';
 import CrossTenantError from '@/components/errors/CrossTenantError';
 import StatusBadge from '@/components/shared/StatusBadge';
 import DealHealthScore from '@/components/ai/DealHealthScore';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import Link from 'next/link';
+import { formatCurrency } from '@/utils/currencyUtils';
 
 dayjs.extend(relativeTime);
 
@@ -46,12 +55,14 @@ export default function OpportunityDetailPage() {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
     const { message } = App.useApp();
+    const { token } = antdTheme.useToken();
     const { isCrossTenantError, execute, reset: resetError } = useCrossTenantError();
 
     const [opportunity, setOpportunity] = useState<Opportunity | null>(null);
     const [stageHistory, setStageHistory] = useState<OpportunityStageHistory[]>([]);
     const [proposals, setProposals] = useState<Proposal[]>([]);
     const [activities, setActivities] = useState<Activity[]>([]);
+    const [pricingRequests, setPricingRequests] = useState<PricingRequest[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [isOpportunityModalOpen, setIsOpportunityModalOpen] = useState(false);
@@ -59,6 +70,7 @@ export default function OpportunityDetailPage() {
     const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
+    const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
     const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
@@ -75,15 +87,18 @@ export default function OpportunityDetailPage() {
             
             // Only fetch related data if the opportunity exists and wasn't a cross-tenant err
             if (oppData) {
-                const [historyData, propsData, actsData] = await Promise.all([
+                const [historyData, propsData, actsData, pricingData] = await Promise.all([
                     opportunityService.getStageHistory(id).catch(() => []),
                     proposalService.getProposals({ opportunityId: id, pageNumber: 1, pageSize: 50 }).catch(() => ({ items: [] })),
                     activityService.getActivities({ relatedToId: id, relatedToType: 2, pageNumber: 1, pageSize: 50 }).catch(() => ({ items: [] })),
+                    pricingRequestService.getPricingRequests({ pageNumber: 1, pageSize: 50 }).catch(() => ({ items: [] })),
                 ]);
 
                 setStageHistory(Array.isArray(historyData) ? historyData : []);
                 setProposals(propsData?.items && Array.isArray(propsData.items) ? propsData.items : []);
                 setActivities(actsData?.items && Array.isArray(actsData.items) ? actsData.items : []);
+                const allPricing = pricingData?.items && Array.isArray(pricingData.items) ? pricingData.items : [];
+                setPricingRequests(allPricing.filter((pr: PricingRequest) => pr.opportunityId === id));
             }
             return true;
         });
@@ -149,6 +164,16 @@ export default function OpportunityDetailPage() {
             message.error('Failed to update stage');
         } finally {
             setUpdatingStage(false);
+        }
+    };
+
+    const handleCompletePricing = async (requestId: string) => {
+        try {
+            await pricingRequestService.completePricingRequest(requestId);
+            message.success('Pricing request completed');
+            fetchAllData();
+        } catch {
+            message.error('Failed to complete pricing request');
         }
     };
 
@@ -244,7 +269,7 @@ export default function OpportunityDetailPage() {
                     <Card variant="borderless">
                         <Statistic 
                             title="Estimated Value" 
-                            value={`${opportunity.currency || 'ZAR'} ${opportunity.estimatedValue?.toLocaleString() || 0}`} 
+                            value={formatCurrency(opportunity.estimatedValue)} 
                         />
                     </Card>
                 </Col>
@@ -293,13 +318,15 @@ export default function OpportunityDetailPage() {
                 </Col>
             </Row>
 
+            <Row gutter={[16, 16]}>
+            <Col xs={24} xl={17}>
             <Card variant="borderless">
                 <Tabs
                     defaultActiveKey="overview"
                     items={[
                         {
                             key: 'overview',
-                            label: 'Overview',
+                            label: (<span><InfoCircleOutlined /> Overview</span>),
                             children: (
                                 <Descriptions column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }} bordered>
                                     <Descriptions.Item label="Client">
@@ -318,14 +345,13 @@ export default function OpportunityDetailPage() {
                                             4: 'Referral'
                                         }[opportunity.source] || 'N/A'}
                                     </Descriptions.Item>
-                                    <Descriptions.Item label="Currency">{opportunity.currency || 'ZAR'}</Descriptions.Item>
                                     <Descriptions.Item label="Description" span={2}>{opportunity.description || 'No description provided.'}</Descriptions.Item>
                                 </Descriptions>
                             ),
                         },
                         {
                             key: 'stage-history',
-                            label: 'Stage History',
+                            label: (<span><HistoryOutlined /> Stage History</span>),
                             children: (
                                 <Table
                                     size="small"
@@ -344,7 +370,7 @@ export default function OpportunityDetailPage() {
                         },
                         {
                             key: 'proposals',
-                            label: 'Proposals',
+                            label: (<span><FileTextOutlined /> Proposals</span>),
                             children: (
                                 <>
                                     <Table
@@ -353,7 +379,7 @@ export default function OpportunityDetailPage() {
                                         dataSource={proposals}
                                         columns={[
                                             { title: 'Title', dataIndex: 'title', key: 'title', render: (t, r) => <Link href={`/proposals/${r.id}`}>{t}</Link> },
-                                            { title: 'Amount', dataIndex: 'totalAmount', key: 'totalAmount', render: (v, r) => `${r.currency || 'R'}${v?.toLocaleString()}` },
+                                            { title: 'Amount', dataIndex: 'totalAmount', key: 'totalAmount', render: (v) => formatCurrency(v) },
                                             { title: 'Status', dataIndex: 'status', key: 'status', render: (s) => <StatusBadge status={s} /> },
                                             {
                                                 title: 'Actions',
@@ -392,7 +418,7 @@ export default function OpportunityDetailPage() {
                         },
                         {
                             key: 'activities',
-                            label: 'Activities',
+                            label: (<span><ScheduleOutlined /> Activities</span>),
                             children: (
                                 <>
                                     <Table
@@ -432,7 +458,7 @@ export default function OpportunityDetailPage() {
                                                 title: 'Actions',
                                                 key: 'actions',
                                                 render: (_, record) => {
-                                                    if (record.statusName !== 'Scheduled') return <span style={{ color: '#aaa' }}>Closed</span>;
+                                                    if (record.statusName !== 'Scheduled') return <span style={{ color: token.colorTextDisabled }}>Closed</span>;
                                                     return (
                                                         <Space>
                                                             <Button type="link" size="small" onClick={() => { setSelectedActivity(record); setIsCompleteModalOpen(true); }}>Complete</Button>
@@ -448,6 +474,74 @@ export default function OpportunityDetailPage() {
                                     <div style={{ marginTop: 16 }}>
                                         <Button type="dashed" block icon={<PlusOutlined />} onClick={() => setIsActivityModalOpen(true)} disabled={!canCreate}>
                                             Log Activity
+                                        </Button>
+                                    </div>
+                                </>
+                            ),
+                        },
+                        {
+                            key: 'pricing',
+                            label: (<span><SolutionOutlined /> Pricing Requests</span>),
+                            children: (
+                                <>
+                                    <Table
+                                        size="small"
+                                        rowKey="id"
+                                        dataSource={pricingRequests}
+                                        columns={[
+                                            { title: 'Title', dataIndex: 'title', key: 'title', render: (text: string, record: PricingRequest) => <Link href={`/pricing-requests/${record.id}`}>{text}</Link> },
+                                            {
+                                                title: 'Priority',
+                                                dataIndex: 'priority',
+                                                key: 'priority',
+                                                render: (p: number) => {
+                                                    const config: Record<number, { color: string; label: string }> = {
+                                                        1: { color: 'green', label: 'Low' },
+                                                        2: { color: 'gold', label: 'Medium' },
+                                                        3: { color: 'orange', label: 'High' },
+                                                        4: { color: 'red', label: 'Urgent' },
+                                                    };
+                                                    const { color, label } = config[p] || { color: 'default', label: `Priority ${p}` };
+                                                    return <Tag color={color}>{label}</Tag>;
+                                                },
+                                            },
+                                            {
+                                                title: 'Status',
+                                                dataIndex: 'status',
+                                                key: 'status',
+                                                render: (s: PricingRequestStatus) => <StatusBadge status={s} />,
+                                            },
+                                            { title: 'Assigned To', dataIndex: 'assignedToName', key: 'assignedToName', render: (t: string) => t || 'Unassigned' },
+                                            {
+                                                title: 'Required By',
+                                                dataIndex: 'requiredByDate',
+                                                key: 'requiredByDate',
+                                                render: (d: string) => {
+                                                    if (!d) return '—';
+                                                    const isOverdue = dayjs(d).isBefore(dayjs());
+                                                    return <span style={{ color: isOverdue ? 'red' : 'inherit' }}>{dayjs(d).format('MMM D, YYYY')}</span>;
+                                                },
+                                            },
+                                            {
+                                                title: 'Actions',
+                                                key: 'actions',
+                                                render: (_: unknown, record: PricingRequest) => (
+                                                    <Space size="small">
+                                                        {record.status === PricingRequestStatus.IN_PROGRESS && canCreate && (
+                                                            <Popconfirm title="Mark as completed?" onConfirm={() => handleCompletePricing(record.id)}>
+                                                                <Button size="small" type="primary" icon={<CheckOutlined />}>Complete</Button>
+                                                            </Popconfirm>
+                                                        )}
+                                                    </Space>
+                                                ),
+                                            },
+                                        ]}
+                                        locale={{ emptyText: 'No pricing requests for this opportunity.' }}
+                                        scroll={{ x: 'max-content' }}
+                                    />
+                                    <div style={{ marginTop: 16 }}>
+                                        <Button type="dashed" block icon={<PlusOutlined />} onClick={() => setIsPricingModalOpen(true)} disabled={!canCreate}>
+                                            New Pricing Request
                                         </Button>
                                     </div>
                                 </>
@@ -470,6 +564,15 @@ export default function OpportunityDetailPage() {
                     ]}
                 />
             </Card>
+            </Col>
+            <Col xs={24} xl={7}>
+                <DealHealthScore
+                    opportunity={opportunity}
+                    activities={activities}
+                    proposals={proposals}
+                />
+            </Col>
+            </Row>
 
             <OpportunityModal
                 open={isOpportunityModalOpen}
@@ -504,6 +607,13 @@ export default function OpportunityDetailPage() {
                 open={isViewModalOpen}
                 onClose={() => setIsViewModalOpen(false)}
                 activity={selectedActivity}
+            />
+
+            <PricingRequestModal
+                open={isPricingModalOpen}
+                onClose={() => setIsPricingModalOpen(false)}
+                onSuccess={fetchAllData}
+                preselectedOpportunityId={id}
             />
 
         </Space>

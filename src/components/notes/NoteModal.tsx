@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Checkbox, Button, App, Typography } from 'antd';
+import { Modal, Form, Input, Checkbox, Button, App, Typography, theme } from 'antd';
 import dayjs from 'dayjs';
 import noteService, { CreateNotePayload, Note, UpdateNotePayload } from '@/services/noteService';
 
@@ -19,6 +19,7 @@ interface NoteModalProps {
 
 export default function NoteModal({ open, onClose, onSuccess, relatedToType, relatedToId, note, readOnly }: NoteModalProps) {
     const { message } = App.useApp();
+    const { token } = theme.useToken();
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
 
@@ -89,7 +90,7 @@ export default function NoteModal({ open, onClose, onSuccess, relatedToType, rel
                             By {note.createdBy || 'Unknown User'} • {dayjs(note.createdAt).format('MMMM D, YYYY HH:mm')}
                         </Text>
                     </div>
-                    <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', minHeight: 100, padding: 12, background: '#f5f5f5', borderRadius: 4 }}>
+                    <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', minHeight: 100, padding: 12, background: token.colorBgLayout, borderRadius: 4 }}>
                         {note.content || note.text}
                     </Typography.Paragraph>
                 </div>
