@@ -110,6 +110,13 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
     </div>
   );
 
+  const drawerLogo = (
+    <div className={styles.logoContainer} onClick={() => { setMobileMenuOpen(false); router.push('/dashboard'); }}>
+      <Image src="/logo.svg" alt="Nexus Logo" width={28} height={28} />
+      <h2 className="logo-text">NEXUS</h2>
+    </div>
+  );
+
   return (
     <>
       <header className={styles.header}>
@@ -163,7 +170,7 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
       </header>
 
       <Drawer
-        title={logoSection}
+        title={drawerLogo}
         placement="top"
         onClose={() => setMobileMenuOpen(false)}
         open={mobileMenuOpen}

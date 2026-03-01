@@ -230,7 +230,6 @@ export default function DashboardPage() {
           <MetricCard
             title="Projected Revenue"
             value={formatCurrency((overview?.revenue?.projectedThisYear || 0) + (overview?.revenue?.thisYear || 0))}
-            prefix={<DollarOutlined />}
             trend={revenueTrend}
           />
         </Col>

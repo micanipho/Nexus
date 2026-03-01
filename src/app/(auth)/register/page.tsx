@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import useStyles from './style/register.style';
+import { RegisterRequest } from '@/types/auth';
 
 const { Text } = Typography;
 
@@ -52,7 +53,7 @@ function InnerRegisterPage() {
     }
   }, [searchParams, form]);
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: RegisterRequest & { confirm: string }) => {
     setLoading(true);
     try {
       const tenantName = mode === 'new-org' ? values.tenantName : undefined;
@@ -75,8 +76,8 @@ function InnerRegisterPage() {
       );
       message.success('Registration successful!');
       router.push('/dashboard');
-    } catch (err) {
-      message.error('Registration failed. Please try again.');
+    } catch (err: any) {
+      // Registration error is already handled by provider state
     } finally {
       setLoading(false);
     }

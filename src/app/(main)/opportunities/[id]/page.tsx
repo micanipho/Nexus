@@ -260,7 +260,7 @@ export default function OpportunityDetailPage() {
     };
 
     return (
-        <Space orientation="vertical" size={24} style={{ width: '100%' }}>
+        <Space direction="vertical" size={24} style={{ width: '100%' }}>
             <PageHeader 
                 title={opportunity.title} 
                 breadcrumbs={breadcrumbs}

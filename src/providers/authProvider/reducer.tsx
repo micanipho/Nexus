@@ -24,11 +24,15 @@ const authReducer = handleActions<AuthState, any>(
       isAuthenticated: true,
       user: action.payload.user,
       token: action.payload.token,
+      error: null,
     }),
     [AUTH_LOGIN_FAILURE]: (state, action) => ({
       ...state,
       loading: false,
       error: action.payload,
+      isAuthenticated: false,
+      user: null,
+      token: null,
     }),
     [AUTH_REGISTER_REQUEST]: (state) => ({
       ...state,
@@ -41,14 +45,19 @@ const authReducer = handleActions<AuthState, any>(
       isAuthenticated: true,
       user: action.payload.user,
       token: action.payload.token,
+      error: null,
     }),
     [AUTH_REGISTER_FAILURE]: (state, action) => ({
       ...state,
       loading: false,
       error: action.payload,
+      isAuthenticated: false,
+      user: null,
+      token: null,
     }),
     [AUTH_LOGOUT]: () => ({
       ...initialState,
+      loading: false,
     }),
     [AUTH_SET_USER]: (state, action) => ({
       ...state,

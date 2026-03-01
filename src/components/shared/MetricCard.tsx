@@ -14,6 +14,7 @@ interface MetricCardProps {
   suffix?: string;
   trend?: number; // percentage
   loading?: boolean;
+  color?: string;
 }
 
 const MetricCard: React.FC<MetricCardProps> = ({ 
@@ -22,7 +23,8 @@ const MetricCard: React.FC<MetricCardProps> = ({
   prefix, 
   suffix, 
   trend, 
-  loading 
+  loading,
+  color
 }) => {
   const { styles } = useStyles();
 
@@ -33,6 +35,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
         value={value}
         prefix={prefix}
         suffix={suffix}
+        valueStyle={color ? { color } : undefined}
       />
       {trend !== undefined && (
         <div className={styles.trendContainer}>

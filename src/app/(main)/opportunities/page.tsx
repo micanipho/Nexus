@@ -2,21 +2,16 @@
 
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import { Button, Input, Select, Space } from 'antd';
+import { Button, Input, Select, Space, App } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
 import { Opportunity, OpportunityStage, UserRole } from '@/types';
 import { useOpportunities, useOpportunityActions } from '@/providers/opportunityProvider';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
-import StatusBadge from '@/components/shared/StatusBadge';
 import { useHasRole } from '@/hooks/useHasRole';
 import dashboardService from '@/services/dashboardService';
-import { formatCurrency } from '@/utils/currencyUtils';
-import { App, Popconfirm } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
 import { useAuth } from '@/providers/authProvider';
+import { getColumns } from './columns';
 
 const OpportunityModal = dynamic(() => import('@/components/opportunities/OpportunityModal'), { 
     ssr: false,
@@ -103,79 +98,13 @@ export default function OpportunitiesPage() {
         setFilters({ ...filters, isActive: value, pageNumber: 1 });
     };
 
-    const columns: ColumnsType<Opportunity> = [
-        {
-            title: 'Opportunity',
-            dataIndex: 'title',
-            key: 'title',
-            render: (text, record) => <Link href={`/opportunities/${record.id}`}>{text}</Link>,
-        },
-        {
-            title: 'Client',
-            dataIndex: 'clientName',
-            key: 'clientName',
-            render: (text, record) => <Link href={`/clients/${record.clientId}`}>{text}</Link>,
-        },
-        {
-            title: 'Value',
-            dataIndex: 'estimatedValue',
-            key: 'estimatedValue',
-            render: (v) => formatCurrency(v),
-            sorter: (a, b) => a.estimatedValue - b.estimatedValue,
-            align: 'right',
-        },
-        {
-            title: 'Stage',
-            dataIndex: 'stage',
-            key: 'stage',
-            render: (stage: OpportunityStage, record) => {
-                const isOwner = user?.id === record.ownerId;
-                const canUpdate = canCreate || isOwner;
-                
-                return canUpdate ? (
-                    <Select
-                        value={stage}
-                        onChange={(value) => handleUpdateStage(record.id, value)}
-                        style={{ width: 140 }}
-                        size="small"
-                        options={[
-                            { value: 1, label: 'Lead' },
-                            { value: 2, label: 'Qualified' },
-                            { value: 3, label: 'Proposal' },
-                            { value: 4, label: 'Negotiation' },
-                            { value: 5, label: 'Closed Won' },
-                            { value: 6, label: 'Closed Lost' }
-                        ]}
-                    />
-                ) : (
-                    <span>{stage}</span>
-                );
-            },
-        },
-        {
-            title: 'Actions',
-            key: 'actions',
-            render: (_, record) => (
-                <Space size="small">
-                    <Link href={`/opportunities/${record.id}`}>
-                        <Button size="small">View</Button>
-                    </Link>
-                    {canDelete && (
-                        <Popconfirm
-                            title="Deactivate Opportunity?"
-                            description="Are you sure you want to deactivate this opportunity?"
-                            onConfirm={() => handleDelete(record.id)}
-                            okText="Yes"
-                            cancelText="No"
-                            okButtonProps={{ danger: true }}
-                        >
-                            <Button size="small" danger icon={<DeleteOutlined />} />
-                        </Popconfirm>
-                    )}
-                </Space>
-            ),
-        },
-    ];
+    const columns = getColumns({
+        currentUserId: user?.id,
+        canUpdate: canCreate,
+        canDelete,
+        onUpdateStage: handleUpdateStage,
+        onDelete: handleDelete,
+    });
 
     const extra = (
         <Space size="middle">

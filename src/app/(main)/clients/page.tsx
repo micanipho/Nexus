@@ -2,19 +2,16 @@
 
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import { Button, Input, Select, Space, Tag } from 'antd';
+import { Button, Input, Select, Space, App } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
 import { Client, UserRole } from '@/types';
 import { theme as antdTheme } from 'antd';
 import { useClients, useClientActions } from '@/providers/clientProvider';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
 import { useHasRole } from '@/hooks/useHasRole';
-import { DeleteOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import { App, Popconfirm } from 'antd';
 import clientService from '@/services/clientService';
+import { getColumns } from './columns';
 
 const ClientModal = dynamic(() => import('@/components/clients/ClientModal'), { 
     ssr: false,
@@ -69,73 +66,12 @@ export default function ClientsPage() {
         }
     };
 
-    const columns: ColumnsType<Client> = [
-        {
-            title: 'Client',
-            dataIndex: 'name',
-            key: 'name',
-            render: (text, record) => <Link href={`/clients/${record.id}`}>{text}</Link>,
-        },
-        { 
-            title: 'Industry', 
-            dataIndex: 'industry',
-            key: 'industry',
-        },
-        {
-            title: 'Opportunities',
-            dataIndex: 'opportunitiesCount',
-            key: 'opportunitiesCount',
-            sorter: (a, b) => (a.opportunitiesCount || 0) - (b.opportunitiesCount || 0),
-        },
-        {
-            title: 'Contracts',
-            dataIndex: 'contractsCount',
-            key: 'contractsCount',
-            sorter: (a, b) => (a.contractsCount || 0) - (b.contractsCount || 0),
-        },
-        {
-            title: 'Status',
-            dataIndex: 'isActive',
-            key: 'isActive',
-            render: (isActive: boolean) => (
-                <Tag color={isActive ? 'green' : 'red'}>
-                    {isActive ? 'Active' : 'Inactive'}
-                </Tag>
-            ),
-        },
-        {
-            title: 'Actions',
-            key: 'actions',
-            render: (_, record) => (
-                <Space size="small">
-                    <Link href={`/clients/${record.id}`}>
-                        <Button size="small">View</Button>
-                    </Link>
-                    {canDelete && record.isActive && (
-                        <Popconfirm
-                            title="Deactivate Client?"
-                            description="Are you sure you want to deactivate this client?"
-                            onConfirm={() => handleDelete(record.id)}
-                            okText="Yes"
-                            cancelText="No"
-                            okButtonProps={{ danger: true }}
-                        >
-                            <Button size="small" danger icon={<DeleteOutlined />} />
-                        </Popconfirm>
-                    )}
-                    {canDelete && !record.isActive && (
-                        <Button 
-                            size="small" 
-                            type="primary" 
-                            icon={<CheckCircleOutlined />} 
-                            onClick={() => handleReactivate(record.id, record)}
-                            style={{ backgroundColor: token.colorSuccess, borderColor: token.colorSuccess }}
-                        />
-                    )}
-                </Space>
-            ),
-        },
-    ];
+    const columns = getColumns({
+        canDelete,
+        onDelete: handleDelete,
+        onReactivate: handleReactivate,
+        successColor: token.colorSuccess,
+    });
 
     const extra = (
         <Space size="middle" wrap>
