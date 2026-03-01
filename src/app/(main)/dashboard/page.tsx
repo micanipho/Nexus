@@ -22,12 +22,11 @@ import dashboardService, {
 import { useHasRole } from '@/hooks/useHasRole';
 import { UserRole } from '@/types';
 import CreateRenewalModal from '@/components/contracts/CreateRenewalModal';
-import { Button, Tabs, Tag, Segmented, InputNumber, Space } from 'antd';
+import { Button, Tabs, Tag, Space } from 'antd';
 import dynamic from 'next/dynamic';
 
 const Line = dynamic(() => import('@ant-design/plots').then((mod) => mod.Line), { ssr: false });
 const Column = dynamic(() => import('@ant-design/plots').then((mod) => mod.Column), { ssr: false });
-const Pie = dynamic(() => import('@ant-design/plots').then((mod) => mod.Pie), { ssr: false });
 import { useActivities, useActivityActions } from '@/providers/activityProvider';
 import dayjs from 'dayjs';
 
@@ -59,8 +58,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [timeRange, setTimeRange] = useState<string>('This Year');
-  const [yAxisMax, setYAxisMax] = useState<number | null>(null);
   const [renewalModalOpen, setRenewalModalOpen] = useState(false);
   const [selectedContract, setSelectedContract] = useState<{ id: string; clientName: string; clientId: string } | null>(null);
 
@@ -123,6 +120,39 @@ export default function DashboardPage() {
 
   const { overview, pipeline, salesPerf, activities, expiring } = data;
 
+  // --- Calculate trends from overview data ---
+  const rev = overview?.revenue;
+  const opp = overview?.opportunities;
+  const contracts = overview?.contracts;
+
+  // Revenue trend: this month's actual vs monthly average this quarter
+  // (thisQuarter / 3 = avg monthly this quarter, compare current month to that baseline)
+  const quarterlyMonthlyAvg = (rev?.thisQuarter || 0) / 3;
+  const revenueTrend = quarterlyMonthlyAvg > 0
+    ? Math.round(((rev?.thisMonth || 0) - quarterlyMonthlyAvg) / quarterlyMonthlyAvg * 100)
+    : rev?.thisMonth ? 100 : 0;
+
+  // Pipeline trend: projected this month vs projected monthly average this quarter
+  const projectedQuarterlyAvg = (rev?.projectedThisQuarter || 0) / 3;
+  const pipelineTrend = projectedQuarterlyAvg > 0
+    ? Math.round(((rev?.projectedThisMonth || 0) - projectedQuarterlyAvg) / projectedQuarterlyAvg * 100)
+    : rev?.projectedThisMonth ? 100 : 0;
+
+  // Contracts trend: expiring this month as a negative % of active contracts
+  const activeContracts = contracts?.totalActiveCount || 0;
+  const expiringThisMonth = contracts?.expiringThisMonthCount || 0;
+  const contractsTrend = activeContracts > 0
+    ? -Math.round((expiringThisMonth / activeContracts) * 100)
+    : 0;
+
+  // Win rate trend: won vs lost as net sentiment (positive = more wins than losses)
+  const wonCount = opp?.wonCount || 0;
+  const lostCount = opp?.lostCount || 0;
+  const totalClosed = wonCount + lostCount;
+  const winRateTrend = totalClosed > 0
+    ? Math.round(((wonCount - lostCount) / totalClosed) * 100)
+    : 0;
+
   const formatCurrency = (value: number) => {
     if (!value) return 'R0';
     if (value >= 1000000000000) return `R${(value / 1000000000000).toFixed(1)}T`;
@@ -150,7 +180,6 @@ export default function DashboardPage() {
   ];
 
   const contractColumns = [
-    { title: 'Contract ID', dataIndex: 'id', key: 'id', render: (text: string) => text.substring(0, 8) },
     { title: 'Client', dataIndex: 'clientName', key: 'clientName' },
     { title: 'End Date', dataIndex: 'endDate', key: 'endDate', render: (val: string) => new Date(val).toLocaleDateString() },
     { title: 'Value', dataIndex: 'totalValue', key: 'totalValue', render: (val: number) => formatCurrency(val) },
@@ -171,30 +200,27 @@ export default function DashboardPage() {
     { title: 'Value', dataIndex: 'totalValue', key: 'totalValue', render: (val: number) => formatCurrency(val) }
   ];
 
-  // Chart Data Mapping
-  const allTrendData = overview?.revenue?.monthlyTrend?.flatMap(d => [
+  // Chart Data Mapping — show 11 months before current month + current month (12 total)
+  const now = dayjs();
+  const currentYear = now.year();
+  const currentMonth = now.month() + 1; // 1-based
+  const windowStart = now.subtract(11, 'month');
+  const startYear = windowStart.year();
+  const startMonth = windowStart.month() + 1;
+
+  const trendInWindow = (overview?.revenue?.monthlyTrend || [])
+    .filter(d => {
+      const key = d.year * 100 + d.month;
+      return key >= startYear * 100 + startMonth && key <= currentYear * 100 + currentMonth;
+    })
+    .sort((a, b) => a.year - b.year || a.month - b.month);
+
+  const allTrendData = trendInWindow.flatMap(d => [
     { month: d.monthName, type: 'Actual', value: d.actual },
     { month: d.monthName, type: 'Projected', value: d.projected },
-  ]) || [];
-
-  // Filter based on Segmented control (assuming backend returned more than a year; otherwise this demonstrates the modern interactive capability)
-  const currentYear = new Date().getFullYear();
-  const currentMonthName = dayjs().format('MMMM');
-
-  let areaData = allTrendData;
-  if (timeRange === 'This Year') {
-      areaData = allTrendData.filter(d => d.month.includes(currentYear.toString()));
-  } else if (timeRange === 'This Month') {
-      areaData = allTrendData.filter(d => d.month.includes(currentYear.toString()) && d.month.includes(currentMonthName));
-  }
-
-  // Fallback if filtering removes all data (e.g., mock data doesn't have the current year appended yet)
-  const finalAreaData = areaData.length > 0 ? areaData : allTrendData;
+  ]);
 
   const funnelData = pipeline?.stages.map(s => ({ stage: s.stageName, value: s.count })) || [];
-  const pieData = Object.entries(activities?.byType || {})
-    .filter(([_, value]) => (value as number) > 0)
-    .map(([type, value]) => ({ type, value }));
 
   return (
     <div style={{ paddingBottom: '24px' }}>
@@ -203,35 +229,35 @@ export default function DashboardPage() {
       {/* Key Metrics Row */}
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         <Col xs={24} sm={12} lg={6}>
-          <MetricCard 
-            title="Projected Revenue" 
-            value={formatCurrency((overview?.revenue?.projectedThisYear || 0) + (overview?.revenue?.thisYear || 0))} 
-            prefix={<DollarOutlined />} 
-            trend={12} 
+          <MetricCard
+            title="Projected Revenue"
+            value={formatCurrency((overview?.revenue?.projectedThisYear || 0) + (overview?.revenue?.thisYear || 0))}
+            prefix={<DollarOutlined />}
+            trend={revenueTrend}
           />
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <MetricCard 
-            title="Pipeline Value" 
-            value={formatCurrency(overview?.opportunities?.pipelineValue || 0)} 
-            prefix={<LineChartOutlined />} 
-            trend={8} 
+          <MetricCard
+            title="Pipeline Value"
+            value={formatCurrency(overview?.opportunities?.pipelineValue || 0)}
+            prefix={<LineChartOutlined />}
+            trend={pipelineTrend}
           />
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <MetricCard 
-            title="Active Contracts" 
-            value={overview?.contracts?.totalActiveCount?.toString() || "0"} 
-            prefix={<TeamOutlined />} 
-            trend={3} 
+          <MetricCard
+            title="Active Contracts"
+            value={overview?.contracts?.totalActiveCount?.toString() || "0"}
+            prefix={<TeamOutlined />}
+            trend={contractsTrend}
           />
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <MetricCard 
-            title="Win Rate" 
-            value={`${overview?.opportunities?.winRate?.toFixed(1) || 0}%`} 
-            prefix={<FileDoneOutlined />} 
-            trend={-2} 
+          <MetricCard
+            title="Win Rate"
+            value={`${overview?.opportunities?.winRate?.toFixed(1) || 0}%`}
+            prefix={<FileDoneOutlined />}
+            trend={winRateTrend}
           />
         </Col>
       </Row>
@@ -239,33 +265,10 @@ export default function DashboardPage() {
       {/* Revenue Trend Chart */}
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         <Col span={24}>
-          <Card 
-            title="Revenue Trend" 
-            className="shadow-sm"
-            extra={
-              <Space>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                   <Text type="secondary" style={{ fontSize: '13px' }}>Y-Max:</Text>
-                   <InputNumber 
-                      size="small" 
-                      placeholder="Auto" 
-                      value={yAxisMax} 
-                      onChange={val => setYAxisMax(val)} 
-                      style={{ width: 100 }}
-                      formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                   />
-                </div>
-                <Segmented 
-                  options={['This Month', 'This Year', 'All Time']} 
-                  value={timeRange} 
-                  onChange={(value) => setTimeRange(value as string)}
-                />
-              </Space>
-            }
-          >
-            {finalAreaData.length > 0 ? (
+          <Card title="Revenue Trend" className="shadow-sm">
+            {allTrendData.length > 0 ? (
               <Line
-                data={finalAreaData}
+                data={allTrendData}
                 xField="month"
                 yField="value"
                 colorField="type"
@@ -273,7 +276,7 @@ export default function DashboardPage() {
                 point={{ shapeField: 'circle', sizeField: 4 }}
                 height={300}
                 legend={{ color: { position: 'top' }, itemMarker: 'circle' }}
-                scale={{ y: { nice: true, zero: false, ...(yAxisMax ? { max: yAxisMax } : {}) } }}
+                scale={{ y: { nice: true, zero: false } }}
                 axis={{ y: { labelFormatter: (v: any) => formatCurrency(Number(v)) } }}
                 interaction={{ tooltip: { crosshairs: true, marker: true } }}
               />
@@ -292,7 +295,7 @@ export default function DashboardPage() {
               <>
                 <Row gutter={[16, 16]} style={{ marginBottom: '16px' }}>
                   <Col span={12}>
-                    <Statistic title="Avg Deals Per User" value={salesPerf?.averageDealsPerUser || 0} />
+                    <Statistic title="Avg Deals Per User" value={Math.round(salesPerf?.averageDealsPerUser || 0)} />
                   </Col>
                   <Col span={12}>
                     <Statistic title="Avg Revenue Per User" value={formatCurrency(salesPerf?.averageRevenuePerUser || 0)} />
@@ -389,26 +392,6 @@ export default function DashboardPage() {
                         </div>
                       </Col>
                     </Row>
-                  )
-                },
-                {
-                  key: 'distribution',
-                  label: 'Distribution',
-                  children: (
-                    pieData.length > 0 ? (
-                      <Pie 
-                        data={pieData}
-                        angleField="value"
-                        colorField="type"
-                        radius={0.8}
-                        innerRadius={0.5}
-                        height={250}
-                        label={{ text: 'value', style: { fontWeight: 'bold' } }}
-                        legend={{ color: { position: 'bottom' } }}
-                      />
-                    ) : (
-                      <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>No activities data</div>
-                    )
                   )
                 },
                 {
