@@ -180,7 +180,7 @@ hasApprovedProposal=${hasApprovedProposal}`;
                   ) : (
                     <WarningOutlined style={{ color: '#faad14', marginTop: 4 }} />
                   )}
-                  <Text size="small">{factor}</Text>
+                  <Text style={{ fontSize: '13px' }}>{factor}</Text>
                 </Space>
               </List.Item>
             )}
