@@ -32,6 +32,7 @@ import CreateActivityModal from '@/components/activities/CreateActivityModal';
 import CompleteActivityModal from '@/components/activities/CompleteActivityModal';
 import CrossTenantError from '@/components/errors/CrossTenantError';
 import StatusBadge from '@/components/shared/StatusBadge';
+import DealHealthScore from '@/components/ai/DealHealthScore';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import Link from 'next/link';
