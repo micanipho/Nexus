@@ -124,6 +124,10 @@ export default function ProposalDetailPage() {
         fetchAllData();
     }, [fetchAllData]);
 
+    useEffect(() => {
+        document.title = proposal ? `${proposal.proposalNumber} | Nexus` : 'Proposal | Nexus';
+    }, [proposal]);
+
     // --- Status actions ---
     const handleSubmit = async () => {
         try {
@@ -263,7 +267,7 @@ export default function ProposalDetailPage() {
 
     // --- Action buttons per status ---
     const actionButtons = (
-        <Space size="middle">
+        <Space size="middle" wrap>
             {isDraft && canEdit && (
                 <Popconfirm
                     title="Submit for Approval"

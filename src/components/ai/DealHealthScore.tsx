@@ -99,13 +99,11 @@ hasApprovedProposal=${hasApprovedProposal}`;
         const jsonString = result.text.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
         parsedData = JSON.parse(jsonString);
       } catch (parseErr) {
-        console.error('Parse error:', parseErr, result.text);
         throw new Error('Invalid response format from AI');
       }
 
       setData(parsedData);
     } catch (err: any) {
-      console.error('Deal analysis error:', err);
       setError(err.message || 'Unable to analyze');
     } finally {
       setLoading(false);

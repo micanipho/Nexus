@@ -114,6 +114,10 @@ export default function ContractDetailPage() {
         fetchAllData();
     }, [fetchAllData]);
 
+    useEffect(() => {
+        document.title = contract ? `${contract.contractNumber} | Nexus` : 'Contract | Nexus';
+    }, [contract]);
+
     const handleActivate = async () => {
         try {
             await contractService.activateContract(id);
@@ -194,7 +198,7 @@ export default function ContractDetailPage() {
     ];
 
     const extra = (
-        <Space size="middle">
+        <Space size="middle" wrap>
             {isDraft && canManage && (
                 <Popconfirm
                     title="Activate this contract?"

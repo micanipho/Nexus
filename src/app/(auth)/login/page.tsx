@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import useStyles from './style/login.style';
+import { LoginRequest } from '@/types/auth';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -19,7 +20,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { styles } = useStyles();
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: LoginRequest) => {
     setLoading(true);
     try {
       await login(values.email, values.password);
@@ -80,7 +81,7 @@ export default function LoginPage() {
           </Form.Item>
           
           <div className={styles.footer}>
-            <Space orientation="vertical" size={4}>
+            <Space direction="vertical" size={4}>
               <p className={styles.subtitle}>
                 Don't have an account? <Link href="/register">Create an account</Link>
               </p>

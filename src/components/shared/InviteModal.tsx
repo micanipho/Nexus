@@ -24,8 +24,8 @@ const InviteModal: React.FC<InviteModalProps> = ({ open, onClose }) => {
   // Generate the magic link based on the selected role
   const generateInviteLink = (role: UserRole) => {
     if (!user?.tenantId) return '';
-    // Use the live URL rather than window.location.origin for emails
-    const baseUrl = 'https://nexus-alpha-gules.vercel.app'; 
+    // Use the current origin for emails
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''; 
     
     // Create a JSON string with the sensitive data and encode it to Base64
     const payload = JSON.stringify({ tenantId: user.tenantId, role });
@@ -56,12 +56,12 @@ const InviteModal: React.FC<InviteModalProps> = ({ open, onClose }) => {
 
     try {
       // Frontend-only email sending via EmailJS
-      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'YOUR_SERVICE_ID';
-      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || 'YOUR_TEMPLATE_ID';
-      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || 'YOUR_PUBLIC_KEY';
+      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || '';
+      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || '';
+      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || '';
 
-      if (serviceId === 'YOUR_SERVICE_ID') {
-        console.warn("EmailJS is not fully configured in your .env file yet.");
+      if (!serviceId || !templateId || !publicKey) {
+        throw new Error('Email configuration is incomplete');
       }
 
       const templateParams = {
@@ -79,7 +79,6 @@ const InviteModal: React.FC<InviteModalProps> = ({ open, onClose }) => {
       form.resetFields();
       onClose();
     } catch (error: any) {
-      console.error('EmailJS error:', error);
       message.error(error.text || 'An unexpected error occurred sending the invite.');
     } finally {
       setLoading(false);

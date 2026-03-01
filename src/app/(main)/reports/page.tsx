@@ -63,6 +63,8 @@ export default function ReportsPage() {
   const { token } = theme.useToken();
   const { isDarkMode } = useThemeMode();
   
+  useEffect(() => { document.title = 'Reports | Nexus'; }, []);
+
   // Data States
   const [oppMetrics, setOppMetrics] = useState<any>(null);
   const [pipelineData, setPipelineData] = useState<any[]>([]);
@@ -178,7 +180,7 @@ export default function ReportsPage() {
       dataIndex: 'title', 
       key: 'title',
       render: (text: string, record: Opportunity) => (
-        <Space orientation="vertical" size={0}>
+        <Space direction="vertical" size={0}>
           <Text strong>{text}</Text>
           <Text type="secondary" style={{ fontSize: '12px' }}>{record.clientName}</Text>
         </Space>
@@ -219,18 +221,30 @@ export default function ReportsPage() {
     if (!aiInsights) return;
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
+
+    // Helper to sanitize HTML special chars
+    const escapeHtml = (text: string) => {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    };
+
     const htmlContent = aiInsights.split('\n').map(line => {
       const trimmed = line.trim();
       if (!trimmed) return '<br/>';
-      if (trimmed.startsWith('### ')) return `<h5>${trimmed.substring(4).replace(/\*\*/g, '')}</h5>`;
-      if (trimmed.startsWith('## ')) return `<h4>${trimmed.substring(3).replace(/\*\*/g, '')}</h4>`;
-      if (trimmed.startsWith('# ')) return `<h3>${trimmed.substring(2).replace(/\*\*/g, '')}</h3>`;
+      const escaped = escapeHtml(trimmed);
+      if (trimmed.startsWith('### ')) return `<h5>${escaped.substring(4).replace(/\*\*/g, '')}</h5>`;
+      if (trimmed.startsWith('## ')) return `<h4>${escaped.substring(3).replace(/\*\*/g, '')}</h4>`;
+      if (trimmed.startsWith('# ')) return `<h3>${escaped.substring(2).replace(/\*\*/g, '')}</h3>`;
       if (trimmed.startsWith('- ') || trimmed.startsWith('* ') || /^\d+\.\s/.test(trimmed)) {
-        const content = trimmed.includes(' ') ? trimmed.substring(trimmed.indexOf(' ') + 1) : trimmed;
+        const content = escaped.includes(' ') ? escaped.substring(escaped.indexOf(' ') + 1) : escaped;
         const bolded = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         return `<div style="margin-left: 20px; margin-bottom: 5px;">• ${bolded}</div>`;
       }
-      return `<p>${trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`;
+      return `<p>${escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`;
     }).join('');
     const content = `<html><head><title>Nexus AI Strategic Analysis</title><style>body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 40px; color: #333; line-height: 1.6; } h3 { color: #1677ff; border-bottom: 2px solid #1677ff; padding-bottom: 10px; margin-top: 30px; } h4 { color: #333; margin-top: 25px; margin-bottom: 10px; } h5 { color: #666; margin-top: 20px; margin-bottom: 8px; } .date { color: #888; font-size: 12px; margin-bottom: 30px; } strong { color: #000; } p { margin-bottom: 10px; }</style></head><body><h1 style="margin-bottom: 5px;">Nexus AI Strategic Analysis</h1><div class="date">Report Generated on: ${new Date().toLocaleString()}</div>${htmlContent}</body></html>`;
     printWindow.document.write(content);
@@ -321,7 +335,7 @@ export default function ReportsPage() {
       {/* TIER 2: AI STRATEGIC ANALYSIS (Full Width - Hero) */}
       <Card 
         className="shadow-sm no-print" 
-        style={{ marginBottom: '24px', border: `1px solid ${token.colorPrimarySecondary}`, background: isDarkMode ? '#1a1a1a' : '#f0f7ff' }}
+        style={{ marginBottom: '24px', border: `1px solid ${token.colorBorderSecondary}`, background: isDarkMode ? '#1a1a1a' : '#f0f7ff' }}
         title={<span><RobotOutlined /> Nexus AI Strategic Analysis</span>}
       >
         {!aiInsights ? (
@@ -374,13 +388,14 @@ export default function ReportsPage() {
           </Col>
           <Col xs={24} lg={12}>
             <Card title="Top 10 High-Value Deals" className="shadow-sm" style={{ height: '100%' }}>
-              <Table 
-                dataSource={topOpps} 
-                columns={topOppsColumns} 
-                rowKey="id" 
-                pagination={false} 
+              <Table
+                dataSource={topOpps}
+                columns={topOppsColumns}
+                rowKey="id"
+                pagination={false}
                 size="small"
                 loading={loading}
+                scroll={{ x: 'max-content' }}
               />
             </Card>
           </Col>

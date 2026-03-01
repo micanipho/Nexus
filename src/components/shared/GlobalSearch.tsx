@@ -82,7 +82,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => {
         });
         setSelectedIndex(0);
       } catch (error) {
-        console.error('Search error:', error);
+        // Silently fail search errors
       } finally {
         setLoading(false);
       }
