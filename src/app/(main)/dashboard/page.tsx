@@ -70,6 +70,8 @@ export default function DashboardPage() {
       setRenewalModalOpen(true);
   };
 
+  useEffect(() => { document.title = 'Dashboard | Nexus'; }, []);
+
   useEffect(() => {
     // Wait until roles are fully loaded before fetching
     if (isRoleLoading) return;
@@ -228,14 +230,13 @@ export default function DashboardPage() {
           <MetricCard
             title="Projected Revenue"
             value={formatCurrency((overview?.revenue?.projectedThisYear || 0) + (overview?.revenue?.thisYear || 0))}
-            prefix={<DollarOutlined />}
             trend={revenueTrend}
           />
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <MetricCard
-            title="Pipeline Value"
-            value={formatCurrency(overview?.opportunities?.pipelineValue || 0)}
+            title="Weighted Pipeline"
+            value={formatCurrency(pipeline?.weightedPipelineValue || 0)}
             prefix={<LineChartOutlined />}
             trend={pipelineTrend}
           />

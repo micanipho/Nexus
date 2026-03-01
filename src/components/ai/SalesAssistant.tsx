@@ -166,6 +166,14 @@ export default function SalesAssistant() {
     const [loading, setLoading] = useState(false);
     const [pageCtx, setPageCtx] = useState<PageContext>({ summary: '', suggestions: SUGGESTIONS.default });
     const [contextLoading, setContextLoading] = useState(false);
+    const [drawerWidth, setDrawerWidth] = useState(378);
+
+    useEffect(() => {
+        const updateWidth = () => setDrawerWidth(window.innerWidth < 768 ? window.innerWidth : 378);
+        updateWidth();
+        window.addEventListener('resize', updateWidth);
+        return () => window.removeEventListener('resize', updateWidth);
+    }, []);
 
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<any>(null);
@@ -178,8 +186,8 @@ export default function SalesAssistant() {
             bottom: 28,
             right: 28,
             zIndex: 999,
-            width: 56,
-            height: 56,
+            width: 48,
+            height: 48,
             borderRadius: '50%',
             background: primary,
             border: 'none',
@@ -190,7 +198,7 @@ export default function SalesAssistant() {
             cursor: 'pointer',
             transition: 'transform 0.2s, box-shadow 0.2s',
             color: '#fff',
-            fontSize: 24,
+            fontSize: 20,
         } as React.CSSProperties,
         fabHoverShadow: `0 6px 20px ${themeToken.colorPrimaryBgHover}`,
         fabShadow: `0 4px 14px ${themeToken.colorPrimaryBg}`,
@@ -323,7 +331,7 @@ export default function SalesAssistant() {
                     </span>
                 }
                 placement="right"
-                width={420}
+                width={drawerWidth}
                 open={open}
                 onClose={() => setOpen(false)}
                 styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column', height: '100%' } }}

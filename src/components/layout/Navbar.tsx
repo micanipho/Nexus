@@ -15,7 +15,8 @@ import {
   MenuOutlined,
   SunOutlined,
   MoonOutlined,
-  SearchOutlined
+  SearchOutlined,
+  BarChartOutlined
 } from '@ant-design/icons';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -55,6 +56,7 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
     { key: '/proposals', icon: <FileTextOutlined />, label: 'Proposals' },
     { key: '/contracts', icon: <FileProtectOutlined />, label: 'Contracts' },
     { key: '/activities', icon: <HistoryOutlined />, label: 'Activities' },
+    { key: '/reports', icon: <BarChartOutlined />, label: 'Reports' },
   ];
 
   const menuItems = useMemo(() => {
@@ -103,6 +105,13 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
 
   const logoSection = (
     <div className={styles.logoContainer} onClick={() => router.push('/dashboard')}>
+      <Image src="/logo.svg" alt="Nexus Logo" width={28} height={28} />
+      <h2 className="logo-text">NEXUS</h2>
+    </div>
+  );
+
+  const drawerLogo = (
+    <div className={styles.logoContainer} onClick={() => { setMobileMenuOpen(false); router.push('/dashboard'); }}>
       <Image src="/logo.svg" alt="Nexus Logo" width={28} height={28} />
       <h2 className="logo-text">NEXUS</h2>
     </div>
@@ -161,7 +170,7 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
       </header>
 
       <Drawer
-        title={logoSection}
+        title={drawerLogo}
         placement="top"
         onClose={() => setMobileMenuOpen(false)}
         open={mobileMenuOpen}

@@ -2,11 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import { Button, Input, Select, Space, App, Popconfirm } from 'antd';
+import { Button, Input, Select, Space, App } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
-import { Contract, ContractStatus, UserRole } from '@/types';
+import { Contract, ContractStatus, UserRole, ContractRenewal } from '@/types';
 import { theme as antdTheme } from 'antd';
 import { useContracts, useContractActions } from '@/providers/contractProvider';
 import DataTable from '@/components/shared/DataTable';
@@ -14,8 +12,7 @@ import PageHeader from '@/components/shared/PageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { useHasRole } from '@/hooks/useHasRole';
 import contractService from '@/services/contractService';
-import { ContractRenewal } from '@/types';
-import { formatCurrency } from '@/utils/currencyUtils';
+import { getColumns } from './columns';
 
 const CreateContractModal = dynamic(() => import('@/components/contracts/CreateContractModal'), { 
     ssr: false,
@@ -39,6 +36,8 @@ export default function ContractsPage() {
     const [expandedRowKeys, setExpandedRowKeys] = useState<readonly React.Key[]>([]);
     const [renewalsByContract, setRenewalsByContract] = useState<Record<string, ContractRenewal[]>>({});
     const [loadingRenewals, setLoadingRenewals] = useState<Record<string, boolean>>({});
+
+    useEffect(() => { document.title = 'Contracts | Nexus'; }, []);
 
     useEffect(() => {
         fetchContracts();
@@ -109,96 +108,12 @@ export default function ContractsPage() {
         }
     };
 
-    const columns: ColumnsType<Contract> = [
-        {
-            title: 'Contract #',
-            dataIndex: 'contractNumber',
-            key: 'contractNumber',
-            render: (text, record) => <Link href={`/contracts/${record.id}`}>{text || record.id.substring(0, 8).toUpperCase()}</Link>,
-        },
-        {
-            title: 'Title',
-            dataIndex: 'title',
-            key: 'title',
-        },
-        {
-            title: 'Client',
-            dataIndex: 'clientName',
-            key: 'clientName',
-            render: (text, record) => <Link href={`/clients/${record.clientId}`}>{text}</Link>,
-        },
-        {
-            title: 'Value',
-            dataIndex: 'contractValue',
-            key: 'contractValue',
-            render: (v, record) => formatCurrency(v ?? record.totalValue),
-            sorter: (a, b) => (a.contractValue ?? a.totalValue) - (b.contractValue ?? b.totalValue),
-        },
-        {
-            title: 'Status',
-            dataIndex: 'statusName',
-            key: 'statusName',
-            render: (statusName: string, record) => <StatusBadge status={statusName || record.status} />,
-        },
-        {
-            title: 'Start Date',
-            dataIndex: 'startDate',
-            key: 'startDate',
-            render: (d) => d ? new Date(d).toLocaleDateString() : '—',
-        },
-        {
-            title: 'End Date',
-            dataIndex: 'endDate',
-            key: 'endDate',
-            render: (d) => d ? new Date(d).toLocaleDateString() : '—',
-        },
-        {
-            title: 'Owner',
-            dataIndex: 'ownerName',
-            key: 'ownerName',
-        },
-        {
-            title: 'Actions',
-            key: 'actions',
-            render: (_, record) => {
-                const isDraft = record.statusName === 'Draft' || record.status === ContractStatus.DRAFT;
-                const isActive = record.statusName === 'Active' || record.status === ContractStatus.ACTIVE;
-                return (
-                    <Space>
-                        <Link href={`/contracts/${record.id}`}>
-                            <Button size="small">View</Button>
-                        </Link>
-                        {isDraft && canManage && (
-                            <Popconfirm
-                                title="Activate this contract?"
-                                description="This will move the contract to Active status."
-                                onConfirm={() => handleActivate(record.id)}
-                                okText="Activate"
-                            >
-                                <Button size="small" type="primary">Activate</Button>
-                            </Popconfirm>
-                        )}
-                        {isActive && canManage && (
-                            <Button size="small" type="primary" onClick={() => handleOpenRenewal(record)}>
-                                Renew
-                            </Button>
-                        )}
-                        {isDraft && canManage && (
-                            <Popconfirm
-                                title="Cancel this contract?"
-                                description="This action cannot be undone."
-                                onConfirm={() => handleCancel(record.id)}
-                                okText="Cancel Contract"
-                                okButtonProps={{ danger: true }}
-                            >
-                                <Button size="small" danger>Cancel</Button>
-                            </Popconfirm>
-                        )}
-                    </Space>
-                );
-            },
-        },
-    ];
+    const columns = getColumns({
+        canManage,
+        onActivate: handleActivate,
+        onCancel: handleCancel,
+        onRenew: handleOpenRenewal,
+    });
 
     const extra = (
         <Space size="middle">
@@ -247,7 +162,8 @@ export default function ContractsPage() {
                     pageSize: filters.pageSize,
                     total: totalCount,
                     onChange: (page) => setFilters({ ...filters, pageNumber: page }),
-                    showTotal: t => `${t} contracts`
+                    showTotal: t => `${t} contracts`,
+                    showSizeChanger: false
                 }}
                 expandable={{
                     expandedRowKeys,

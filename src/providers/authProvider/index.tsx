@@ -22,8 +22,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           // Fetch the full user profile to ensure user data is populated
           const user = await authService.getCurrentUser();
           dispatch(actions.authSetUser(user));
-        } catch (error: any) {
-          dispatch(actions.authLoginFailure(error.message || "Login failed"));
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : "Login failed";
+          dispatch(actions.authLoginFailure(message));
           throw error;
         }
       },
@@ -49,10 +50,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           );
           sessionStorage.setItem("nexus_token", result.token);
           dispatch(actions.authRegisterSuccess(result));
-        } catch (error: any) {
-          dispatch(
-            actions.authRegisterFailure(error.message || "Registration failed"),
-          );
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : "Registration failed";
+          dispatch(actions.authRegisterFailure(message));
           throw error;
         }
       },
@@ -60,14 +60,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         try {
           await authService.logout();
         } catch (error) {
-          // Log error but proceed with local cleanup
-          console.error("Server logout failed:", error);
+          // Proceed with local cleanup even if server-side logout fails
         } finally {
           sessionStorage.removeItem("nexus_token");
           dispatch(actions.authLogout());
           globalThis.location.href = '/login';
         }
-      },        checkAuth: async () => {
+      },
+      checkAuth: async () => {
         const token = sessionStorage.getItem("nexus_token");
         if (token) {
           try {
@@ -91,11 +91,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   useEffect(() => {
-    // If we're booting up, ensure loading state starts true if we possess a token
-    const token = typeof globalThis.window !== 'undefined' ? sessionStorage.getItem("nexus_token") : null;
-    if (token) {
-        dispatch(actions.authLoginRequest());
-    }
     authActions.checkAuth();
   }, [authActions]);
 

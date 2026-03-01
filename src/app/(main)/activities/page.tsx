@@ -2,42 +2,30 @@
 
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Tabs, Button, Tag, Space, Dropdown } from 'antd';
-import { Activity, ActivityType, UserRole } from '@/types';
+import { Tabs, Button } from 'antd';
+import { ClockCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { Activity, UserRole } from '@/types';
 import { theme as antdTheme } from 'antd';
 import { useActivities, useActivityActions } from '@/providers/activityProvider';
 import { useHasRole } from '@/hooks/useHasRole';
 import PageHeader from '@/components/shared/PageHeader';
 import DataTable from '@/components/shared/DataTable';
+import { getColumns } from './columns';
 
-const CreateActivityModal = dynamic(() => import('@/components/activities/CreateActivityModal'), { 
+const CreateActivityModal = dynamic(() => import('@/components/activities/CreateActivityModal'), {
     ssr: false,
     loading: () => null
 });
 
-const CompleteActivityModal = dynamic(() => import('@/components/activities/CompleteActivityModal'), { 
+const CompleteActivityModal = dynamic(() => import('@/components/activities/CompleteActivityModal'), {
     ssr: false,
     loading: () => null
 });
 
-const ViewActivityModal = dynamic(() => import('@/components/activities/ViewActivityModal'), { 
+const ViewActivityModal = dynamic(() => import('@/components/activities/ViewActivityModal'), {
     ssr: false,
     loading: () => null
 });
-import { 
-    ClockCircleOutlined, 
-    CheckCircleOutlined, 
-    CloseCircleOutlined, 
-    CalendarOutlined,
-    PhoneOutlined,
-    MailOutlined,
-    VideoCameraOutlined,
-    DownOutlined,
-    ProjectOutlined,
-    PlusOutlined,
-    EditOutlined
-} from '@ant-design/icons';
-import dayjs from 'dayjs';
 
 export default function ActivitiesPage() {
     const { token } = antdTheme.useToken();
@@ -58,6 +46,8 @@ export default function ActivitiesPage() {
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER, UserRole.SALES_REP]);
+
+    useEffect(() => { document.title = 'Activities | Nexus'; }, []);
 
     const loadData = () => {
         if (activeTab === 'my_activities') {
@@ -101,114 +91,13 @@ export default function ActivitiesPage() {
         loadData();
     };
 
-    // Helper rendering functions
-    const renderTypeIcon = (type: ActivityType) => {
-        switch (type) {
-            case ActivityType.CALL: return <PhoneOutlined />;
-            case ActivityType.MEETING: return <VideoCameraOutlined />;
-            case ActivityType.EMAIL: return <MailOutlined />;
-            case ActivityType.PRESENTATION: return <ProjectOutlined />;
-            default: return <CalendarOutlined />;
-        }
-    };
-
-    const columns = [
-        {
-            title: 'Subject',
-            dataIndex: 'subject',
-            key: 'subject',
-            render: (text: string, record: Activity) => (
-                <Space>
-                    {renderTypeIcon(record.type)}
-                    <a onClick={() => openViewModal(record)} style={{ fontWeight: 500 }}>{text}</a>
-                </Space>
-            )
-        },
-        {
-            title: 'Related To',
-            key: 'relatedTo',
-            render: (_: any, record: Activity) => (
-                record.relatedToName ? (
-                    <Tag color={record.relatedToType === 1 ? 'blue' : 'purple'}>
-                        {record.relatedToName}
-                    </Tag>
-                ) : <span style={{ color: token.colorTextDisabled }}>-</span>
-            )
-        },
-        {
-            title: 'Due Date',
-            dataIndex: 'dueDate',
-            key: 'dueDate',
-            render: (date: string) => {
-                const isOverdue = dayjs(date).isBefore(dayjs());
-                return (
-                    <span style={{ color: isOverdue ? 'red' : 'inherit' }}>
-                        {dayjs(date).format('MMM D, YYYY HH:mm')}
-                    </span>
-                );
-            }
-        },
-        {
-            title: 'Status',
-            dataIndex: 'statusName',
-            key: 'statusName',
-            render: (status: string) => {
-                let color = 'gold';
-                if (status === 'Completed') color = 'green';
-                if (status === 'Cancelled') color = 'default';
-                return <Tag color={color}>{status}</Tag>;
-            }
-        },
-        {
-            title: 'Actions',
-            key: 'actions',
-            render: (_: any, record: Activity) => {
-                const isClosed = record.statusName !== 'Scheduled';
-                
-                return (
-                    <Dropdown
-                        menu={{
-                            items: [
-                                {
-                                    key: 'view',
-                                    label: 'View Details',
-                                    onClick: () => openViewModal(record),
-                                },
-                                {
-                                    key: 'divider',
-                                    type: 'divider',
-                                },
-                                ...(isClosed ? [] : [
-                                    {
-                                        key: 'edit',
-                                        icon: <EditOutlined style={{ color: 'blue' }} />,
-                                        label: 'Edit Activity',
-                                        onClick: () => openEditModal(record),
-                                    },
-                                    {
-                                        key: 'complete',
-                                        icon: <CheckCircleOutlined style={{ color: 'green' }} />,
-                                        label: 'Mark Complete',
-                                        onClick: () => openCompleteModal(record),
-                                    },
-                                    {
-                                        key: 'cancel',
-                                        icon: <CloseCircleOutlined style={{ color: 'red' }} />,
-                                        label: 'Cancel Activity',
-                                        onClick: () => handleCancelActivity(record.id),
-                                    }
-                                ])
-                            ]
-                        }}
-                    >
-                        <Button type="link" size="small">
-                            Actions <DownOutlined />
-                        </Button>
-                    </Dropdown>
-                );
-            }
-        }
-    ];
+    const columns = getColumns({
+        colorTextDisabled: token.colorTextDisabled,
+        onView: openViewModal,
+        onEdit: openEditModal,
+        onComplete: openCompleteModal,
+        onCancel: handleCancelActivity,
+    });
 
     const getDataSource = () => {
         if (activeTab === 'my_activities') return myActivities;
@@ -285,6 +174,8 @@ export default function ActivitiesPage() {
                     pageSize: filters.pageSize,
                     total: activeTab === 'overdue' ? overdueActivities.length : totalCount,
                     onChange: (page) => setFilters({ pageNumber: page }),
+                    showTotal: t => `${t} activities`,
+                    showSizeChanger: false
                 }}
             />
 

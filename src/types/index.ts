@@ -41,6 +41,7 @@ export interface Opportunity {
   currency: string;
   probability: number;
   stage: OpportunityStage;
+  stageName: string;
   source: number;
   expectedCloseDate: string;
   description: string;

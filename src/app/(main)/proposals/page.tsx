@@ -2,17 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import { Button, Input, Select, Space, Popconfirm, App } from 'antd';
-import { CheckOutlined, SendOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
+import { Button, Input, Select, Space, App } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { Proposal, ProposalStatus, UserRole } from '@/types';
 import { useProposals, useProposalActions } from '@/providers/proposalProvider';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
-import StatusBadge from '@/components/shared/StatusBadge';
 import { useHasRole } from '@/hooks/useHasRole';
-import { formatCurrency } from '@/utils/currencyUtils';
+import { getColumns } from './columns';
 
 const ProposalModal = dynamic(() => import('@/components/proposals/ProposalModal'), { 
     ssr: false,
@@ -26,6 +23,8 @@ export default function ProposalsPage() {
     const { hasRole: canCreate } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER, UserRole.BUSINESS_DEVELOPMENT_MANAGER]);
     const { hasRole: canApprove } = useHasRole([UserRole.ADMIN, UserRole.SALES_MANAGER]);
     const [modalOpen, setModalOpen] = useState(false);
+
+    useEffect(() => { document.title = 'Proposals | Nexus'; }, []);
 
     useEffect(() => {
         fetchProposals();
@@ -69,96 +68,13 @@ export default function ProposalsPage() {
         }
     };
 
-    const columns: ColumnsType<Proposal> = [
-        {
-            title: 'Title',
-            dataIndex: 'title',
-            key: 'title',
-            ellipsis: true,
-            render: (text, record) => <Link href={`/proposals/${record.id}`}>{text}</Link>,
-        },
-        {
-            title: 'Opportunity',
-            dataIndex: 'opportunityTitle',
-            key: 'opportunityTitle',
-            render: (text, record) => <Link href={`/opportunities/${record.opportunityId}`}>{text}</Link>,
-            ellipsis: true,
-        },
-        {
-            title: 'Client',
-            dataIndex: 'clientName',
-            key: 'clientName',
-            render: (text, record) => <Link href={`/clients/${record.clientId}`}>{text}</Link>,
-        },
-        {
-            title: 'Total',
-            dataIndex: 'totalAmount',
-            key: 'totalAmount',
-            render: (v) => formatCurrency(v),
-            sorter: (a, b) => a.totalAmount - b.totalAmount,
-            align: 'right',
-        },
-        {
-            title: 'Status',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status: ProposalStatus) => <StatusBadge status={status} />,
-            width: 120,
-        },
-        {
-            title: 'Created',
-            dataIndex: 'createdAt',
-            key: 'createdAt',
-            render: (d: string) => d ? new Date(d).toLocaleDateString() : '—',
-            width: 110,
-        },
-        {
-            title: 'Actions',
-            key: 'actions',
-            width: 220,
-            render: (_, record) => (
-                <Space size="small">
-                    <Link href={`/proposals/${record.id}`}>
-                        <Button size="small">View</Button>
-                    </Link>
-                    {record.status === ProposalStatus.DRAFT && canCreate && (
-                        <Popconfirm
-                            title="Submit this proposal for review?"
-                            onConfirm={() => handleSubmit(record.id)}
-                            okText="Yes"
-                        >
-                            <Button size="small" type="primary" ghost icon={<SendOutlined />}>
-                                Submit
-                            </Button>
-                        </Popconfirm>
-                    )}
-                    {record.status === ProposalStatus.SUBMITTED && canApprove && (
-                        <>
-                            <Popconfirm
-                                title="Approve this proposal?"
-                                onConfirm={() => handleApprove(record.id)}
-                                okText="Approve"
-                            >
-                                <Button size="small" type="primary" icon={<CheckOutlined />}>
-                                    Approve
-                                </Button>
-                            </Popconfirm>
-                            <Popconfirm
-                                title="Reject this proposal?"
-                                onConfirm={() => handleReject(record.id)}
-                                okText="Reject"
-                                okButtonProps={{ danger: true }}
-                            >
-                                <Button size="small" danger icon={<CloseOutlined />}>
-                                    Reject
-                                </Button>
-                            </Popconfirm>
-                        </>
-                    )}
-                </Space>
-            ),
-        },
-    ];
+    const columns = getColumns({
+        canCreate,
+        canApprove,
+        onSubmit: handleSubmit,
+        onApprove: handleApprove,
+        onReject: handleReject,
+    });
 
     const statusOptions = [
         { value: undefined, label: 'All Statuses' },
@@ -214,7 +130,8 @@ export default function ProposalsPage() {
                     pageSize: filters.pageSize,
                     total: totalCount,
                     onChange: (page) => setFilters({ ...filters, pageNumber: page }),
-                    showTotal: t => `${t} proposals`
+                    showTotal: t => `${t} proposals`,
+                    showSizeChanger: false
                 }}
             />
             <ProposalModal
