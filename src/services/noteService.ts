@@ -8,6 +8,7 @@ export interface Note {
     relatedToId: string;
     isPrivate: boolean;
     tenantId: string;
+    createdById: string;
     createdBy: string;
     createdAt: string;
     updatedAt?: string;
