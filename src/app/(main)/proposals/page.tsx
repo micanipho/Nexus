@@ -74,12 +74,14 @@ export default function ProposalsPage() {
             dataIndex: 'proposalNumber',
             key: 'proposalNumber',
             width: 160,
+            render: (text, record) => <Link href={`/proposals/${record.id}`}>{text}</Link>,
         },
         {
             title: 'Title',
             dataIndex: 'title',
             key: 'title',
             ellipsis: true,
+            render: (text, record) => <Link href={`/proposals/${record.id}`}>{text}</Link>,
         },
         {
             title: 'Opportunity',
